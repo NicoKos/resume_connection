@@ -22,7 +22,7 @@
 		<!-- The abbreviated title is used in the page header - it is only necessary if the
          full title is longer than 39 characters -->
 
-		<title abbrev="Session Careful Resume">Session Careful Resume</title>
+		<title abbrev="Carefully Resume QUIC Session">Carefully Resume QUIC Session</title>
 
 		<author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
 			<organization></organization>
@@ -106,9 +106,18 @@
                 This draft proposes guidelines for how to
                 carefully resume QUIC sessions. The previously
                 computed parameters relating to path
-                characteristics, such as the 
+                characteristics, such as the
                 bottleneck bandwidth or the RTT, can be stored and
-                exploited.
+		exploited.
+		</t>
+		<t>	
+		The draft discusses that a server should not just
+                presume that this is the same path, rather check the new
+                path cahracteristics. The server should not just reuse
+                the same bandwidth to allow opportunities for new flows
+                to enter. The default behavior must be prioritized if
+                there are indications that the new rate is not
+                appropriate.
 		</t>
 	</abstract>
 	</front>
@@ -200,7 +209,7 @@
 		<list style="numbers">
 			<t>
                         discusses the use-cases where carefully resuming
-                        QUIC sessions is of interests;
+                        QUIC sessions is of interest;
 			</t>
 			<t> 
                         proposes guidelines for how to
