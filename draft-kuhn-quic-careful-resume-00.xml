@@ -25,7 +25,7 @@
 		<title abbrev="Session Careful Resume">Session Careful Resume</title>
 
 		<author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
-			<organization>CNES</organization>
+			<organization></organization>
 			<address>
 				<email>nicolas.kuhn.ietf@gmail.com</email>
 			</address>
@@ -103,7 +103,12 @@
 
 	<abstract>
 		<t>
-		TBD
+                This draft proposes guidelines for how to
+                carefully resume QUIC sessions. The previously
+                computed parameters relating to path
+                characteristics, such as the 
+                bottleneck bandwidth or the RTT, can be stored and
+                exploited.
 		</t>
 	</abstract>
 	</front>
@@ -112,23 +117,40 @@
 
 	<section anchor="sec:introduction" title="Introduction">
 		<t>
-                QUIC 0-RTT transport features currently
-                focus on egress traffic optimization. This draft describes a QUIC extension
-		that can be used to improve the performance of ingress traffic. 
-		</t>
-
-		<t>
                 <xref target="RFC9000"></xref>
                 mentions that "Generally, implementations are advised to
 		be cautious when using previous values on a new path."
 		This draft proposes a discussion on how using previous values 
-		can be achieved in a interoperable manner and how it can 
-		be done safely.
+		can be done safely.
 		</t>
-	
+
 		<t>
-                When clients resume a session to download a
-                large object, the congestion control algorithms will
+                There are scenarios where sharing the previously
+                computed parameters relating to path characteristics,
+                such as bottleneck bandwidth or RTT, can help saving
+                precious round-trip times at the beginning of a new
+		session:
+		<list style="numbers">
+			<t>
+                        To resume sessions to download an object over a
+                        SATCOM access.
+			</t>
+			<t>	
+                        To optimize client's requests for Dynamic
+                        Adaptive Streaming over HTTPS (DASH).
+			</t>
+			<t>
+                        To share transport information across multiple
+                        connections.
+			</t>
+			<t>
+                        To accomodate from drops in bandwidth: when a
+                        user in a train goes in and out of a tunnel.
+			</t>
+		</list></t>		
+
+		<t>
+                The congestion control algorithms 
                 require time to ramp-up the packet rate as a sequence
 		of Round-Trip Time (RTT)-based increases. This
                 document specifies a method that can improve traffic
@@ -158,20 +180,7 @@
                 saved_session and recon_session can be a 0-RTT QUIC
 		connection or a 1-RTT QUIC connection.
 		</t>
-		<t>
-		The current version of this draft considers several 
-		possible solutions: (1) the saved
-                parameters are stored at the server; they are not sent to the client; (2) the saved
-                parameters are sent to the client as an encrypted opaque blob; although the client is unable to
-                read the parameters can include this opaque blob in a subsequent request to the server; 
-		(3) the saved parameters are sent to the
-                client and the client is notified of their value, but the parameters also include
-		a cryptographic integrity check; the client 
-		can include both the parameters and the integrity check in a subsequent request to the server. </t>
-                <t>
-		None of these possible solutions allow q client to modify the parameters that will be used by the server. 
-		</t>
-			
+
 		<t>
                 There are several cases where the parameters of a previous session are not
                 appropriate. These include:
@@ -189,9 +198,13 @@
 		<t>
 		This document:
 		<list style="numbers">
+			<t>
+                        discusses the use-cases where carefully resuming
+                        QUIC sessions is of interests;
+			</t>
 			<t> 
                         proposes guidelines for how to
-                        safely apply the previously computed
+                        carefully apply the previously computed
                         parameters to new sessions;
 			</t>
 			<t>
@@ -327,7 +340,94 @@
 		</section>
 	
 	</section>
-	
+
+	<section anchor="sec:use_case" title="Scenarios of interest">
+		<section anchor="subsec:rationale_satcom" title="Large BDP scenarios">
+			<t>
+                        Using the transport parameters of a previous
+                        connection can reduce the transmission time of
+			data over a SATCOM access.
+			</t>
+			<t>
+                        The usage of a congestion control and transport
+                        initialization not adapted to satellite
+                        communication results in high page loading time
+                        for heavy pages in a SATCOM context: downloading
+                        5.3 MB can take up to 9 seconds with a non
+                        specific congestion control when a 'getting up
+                        to speed' congestion controls reduces this time
+                        to 4 seconds 
+                        <xref target="IJSCN"></xref>.
+			</t>
+			<t>
+                        Through the sharing of transport parameters of
+                        previous sessions, the transmission time of 1 MB
+                        has been reduced by up to
+                        62 % on a public SATCOM
+                        access 
+                        <xref target="MAPRG111"></xref>.
+			</t>
+		</section>
+
+		<section anchor="subsec:rationale_drops" title="Accomodating from known drops in bandwidth">
+			<t>
+                        There are cases where the client faces drops in
+                        bandwidth. Saving round-trip to get up to speed
+                        when the bandwidth is
+                        back to the previous high
+                        values is of interest and can be achieved by
+                        sharing information related to the path
+                        characteristics. 
+			</t>
+		</section>
+
+		<section anchor="subsec:rationale_client" title="Optimizing client's requests">
+			<t>
+                        When using Dynamic Adaptive
+                        Streaming over HTTPS (DASH), clients
+                        might encounter issues in knowing the
+                        available path capacity or DASH can
+                        encounter issues in reaching the best
+                        available video playback quality. The
+                        client requests could then be adapted
+                        and specific traffic could utilize
+                        information from the path
+                        characteristics (such as encouraging the
+                        client to increase the quality of video
+                        chunks, to fill the buffers and avoid
+                        video blocking or to send high quality
+                        adds).
+			</t>
+			<t>
+                        In other cases, applications could provide
+                        additional services if clients can know
+                        the server estimation of the path
+                        characteristics.
+			</t>
+		</section>
+
+		<section anchor="subsec:rationale_sharing" title="Sharing transport information across multiple connections">
+			<t>
+                        There can be benefit in sharing
+                        transport
+                        information across multiple
+                        connections. 
+                        <xref
+                        target="I-D.ietf-tcpm-2140bis"></xref>
+                        considers the sharing of transport
+                        parameters between TCP connections
+                        originating from the same host. The
+                        proposal in this document has the
+                        advantage of storing server-generated
+                        information at
+                        the client and not requiring the
+                        server to
+                        retain additional state for each
+                        client.
+			</t>
+		</section>
+	</section>
+
 	<section anchor="subsec:rationale_jump" title="Safe jump start">
 
 		<section title="Rationale behind the safety guidelines">
@@ -353,7 +453,6 @@
 				</t>
 			</list></t>
 			
-
 		</section> 
 	
 		<section title="Rationale #1: Variable network conditions">
@@ -456,7 +555,7 @@
                         the saved_rtt and saved_bb parameters received
                         from a client.
 			</t>
-
+		
 			<t>
                         There are several solutions to avoid
 			attacks by malicious clients:
@@ -844,6 +943,137 @@
 
 	</section>
 
+
+	<!--
+	<section anchor="sec:discuss" title="Discussion">
+		<section anchor="subsec:other_param_bdp_protect" title="BDP extension protected as much as initial_max_data">
+			<t>
+                        The BDP metadata parameters are measured by
+                        the server during a previous
+                        connection. The BDP extension is
+                        protected by the mechanism that
+                        protects the exchange of the 0-RTT
+                        transport parameters. For version 1
+                        of QUIC, the BDP extension is protected
+                        using the mechanism that already
+                        protects the "initial_max_data"
+                        parameter. This is defined in sections
+                        4.5 to 4.7 of 
+                        <xref target="RFC9001"></xref>.
+                        This provides a way for the server to
+                        verify that the parameters proposed by the
+                        client are the same as those that the server
+                        sent to the client during the previous
+                        connection.
+			</t>
+		</section>
+	</section>
+	-->
+
+	<section anchor="sec:acknowledgments" title="Acknowledgments">
+		<t>
+                The authors would like to thank Gabriel Montenegro,
+                Patrick McManus, Ian Swett, Igor Lubashev, Robin Marx,
+                Roland Bless and Franklin Simo for their fruitful
+                comments on earlier versions of this document.
+		</t>
+	</section>
+
+	<section anchor="sec:IANA" title="IANA Considerations">
+		<t>
+                TBD: Text is required to register the BDP Frame and the
+                enable_bdp transport parameter. Parameters are
+                registered using the procedure defined in 
+                <xref target="RFC9000"></xref>.
+		</t>
+	</section>
+
+	<section anchor="sec:security" title="Security Considerations">
+		<t>
+                Security considerations are discussed  
+                in
+		<xref target="sec:safety_guide"></xref>.
+                </t>
+	</section>
+	</middle>
+
+	<!--  *****BACK MATTER ***** -->
+	<back>
+		<!-- References split into informative and normative -->
+		<!-- There are 2 ways to insert reference entries from the citation libraries:
+	1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+	2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+	(for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+	Both are cited textually in the same manner: by using xref elements.
+	If you use the PI option, xml2rfc will, by default, try to find included files in the same
+	directory as the including file. You can also define the XML_LIBRARY environment variable
+	with a value containing a set of directories to search.  These can be either in the local
+	filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+		<references title="Normative References">		
+			<?rfc include="reference.RFC.2119.xml"?>
+			<?rfc include="reference.RFC.4782.xml"?>
+			<?rfc include="reference.RFC.6349.xml"?>
+			<?rfc include="reference.RFC.6928.xml"?>
+			<?rfc include="reference.RFC.8174.xml"?>
+			<?rfc include="reference.RFC.8446.xml"?>
+			<?rfc include="reference.I-D.ietf-tcpm-2140bis.xml"?>
+			<?rfc include="reference.RFC.9000.xml"?>
+			<!-- <?rfc include="reference.RFC.9001.xml"?> -->
+			<!-- <?rfc include="reference.RFC.9002.xml"?> -->
+		</references>
+			
+		<references title="Informative References">
+			<?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
+			
+			<reference anchor="MAPRG111">
+				<front>
+					<title>Feedback from using QUIC's 0-RTT-BDP extension over SATCOM public access</title>
+					<author initials="N" surname="Kuhn">
+					</author>
+					<author initials="E" surname="Stephan">
+					</author>
+					<author initials="G" surname="Fairhurst">
+					</author>
+					<author initials="T" surname="Jones">
+					</author>
+					<author initials="C" surname="Huitema">
+					</author>
+					<date year="2021"/>
+				</front>
+				<seriesInfo name="IETF 111 - MAPRG meeting" value=""/>
+			</reference>
+
+			<reference anchor="IJSCN">
+				<front>
+					<title>Google QUIC performance over a public SATCOM access</title>
+					<author initials="L" surname="Thomas">
+					</author>
+					<author initials="E" surname="Dubois">
+					</author>
+					<author initials="N" surname="Kuhn">
+					</author>
+					<author initials="E" surname="Lochin">
+					</author>
+					<date year="2019"/>
+				</front>
+				<seriesInfo name="International Journal of Satellite Communications and Networking" value="10.1002/sat.1301"/>
+			</reference>
+			
+			<reference anchor="CONEXT15">
+				<front>
+					<title>Halfback: Running Short Flows Quickly and Safely</title>
+					<author initials="Q" surname="Li">
+					</author>
+					<author initials="M" surname="Dong">
+					</author>
+					<author initials="P B" surname="Godfrey">
+					</author>
+					<date year="2015"/>
+				</front>
+				<seriesInfo name="ACM CoNEXT" value=""/>
+			</reference>
+		</references>
 	<section anchor="sec:implem" title="Implementation considerations">
 		<section anchor="sec:bdp_frame" title="Rationale behind the different implementation options">
 			<t>
@@ -955,320 +1185,20 @@
 		</section>
 	
 		<section anchor="sec:bdp_frame_section" title="BDP Frame">
-
 			<t>
-                        This section describes the use of a new
-                        Frame, the BDP Frame. The BDP Frame MUST be
-                        contained in 0-RTT packets, if sent by the
-                        client. The BDP Frame MUST be contained in 1-RTT
-                        packets, if sent by the server. The BDP Frame
-                        MUST be considered by congestion control and
-                        its data is not be limited by flow control
-                        limits. The server MAY send multiple BDP Frames
-                        in both 1-RTT and 0-RTT connections. 
-			The client
-                        can send BDP Frames during 1-RTT and 0-RTT
-                        connections.
-			</t>
-       
-			<section anchor="sec:bdp_metadata" title="BDP Frame Format">
-			
-				<t>
-                                A BDP Frame is formatted as shown in
-                                <xref target="fig:bdp_frame_format"></xref>.
-				</t>
-<figure anchor="fig:bdp_frame_format" title="BDP Frame Format">
-<artwork>
-BDP Frame {
-  Type (i) = 0xXXX,
-  Lifetime (i),
-  Saved BB (i),
-  Saved RTT (i),
-  Saved IP length (i),
-  Saved IP (...)
-}
-</artwork>
-</figure>
-				<t>
-                                A BDP Frame contains the following
-                                fields: 
-                                	<list style="symbols">
-					<t>
-                                        Lifetime (extension_lifetime):
-                                        The extension_lifetime is a
-                                        value in milliseconds,
-                                        encoded as a variable length
-                                        integer. This follows the idea
-                                        of NewSessionTicket of TLS 
-                                        <xref target="RFC8446"></xref>.
-					This represents the validity
-                                        in time of this extension.
-					</t> 
-
-					<t>
-                                        Saved BB
-                                        (saved_bb): The
-                                        saved_bb is a value
-                                        in bytes, encoded as a
-                                        variable length integer. The
-                                        bottleneck bandwidth estimated 
-                                        for the previous
-                                        connection by
-					the server.
-					Using 
-                                        the previous values of
-                                        bytes_in_flight defined in 
-                                        <xref
-                                        target="RFC9002"></xref>
-					can result in overshoot of
-					the bottleneck capacity and is not advised.
-					</t>
-
-					<t>
-                                        Saved RTT
-                                        (saved_rtt): The
-                                        saved_rtt is a value in
-                                        milliseconds, encoded as
-                                        a variable length integer.
-                                        This could be set to 
-                                        the minimum RTT (min_rtt). The
-                                        saved_rtt can be set to
-                                        min_rtt.  NOTE: The min_rtt defined in 
-                                        <xref
-                                        target="RFC9002"></xref>, does not track a
-                                        decreasing RTT: therefore
-                                        min_rtt reported might be larger than the
-                                        actual minimum RTT measured during the 1-RTT
-                                        connection.
-					</t>
-					<t>
-					Saved IP length (saved_ip_length) : The 
-					length of the IP address set to either 4
-					(IPv4) or 16 (IPv6).
-					</t>
-					<t>
-                                        Saved IP (saved_client_ip) : The
-                                        saved_client_ip could be set to
-                                        the IP address of the client.
-					</t>
-					</list>
-				</t>
-			</section>
-
-			<section anchor="sec:bdp_activation" title="Extension activation">
-				<t>
-                                The client can accept the transmission
-                                of BDP Frames from the server by using
-                                the enable_bdp transport
-                                extension.
-				</t>
-				<t>
-                                enable_bdp (0xTBD): in the 1-RTT
-                                connection, the client indicates to the
-                                server that it wishes to receive BDP
-                                extension Frames for improving ingress
-                                of 0-RTT connection. The default value is 0.
-                                Values strictly above 3 are invalid, and
-                                receipt of these values MUST be treated
-                                as a connection error of type
-                                TRANSPORT_PARAMETER_ERROR.
-				</t>
-				<t><list style="symbols">
-					<t>
-                                        0: Default value. If the client
-                                        does not send this parameter,
-                                        the server considers that the
-                                        client does not support or does
-                                        not wish to activate the BDP
-                                        extension.
-					</t>
-					<t>
-                                        1: The client indicates to the
-                                        server that it wishes to receive
-                                        BDP Frame and activates the
-                                        ingress optimization for the
-                                        0-RTT connection.
-					</t>
-					<t>
-                                        2: The client indicates that it
-                                        does not wish to receive BDP
-                                        Frames but activates ingress
-                                        optimization.
-					</t>
-					<t>
-                                        3: The client indicates that it
-                                        wishes to receive BDP Frames but
-                                        does not activate ingress
-                                        optimization.
-					</t>
-				</list></t>
-				<t>
-                                This Transport Parameter is encoded as
-                                per Section 18 of 
-                                <xref target="RFC9000"></xref>.
-				</t>
-
-			</section>
-		</section>
-	</section>
-
-	<section anchor="sec:discuss" title="Discussion">
-		<section anchor="subsec:other_param_bdp_protect" title="BDP extension protected as much as initial_max_data">
-			<t>
-                        The BDP metadata parameters are measured by
-                        the server during a previous
-                        connection. The BDP extension is
-                        protected by the mechanism that
-                        protects the exchange of the 0-RTT
-                        transport parameters. For version 1
-                        of QUIC, the BDP extension is protected
-                        using the mechanism that already
-                        protects the "initial_max_data"
-                        parameter. This is defined in sections
-                        4.5 to 4.7 of 
-                        <xref target="RFC9001"></xref>.
-                        This provides a way for the server to
-                        verify that the parameters proposed by the
-                        client are the same as those that the server
-                        sent to the client during the previous
-                        connection.
+                        Using BDP Frames, the server could send a
+                        information relatingto path characteristics to
+                        the client. The BDP
+                        Frame exploiting is negociated with the client.
+                        The client can read its
+                        content.
+                        If the client agrees with the usage of previous
+                        session parameters, it can send the BDP frame
+                        back to the server in an Initial packet for a
+                        later connection. 
 			</t>
 		</section>
-
-		<section anchor="sec:rationale" title="Other use-cases">
-	
-			<section anchor="subsec:rationale_client" title="Optimizing client's requests">
-				<t>
-                                When using Dynamic Adaptive
-                                Streaming over HTTPS (DASH), clients
-                                might encounter issues in knowing the
-                                available path capacity or DASH can
-                                encounter issues in reaching the best
-                                available video playback quality. The
-                                client requests could then be adapted
-                                and specific traffic could utilize
-                                information from the path
-                                characteristics (such as encouraging the
-                                client to increase the quality of video
-                                chunks, to fill the buffers and avoid
-                                video blocking or to send high quality
-                                adds).
-				</t>
-				<t>
-                                In other cases, applications could provide
-                                additional services if clients can know
-                                the server estimation of the path
-                                characteristics.
-				</t>
-			</section>
-
-			<section anchor="subsec:rationale_sharing" title="Sharing transport information across multiple connections">
-				<t>
-                                There can be benefit in sharing
-                                transport
-                                information across multiple
-                                connections. 
-                                <xref
-                                target="I-D.ietf-tcpm-2140bis"></xref>
-                                considers the sharing of transport
-                                parameters between TCP connections
-                                originating from the same host. The
-                                proposal in this document has the
-                                advantage of storing server-generated
-                                information at
-                                the client and not requiring the
-                                server to
-                                retain additional state for each
-                                client.
-				</t>
-			</section>
-		</section>
 	</section>
-	
-	<section anchor="sec:acknowledgments" title="Acknowledgments">
-		<t>
-                The authors would like to thank Gabriel Montenegro,
-                Patrick McManus, Ian Swett, Igor Lubashev, Robin Marx,
-                Roland Bless and Franklin Simo for their fruitful
-                comments on earlier versions of this document.
-		</t>
-	</section>
-
-	<section anchor="sec:IANA" title="IANA Considerations">
-		<t>
-                TBD: Text is required to register the BDP Frame and the
-                enable_bdp transport parameter. Parameters are
-                registered using the procedure defined in 
-                <xref target="RFC9000"></xref>.
-		</t>
-	</section>
-
-	<section anchor="sec:security" title="Security Considerations">
-		<t>
-                Security considerations are discussed in 
-                <xref target="sec:discuss"></xref> and in
-		<xref target="sec:safety_guide"></xref>.
-                </t>
-	</section>
-	</middle>
-
-	<!--  *****BACK MATTER ***** -->
-	<back>
-		<!-- References split into informative and normative -->
-		<!-- There are 2 ways to insert reference entries from the citation libraries:
-	1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
-	2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
-	(for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
-	Both are cited textually in the same manner: by using xref elements.
-	If you use the PI option, xml2rfc will, by default, try to find included files in the same
-	directory as the including file. You can also define the XML_LIBRARY environment variable
-	with a value containing a set of directories to search.  These can be either in the local
-	filing system or remote ones accessed by http (http://domain/dir/... ).-->
-
-		<references title="Normative References">		
-			<?rfc include="reference.RFC.2119.xml"?>
-			<?rfc include="reference.RFC.4782.xml"?>
-			<?rfc include="reference.RFC.6349.xml"?>
-			<?rfc include="reference.RFC.6928.xml"?>
-			<?rfc include="reference.RFC.8174.xml"?>
-			<?rfc include="reference.RFC.8446.xml"?>
-			<?rfc include="reference.I-D.ietf-tcpm-2140bis.xml"?>
-			<?rfc include="reference.RFC.9000.xml"?>
-			<?rfc include="reference.RFC.9001.xml"?>
-			<?rfc include="reference.RFC.9002.xml"?>
-		</references>
-			
-		<references title="Informative References">
-			<?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
-			<!--
-			<reference anchor="TMA18">
-				<front>
-					<title>Demystifying TCP Initial Window Configurations of Content Distribution Networks</title>
-					<author initials="J" surname="Ruth">
-					</author>
-					<author initials="O" surname="Hohlfeld">
-					</author>
-					<date year="2018"/>
-				</front>
-				<seriesInfo name="2018 Network Traffic Measurement and Analysis Conference (TMA)" value=""/>
-			</reference>
-			-->
-			<reference anchor="CONEXT15">
-				<front>
-					<title>Halfback: Running Short Flows Quickly and Safely</title>
-					<author initials="Q" surname="Li">
-					</author>
-					<author initials="M" surname="Dong">
-					</author>
-					<author initials="P B" surname="Godfrey">
-					</author>
-					<date year="2015"/>
-				</front>
-				<seriesInfo name="ACM CoNEXT" value=""/>
-			</reference>
-		</references>
-		<!-- <section anchor="appendix-numerical" title="Example">
-			<t> TBD </t>
-		</section> -->
+		
 	</back>
 </rfc>

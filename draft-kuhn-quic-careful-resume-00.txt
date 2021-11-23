@@ -3,15 +3,15 @@
 
 
 Internet Engineering Task Force                                  N. Kuhn
-Internet-Draft                                                      CNES
+Internet-Draft
 Intended status: Informational                                E. Stephan
-Expires: May 22, 2022                                             Orange
+Expires: May 27, 2022                                             Orange
                                                             G. Fairhurst
                                                                 T. Jones
                                                   University of Aberdeen
                                                               C. Huitema
                                                     Private Octopus Inc.
-                                                       November 18, 2021
+                                                       November 23, 2021
 
 
                          Session Careful Resume
@@ -19,7 +19,10 @@ Expires: May 22, 2022                                             Orange
 
 Abstract
 
-   TBD
+   This draft proposes guidelines for how to carefully resume QUIC
+   sessions.  The previously computed parameters relating to path
+   characteristics, such as the bottleneck bandwidth or the RTT, can be
+   stored and exploited.
 
 Status of This Memo
 
@@ -36,7 +39,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 22, 2022.
+   This Internet-Draft will expire on May 27, 2022.
 
 Copyright Notice
 
@@ -47,17 +50,17 @@ Copyright Notice
    Provisions Relating to IETF Documents
    (https://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
-   carefully, as they describe your rights and restrictions with respect
-   to this document.  Code Components extracted from this document must
-   include Simplified BSD License text as described in Section 4.e of
 
 
 
-Kuhn, et al.              Expires May 22, 2022                  [Page 1]
+Kuhn, et al.              Expires May 27, 2022                  [Page 1]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
 
@@ -66,56 +69,65 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Notations and terms . . . . . . . . . . . . . . . . . . .   4
      1.2.  Requirements Language . . . . . . . . . . . . . . . . . .   5
-   2.  Safe jump start . . . . . . . . . . . . . . . . . . . . . . .   5
-     2.1.  Rationale behind the safety guidelines  . . . . . . . . .   5
-     2.2.  Rationale #1: Variable network conditions . . . . . . . .   6
-     2.3.  Rationale #2: Malicious clients . . . . . . . . . . . . .   7
-     2.4.  Trade-off between the different solutions . . . . . . . .   7
-       2.4.1.  Security aspects  . . . . . . . . . . . . . . . . . .   8
-       2.4.2.  Interoperability and use-cases  . . . . . . . . . . .   8
-       2.4.3.  Summary . . . . . . . . . . . . . . . . . . . . . . .   9
-   3.  Safety guidelines . . . . . . . . . . . . . . . . . . . . . .  10
-   4.  Implementation considerations . . . . . . . . . . . . . . . .  12
-     4.1.  Rationale behind the different implementation options . .  12
-     4.2.  Independent local storage of values . . . . . . . . . . .  12
-     4.3.  Using NEW_TOKEN frames  . . . . . . . . . . . . . . . . .  13
-     4.4.  BDP Frame . . . . . . . . . . . . . . . . . . . . . . . .  13
-       4.4.1.  BDP Frame Format  . . . . . . . . . . . . . . . . . .  13
-       4.4.2.  Extension activation  . . . . . . . . . . . . . . . .  14
-   5.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .  15
-     5.1.  BDP extension protected as much as initial_max_data . . .  15
-     5.2.  Other use-cases . . . . . . . . . . . . . . . . . . . . .  15
-       5.2.1.  Optimizing client's requests  . . . . . . . . . . . .  15
-       5.2.2.  Sharing transport information across multiple
-               connections . . . . . . . . . . . . . . . . . . . . .  16
-   6.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  16
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  16
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  16
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  16
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  16
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  17
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  17
+   2.  Scenarios of interest . . . . . . . . . . . . . . . . . . . .   5
+     2.1.  Large BDP scenarios . . . . . . . . . . . . . . . . . . .   5
+     2.2.  Accomodating from known drops in bandwidth  . . . . . . .   6
+     2.3.  Optimizing client's requests  . . . . . . . . . . . . . .   6
+     2.4.  Sharing transport information across multiple connections   6
+   3.  Safe jump start . . . . . . . . . . . . . . . . . . . . . . .   6
+     3.1.  Rationale behind the safety guidelines  . . . . . . . . .   6
+     3.2.  Rationale #1: Variable network conditions . . . . . . . .   7
+     3.3.  Rationale #2: Malicious clients . . . . . . . . . . . . .   8
+     3.4.  Trade-off between the different solutions . . . . . . . .   8
+       3.4.1.  Security aspects  . . . . . . . . . . . . . . . . . .   9
+       3.4.2.  Interoperability and use-cases  . . . . . . . . . . .   9
+       3.4.3.  Summary . . . . . . . . . . . . . . . . . . . . . . .  10
+   4.  Safety guidelines . . . . . . . . . . . . . . . . . . . . . .  11
+   5.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .  13
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  13
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  13
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  13
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .  13
+     8.2.  Informative References  . . . . . . . . . . . . . . . . .  14
+   Appendix A.  Implementation considerations  . . . . . . . . . . .  14
+     A.1.  Rationale behind the different implementation options . .  15
+     A.2.  Independent local storage of values . . . . . . . . . . .  15
+     A.3.  Using NEW_TOKEN frames  . . . . . . . . . . . . . . . . .  16
+     A.4.  BDP Frame . . . . . . . . . . . . . . . . . . . . . . . .  16
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  16
 
 1.  Introduction
 
-   QUIC 0-RTT transport features currently focus on egress traffic
-   optimization.  This draft describes a QUIC extension that can be used
-   to improve the performance of ingress traffic.
-
    [RFC9000] mentions that "Generally, implementations are advised to be
    cautious when using previous values on a new path."  This draft
-   proposes a discussion on how using previous values can be achieved in
-   a interoperable manner and how it can be done safely.
+   proposes a discussion on how using previous values can be done
+   safely.
+
+   There are scenarios where sharing the previously computed parameters
+   relating to path characteristics, such as bottleneck bandwidth or
 
 
 
-Kuhn, et al.              Expires May 22, 2022                  [Page 2]
+
+Kuhn, et al.              Expires May 27, 2022                  [Page 2]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
-   When clients resume a session to download a large object, the
-   congestion control algorithms will require time to ramp-up the packet
+   RTT, can help saving precious round-trip times at the beginning of a
+   new session:
+
+   1.  To resume sessions to download an object over a SATCOM access.
+
+   2.  To optimize client's requests for Dynamic Adaptive Streaming over
+       HTTPS (DASH).
+
+   3.  To share transport information across multiple connections.
+
+   4.  To accomodate from drops in bandwidth: when a user in a train
+       goes in and out of a tunnel.
+
+   The congestion control algorithms require time to ramp-up the packet
    rate as a sequence of Round-Trip Time (RTT)-based increases.  This
    document specifies a method that can improve traffic delivery by
    allowing a QUIC connection to avoid a the slow process to discover
@@ -134,20 +146,6 @@ Internet-Draft           Session Careful Resume            November 2021
    and recon_session can be a 0-RTT QUIC connection or a 1-RTT QUIC
    connection.
 
-   The current version of this draft considers several possible
-   solutions: (1) the saved parameters are stored at the server; they
-   are not sent to the client; (2) the saved parameters are sent to the
-   client as an encrypted opaque blob; although the client is unable to
-   read the parameters can include this opaque blob in a subsequent
-   request to the server; (3) the saved parameters are sent to the
-   client and the client is notified of their value, but the parameters
-   also include a cryptographic integrity check; the client can include
-   both the parameters and the integrity check in a subsequent request
-   to the server.
-
-   None of these possible solutions allow q client to modify the
-   parameters that will be used by the server.
-
    There are several cases where the parameters of a previous session
    are not appropriate.  These include:
 
@@ -163,22 +161,25 @@ Internet-Draft           Session Careful Resume            November 2021
       (3) a client uses parameters that are no longer appropriate, e.g.,
       to intentionally try to use a CWND larger than appropriate.
 
+   This document:
 
 
-Kuhn, et al.              Expires May 22, 2022                  [Page 3]
+
+Kuhn, et al.              Expires May 27, 2022                  [Page 3]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
-   This document:
+   1.  discusses the use-cases where carefully resuming QUIC sessions is
+       of interests;
 
-   1.  proposes guidelines for how to safely apply the previously
+   2.  proposes guidelines for how to carefully apply the previously
        computed parameters to new sessions;
 
-   2.  describes different implementation considerations for the
+   3.  describes different implementation considerations for the
        proposed method using QUIC;
 
-   3.  discusses the trade-offs associated with the different
+   4.  discusses the trade-offs associated with the different
        implementation solutions.
 
 1.1.  Notations and terms
@@ -220,8 +221,7 @@ Internet-Draft           Session Careful Resume            November 2021
 
 
 
-
-Kuhn, et al.              Expires May 22, 2022                  [Page 4]
+Kuhn, et al.              Expires May 27, 2022                  [Page 4]
 
 Internet-Draft           Session Careful Resume            November 2021
 
@@ -258,9 +258,67 @@ Internet-Draft           Session Careful Resume            November 2021
    14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-2.  Safe jump start
+2.  Scenarios of interest
 
-2.1.  Rationale behind the safety guidelines
+2.1.  Large BDP scenarios
+
+   Using the transport parameters of a previous connection can reduce
+   the transmission time of data over a SATCOM access.
+
+   The usage of a congestion control and transport initialization not
+   adapted to satellite communication results in high page loading time
+   for heavy pages in a SATCOM context: downloading 5.3 MB can take up
+   to 9 seconds with a non specific congestion control when a 'getting
+   up to speed' congestion controls reduces this time to 4 seconds
+   [IJSCN].
+
+
+
+
+
+
+Kuhn, et al.              Expires May 27, 2022                  [Page 5]
+
+Internet-Draft           Session Careful Resume            November 2021
+
+
+   Through the sharing of transport parameters of previous sessions, the
+   transmission time of 1 MB has been reduced by up to 62 % on a public
+   SATCOM access [MAPRG111].
+
+2.2.  Accomodating from known drops in bandwidth
+
+   There are cases where the client faces drops in bandwidth.  Saving
+   round-trip to get up to speed when the bandwidth is back to the
+   previous high values is of interest and can be achieved by sharing
+   information related to the path characteristics.
+
+2.3.  Optimizing client's requests
+
+   When using Dynamic Adaptive Streaming over HTTPS (DASH), clients
+   might encounter issues in knowing the available path capacity or DASH
+   can encounter issues in reaching the best available video playback
+   quality.  The client requests could then be adapted and specific
+   traffic could utilize information from the path characteristics (such
+   as encouraging the client to increase the quality of video chunks, to
+   fill the buffers and avoid video blocking or to send high quality
+   adds).
+
+   In other cases, applications could provide additional services if
+   clients can know the server estimation of the path characteristics.
+
+2.4.  Sharing transport information across multiple connections
+
+   There can be benefit in sharing transport information across multiple
+   connections.  [I-D.ietf-tcpm-2140bis] considers the sharing of
+   transport parameters between TCP connections originating from the
+   same host.  The proposal in this document has the advantage of
+   storing server-generated information at the client and not requiring
+   the server to retain additional state for each client.
+
+3.  Safe jump start
+
+3.1.  Rationale behind the safety guidelines
 
    The previously measured saved_rtt and saved_bb SHOULD NOT be used as-
    is, to avoid potential congestion collapse:
@@ -271,18 +329,19 @@ Internet-Draft           Session Careful Resume            November 2021
 
    o  Rationale #2: Information sent by a malicious client is not
       relevant.  A client could try to convince a server to use a CWND
-      higher than appropriate, to gain an unfair share of capacity for
-      itself or to induce congestion for other flows.
 
 
 
 
-Kuhn, et al.              Expires May 22, 2022                  [Page 5]
+Kuhn, et al.              Expires May 27, 2022                  [Page 6]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
-2.2.  Rationale #1: Variable network conditions
+      higher than appropriate, to gain an unfair share of capacity for
+      itself or to induce congestion for other flows.
+
+3.2.  Rationale #1: Variable network conditions
 
    The server MUST check the validity of the saved_rtt and saved_bb
    parameters, whether these are sent by a client or are stored at the
@@ -327,21 +386,21 @@ Internet-Draft           Session Careful Resume            November 2021
       safety check to measure avoid using the saved_bb and saved_rtt
       parameters to cause congestion over the path.  In this case, the
       current_bb and current_rtt might not be set directly to the
-      saved_bb and saved_rtt: the server might wait for the completion
-      of the safety check before doing so.
 
 
 
-
-Kuhn, et al.              Expires May 22, 2022                  [Page 6]
+Kuhn, et al.              Expires May 27, 2022                  [Page 7]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
-   Section 3 describes various approaches for Rationale #1 - Solution
+      saved_bb and saved_rtt: the server might wait for the completion
+      of the safety check before doing so.
+
+   Section 4 describes various approaches for Rationale #1 - Solution
    #2.
 
-2.3.  Rationale #2: Malicious clients
+3.3.  Rationale #2: Malicious clients
 
    The server MUST check the integrity of the saved_rtt and saved_bb
    parameters received from a client.
@@ -368,13 +427,13 @@ Internet-Draft           Session Careful Resume            November 2021
       appropriate, based on client-side information about the network
       conidtions or connectivity.
 
-   Section 4 describes various implementation approaches for each of
-   these solutions using local storage ( Section 4.2 for Rationale #2 -
-   Solution #1), NEW_TOKEN Frame ( Section 4.3 for Rationale #2 -
-   Solution #2), BDP extension Frame ( Section 4.4 for Rationale #2 -
+   Appendix A describes various implementation approaches for each of
+   these solutions using local storage ( Appendix A.2 for Rationale #2 -
+   Solution #1), NEW_TOKEN Frame ( Appendix A.3 for Rationale #2 -
+   Solution #2), BDP extension Frame ( Appendix A.4 for Rationale #2 -
    Solution #3).
 
-2.4.  Trade-off between the different solutions
+3.4.  Trade-off between the different solutions
 
    This section provides a description of different implementation
    options and discusses their respective advantages and drawbacks.
@@ -382,19 +441,19 @@ Internet-Draft           Session Careful Resume            November 2021
    Rationale #2, the server MUST consider Rationale #1 - Solution #2 and
    avoid Rationale #1 - Solution #1: the server MUST implement a safety
    check to measure whether the saved BDP parameters (i.e. saved_rtt and
-   saved_bb) are relevant or check that their usage would not cause
-   excessive congestion over the path.
 
 
 
 
-
-Kuhn, et al.              Expires May 22, 2022                  [Page 7]
+Kuhn, et al.              Expires May 27, 2022                  [Page 8]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
-2.4.1.  Security aspects
+   saved_bb) are relevant or check that their usage would not cause
+   excessive congestion over the path.
+
+3.4.1.  Security aspects
 
    The client can send information related to the saved_rtt and saved_bb
    to the server with the BDP Frame extension using either Rationale #2
@@ -411,7 +470,7 @@ Internet-Draft           Session Careful Resume            November 2021
 
    A malicious client might modify the saved_bb parameter to convince
    the server to use a larger CWND than appropriate.  Using the
-   algorithms proposed in Section 3, the server may reduce any intended
+   algorithms proposed in Section 4, the server may reduce any intended
    harm and can check that part of the information provided by the
    client are valid.
 
@@ -420,7 +479,7 @@ Internet-Draft           Session Careful Resume            November 2021
    related to the BDP of the path in the case of a malicious client
    trying to break the encryption mechanism that it had received.
 
-2.4.2.  Interoperability and use-cases
+3.4.2.  Interoperability and use-cases
 
    If the server stores a resumption ticket for each client to protect
    against replay on a third party IP, it could also store the IP
@@ -439,18 +498,18 @@ Internet-Draft           Session Careful Resume            November 2021
    ingress for 0-RTT connections, however, not using a BDP Frame
    extension could reduce the interest of the approach where (1) the
    client knows the BDP estimations done at the server, (2) the client
-   decides to accept or reject ingress optimization, (3) the client
-   tunes application level requests.
 
 
 
-
-Kuhn, et al.              Expires May 22, 2022                  [Page 8]
+Kuhn, et al.              Expires May 27, 2022                  [Page 9]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
-2.4.3.  Summary
+   decides to accept or reject ingress optimization, (3) the client
+   tunes application level requests.
+
+3.4.3.  Summary
 
    As a summary, the approach of local storage of values can be secure
    and the BDP Frame extension provides more information to the client
@@ -495,17 +554,17 @@ Internet-Draft           Session Careful Resume            November 2021
    |         |           |                | trust client  |Section 4.3|
    |         +-----------+----------------+---------------+-----------+
    |         |#3         |                |               |           |
-   |         |BDP        |Extended        |Malicious      |           |
-   |         |extension  | use-cases      | client could  |           |
-   |         |           |Save resource   | change BDP    |           |
 
 
 
-Kuhn, et al.              Expires May 22, 2022                  [Page 9]
+Kuhn, et al.              Expires May 27, 2022                 [Page 10]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
+   |         |BDP        |Extended        |Malicious      |           |
+   |         |extension  | use-cases      | client could  |           |
+   |         |           |Save resource   | change BDP    |           |
    |         |           | at server      | even if       |           |
    |         |           |Client can      | protected     |           |
    |         |           | read and decide|Server may not |           |
@@ -517,7 +576,7 @@ Internet-Draft           Session Careful Resume            November 2021
 
                        Figure 1: Comparing solutions
 
-3.  Safety guidelines
+4.  Safety guidelines
 
    The safety guidelines are designed to avoid a server adding excessive
    congestion to an already congested path.  The following mechanisms
@@ -552,16 +611,15 @@ Internet-Draft           Session Careful Resume            November 2021
    sent without acknowledgment needs to be chosen to avoid the creation
    and the increase of congestion for the path.
 
-   This extension should not provide an opportunity for the current
-   connection to be a vector of an amplification attack.  The address
 
 
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 10]
+Kuhn, et al.              Expires May 27, 2022                 [Page 11]
 
 Internet-Draft           Session Careful Resume            November 2021
 
 
+   This extension should not provide an opportunity for the current
+   connection to be a vector of an amplification attack.  The address
    validation process, used to prevent amplification attacks, SHOULD be
    performed [RFC9000].
 
@@ -611,9 +669,7 @@ Internet-Draft           Session Careful Resume            November 2021
 
 
 
-
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 11]
+Kuhn, et al.              Expires May 27, 2022                 [Page 12]
 
 Internet-Draft           Session Careful Resume            November 2021
 
@@ -627,249 +683,25 @@ Internet-Draft           Session Careful Resume            November 2021
    This follows the idea of [RFC4782],
    [I-D.irtf-iccrg-sallantin-initial-spreading] and [CONEXT15].
 
-4.  Implementation considerations
-
-4.1.  Rationale behind the different implementation options
-
-   The NewSessionTickets messages of TLS offer a solution.  The idea
-   would have been to add a 'bdp_metada' field in the NewSessionTickets
-   that the client could read.  The sole extension currently defined in
-   TLS1.3 that can be seen by the client is max_early_data_size (see
-   section 4.6.1 of [RFC8446]).  However, in the general design of QUIC,
-   TLS sessions are managed by the TLS stacks.
-
-   Three distinct approaches are presented: sending an opaque blob to
-   the client that it may return to the server for a future connection
-   (see Section 4.3), enable a local storage of BDP related values (see
-   Section 4.2) and a BDP Frame extension (see Section 4.4).
-
-4.2.  Independent local storage of values
-
-   This approach independently lets both a client and a server remember
-   their BDP parameters:
-
-   o  During a 1-RTT session, the endpoint stores the RTT (as the
-      saved_rtt) and bottleneck bandwidth (as the saved_bb) together
-      with the session resume ticket.  The client can also store the IP
-      address of the server.
-
-   o  The server maintains a table of previously issued tickets, indexed
-      by the random ticket identifier that is used to guarantee
-      uniqueness of the Authenticated Encryption with Associated Data
-      (AEAD) encryption.  Old tokens are removed from the table using
-      the Least Recently Used (LRU) logic.  For each ticket identifier,
-      the table holds the RTT and bottleneck bandwidth (i.e. saved_rtt
-      and saved_bb), and also the IP address of the client (i.e.
-      saved_client_ip).
-
-   During the 0-RTT session, the endpoint waits for the first RTT
-   measurement from the peer's IP address.  This is used to verify that
-   the current_rtt has not significantly changed from the saved_rtt, and
-
-
-
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 12]
-
-Internet-Draft           Session Careful Resume            November 2021
-
-
-   hence is an indication that the BDP information is appropriate to the
-   path that is currently being used.
-
-   If this RTT is confirmed (e.g. current_rtt < 1.2*saved_rtt, the
-   endpoint also verifies that an initial window of data has been
-   acknowledged without requiring retransmission.  This second check
-   detects a path with significant incipient congestion (i.e. where it
-   would not be safe to update the CWND based on the saved_bb).  In
-   practice, this could be realized by a proportional increase in the
-   CWND, where the increase is (saved_bb/IW)*proportion_of_IW_currently-
-   ACKed.
-
-   This solution does not allow the client to refuse the exploitation of
-   the BDP parameters.  If the server does not want to store the metrics
-   from previous connections, an equivalent of the tcp_no_metrics_save
-   for QUIC may be necessary.  This option could be negociated that
-   alows a client to choose whether to use the saved information.
-
-4.3.  Using NEW_TOKEN frames
-
-   Using NEW_TOKEN Frames, the server could send a token to the client
-   through a NEW_TOKEN Frame.  The token is an opaque blob and the
-   client can not read its content (see section 19.7 of [RFC9000]).  The
-   client sends the received token in the header of an Initial packet
-   for a later connection.
-
-4.4.  BDP Frame
-
-   This section describes the use of a new Frame, the BDP Frame.  The
-   BDP Frame MUST be contained in 0-RTT packets, if sent by the client.
-   The BDP Frame MUST be contained in 1-RTT packets, if sent by the
-   server.  The BDP Frame MUST be considered by congestion control and
-   its data is not be limited by flow control limits.  The server MAY
-   send multiple BDP Frames in both 1-RTT and 0-RTT connections.  The
-   client can send BDP Frames during 1-RTT and 0-RTT connections.
-
-4.4.1.  BDP Frame Format
-
-   A BDP Frame is formatted as shown in Figure 2.
-
-
-
-
-
-
-
-
-
-
-
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 13]
-
-Internet-Draft           Session Careful Resume            November 2021
-
-
-   BDP Frame {
-     Type (i) = 0xXXX,
-     Lifetime (i),
-     Saved BB (i),
-     Saved RTT (i),
-     Saved IP length (i),
-     Saved IP (...)
-   }
-
-                        Figure 2: BDP Frame Format
-
-   A BDP Frame contains the following fields:
-
-   o  Lifetime (extension_lifetime): The extension_lifetime is a value
-      in milliseconds, encoded as a variable length integer.  This
-      follows the idea of NewSessionTicket of TLS [RFC8446].  This
-      represents the validity in time of this extension.
-
-   o  Saved BB (saved_bb): The saved_bb is a value in bytes, encoded as
-      a variable length integer.  The bottleneck bandwidth estimated for
-      the previous connection by the server.  Using the previous values
-      of bytes_in_flight defined in [RFC9002] can result in overshoot of
-      the bottleneck capacity and is not advised.
-
-   o  Saved RTT (saved_rtt): The saved_rtt is a value in milliseconds,
-      encoded as a variable length integer.  This could be set to the
-      minimum RTT (min_rtt).  The saved_rtt can be set to min_rtt.
-      NOTE: The min_rtt defined in [RFC9002], does not track a
-      decreasing RTT: therefore min_rtt reported might be larger than
-      the actual minimum RTT measured during the 1-RTT connection.
-
-   o  Saved IP length (saved_ip_length) : The length of the IP address
-      set to either 4 (IPv4) or 16 (IPv6).
-
-   o  Saved IP (saved_client_ip) : The saved_client_ip could be set to
-      the IP address of the client.
-
-4.4.2.  Extension activation
-
-   The client can accept the transmission of BDP Frames from the server
-   by using the enable_bdp transport extension.
-
-   enable_bdp (0xTBD): in the 1-RTT connection, the client indicates to
-   the server that it wishes to receive BDP extension Frames for
-   improving ingress of 0-RTT connection.  The default value is 0.
-   Values strictly above 3 are invalid, and receipt of these values MUST
-   be treated as a connection error of type TRANSPORT_PARAMETER_ERROR.
-
-
-
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 14]
-
-Internet-Draft           Session Careful Resume            November 2021
-
-
-   o  0: Default value.  If the client does not send this parameter, the
-      server considers that the client does not support or does not wish
-      to activate the BDP extension.
-
-   o  1: The client indicates to the server that it wishes to receive
-      BDP Frame and activates the ingress optimization for the 0-RTT
-      connection.
-
-   o  2: The client indicates that it does not wish to receive BDP
-      Frames but activates ingress optimization.
-
-   o  3: The client indicates that it wishes to receive BDP Frames but
-      does not activate ingress optimization.
-
-   This Transport Parameter is encoded as per Section 18 of [RFC9000].
-
-5.  Discussion
-
-5.1.  BDP extension protected as much as initial_max_data
-
-   The BDP metadata parameters are measured by the server during a
-   previous connection.  The BDP extension is protected by the mechanism
-   that protects the exchange of the 0-RTT transport parameters.  For
-   version 1 of QUIC, the BDP extension is protected using the mechanism
-   that already protects the "initial_max_data" parameter.  This is
-   defined in sections 4.5 to 4.7 of [RFC9001].  This provides a way for
-   the server to verify that the parameters proposed by the client are
-   the same as those that the server sent to the client during the
-   previous connection.
-
-5.2.  Other use-cases
-
-5.2.1.  Optimizing client's requests
-
-   When using Dynamic Adaptive Streaming over HTTPS (DASH), clients
-   might encounter issues in knowing the available path capacity or DASH
-   can encounter issues in reaching the best available video playback
-   quality.  The client requests could then be adapted and specific
-   traffic could utilize information from the path characteristics (such
-   as encouraging the client to increase the quality of video chunks, to
-   fill the buffers and avoid video blocking or to send high quality
-   adds).
-
-   In other cases, applications could provide additional services if
-   clients can know the server estimation of the path characteristics.
-
-
-
-
-
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 15]
-
-Internet-Draft           Session Careful Resume            November 2021
-
-
-5.2.2.  Sharing transport information across multiple connections
-
-   There can be benefit in sharing transport information across multiple
-   connections.  [I-D.ietf-tcpm-2140bis] considers the sharing of
-   transport parameters between TCP connections originating from the
-   same host.  The proposal in this document has the advantage of
-   storing server-generated information at the client and not requiring
-   the server to retain additional state for each client.
-
-6.  Acknowledgments
+5.  Acknowledgments
 
    The authors would like to thank Gabriel Montenegro, Patrick McManus,
    Ian Swett, Igor Lubashev, Robin Marx, Roland Bless and Franklin Simo
    for their fruitful comments on earlier versions of this document.
 
-7.  IANA Considerations
+6.  IANA Considerations
 
    TBD: Text is required to register the BDP Frame and the enable_bdp
    transport parameter.  Parameters are registered using the procedure
    defined in [RFC9000].
 
-8.  Security Considerations
+7.  Security Considerations
 
-   Security considerations are discussed in Section 5 and in Section 3.
+   Security considerations are discussed in Section 4.
 
-9.  References
+8.  References
 
-9.1.  Normative References
+8.1.  Normative References
 
    [I-D.ietf-tcpm-2140bis]
               Touch, J., Welzl, M., and S. Islam, "TCP Control Block
@@ -893,7 +725,7 @@ Internet-Draft           Session Careful Resume            November 2021
 
 
 
-Kuhn, et al.              Expires May 22, 2022                 [Page 16]
+Kuhn, et al.              Expires May 27, 2022                 [Page 13]
 
 Internet-Draft           Session Careful Resume            November 2021
 
@@ -916,15 +748,7 @@ Internet-Draft           Session Careful Resume            November 2021
               DOI 10.17487/RFC9000, May 2021,
               <https://www.rfc-editor.org/info/rfc9000>.
 
-   [RFC9001]  Thomson, M., Ed. and S. Turner, Ed., "Using TLS to Secure
-              QUIC", RFC 9001, DOI 10.17487/RFC9001, May 2021,
-              <https://www.rfc-editor.org/info/rfc9001>.
-
-   [RFC9002]  Iyengar, J., Ed. and I. Swett, Ed., "QUIC Loss Detection
-              and Congestion Control", RFC 9002, DOI 10.17487/RFC9002,
-              May 2021, <https://www.rfc-editor.org/info/rfc9002>.
-
-9.2.  Informative References
+8.2.  Informative References
 
    [CONEXT15]
               Li, Q., Dong, M., and P. Godfrey, "Halfback: Running Short
@@ -937,21 +761,115 @@ Internet-Draft           Session Careful Resume            November 2021
               sallantin-initial-spreading-00 (work in progress), January
               2014.
 
+   [IJSCN]    Thomas, L., Dubois, E., Kuhn, N., and E. Lochin, "Google
+              QUIC performance over a public SATCOM access",
+              International Journal of Satellite Communications and
+              Networking 10.1002/sat.1301, 2019.
+
+   [MAPRG111]
+              Kuhn, N., Stephan, E., Fairhurst, G., Jones, T., and C.
+              Huitema, "Feedback from using QUIC's 0-RTT-BDP extension
+              over SATCOM public access", IETF 111 - MAPRG meeting ,
+              2021.
+
+Appendix A.  Implementation considerations
+
+
+
+
+
+
+
+
+Kuhn, et al.              Expires May 27, 2022                 [Page 14]
+
+Internet-Draft           Session Careful Resume            November 2021
+
+
+A.1.  Rationale behind the different implementation options
+
+   The NewSessionTickets messages of TLS offer a solution.  The idea
+   would have been to add a 'bdp_metada' field in the NewSessionTickets
+   that the client could read.  The sole extension currently defined in
+   TLS1.3 that can be seen by the client is max_early_data_size (see
+   section 4.6.1 of [RFC8446]).  However, in the general design of QUIC,
+   TLS sessions are managed by the TLS stacks.
+
+   Three distinct approaches are presented: sending an opaque blob to
+   the client that it may return to the server for a future connection
+   (see Appendix A.3), enable a local storage of BDP related values (see
+   Appendix A.2) and a BDP Frame extension (see Appendix A.4).
+
+A.2.  Independent local storage of values
+
+   This approach independently lets both a client and a server remember
+   their BDP parameters:
+
+   o  During a 1-RTT session, the endpoint stores the RTT (as the
+      saved_rtt) and bottleneck bandwidth (as the saved_bb) together
+      with the session resume ticket.  The client can also store the IP
+      address of the server.
+
+   o  The server maintains a table of previously issued tickets, indexed
+      by the random ticket identifier that is used to guarantee
+      uniqueness of the Authenticated Encryption with Associated Data
+      (AEAD) encryption.  Old tokens are removed from the table using
+      the Least Recently Used (LRU) logic.  For each ticket identifier,
+      the table holds the RTT and bottleneck bandwidth (i.e. saved_rtt
+      and saved_bb), and also the IP address of the client (i.e.
+      saved_client_ip).
+
+   During the 0-RTT session, the endpoint waits for the first RTT
+   measurement from the peer's IP address.  This is used to verify that
+   the current_rtt has not significantly changed from the saved_rtt, and
+   hence is an indication that the BDP information is appropriate to the
+   path that is currently being used.
+
+   If this RTT is confirmed (e.g. current_rtt < 1.2*saved_rtt, the
+   endpoint also verifies that an initial window of data has been
+   acknowledged without requiring retransmission.  This second check
+   detects a path with significant incipient congestion (i.e. where it
+   would not be safe to update the CWND based on the saved_bb).  In
+   practice, this could be realized by a proportional increase in the
+   CWND, where the increase is (saved_bb/IW)*proportion_of_IW_currently-
+   ACKed.
+
+
+
+
+Kuhn, et al.              Expires May 27, 2022                 [Page 15]
+
+Internet-Draft           Session Careful Resume            November 2021
+
+
+   This solution does not allow the client to refuse the exploitation of
+   the BDP parameters.  If the server does not want to store the metrics
+   from previous connections, an equivalent of the tcp_no_metrics_save
+   for QUIC may be necessary.  This option could be negociated that
+   alows a client to choose whether to use the saved information.
+
+A.3.  Using NEW_TOKEN frames
+
+   Using NEW_TOKEN Frames, the server could send a token to the client
+   through a NEW_TOKEN Frame.  The token is an opaque blob and the
+   client can not read its content (see section 19.7 of [RFC9000]).  The
+   client sends the received token in the header of an Initial packet
+   for a later connection.
+
+A.4.  BDP Frame
+
+   Using BDP Frames, the server could send a information relatingto path
+   characteristics to the client.  The BDP Frame exploiting is
+   negociated with the client.  The client can read its content.  If the
+   client agrees with the usage of previous session parameters, it can
+   send the BDP frame back to the server in an Initial packet for a
+   later connection.
+
 Authors' Addresses
 
    Nicolas Kuhn
-   CNES
 
    Email: nicolas.kuhn.ietf@gmail.com
-
-
-
-
-
-
-Kuhn, et al.              Expires May 22, 2022                 [Page 17]
-
-Internet-Draft           Session Careful Resume            November 2021
 
 
    Emile Stephan
@@ -968,6 +886,16 @@ Internet-Draft           Session Careful Resume            November 2021
    Scotland, UK
 
    Email: gorry@erg.abdn.ac.uk
+
+
+
+
+
+
+
+Kuhn, et al.              Expires May 27, 2022                 [Page 16]
+
+Internet-Draft           Session Careful Resume            November 2021
 
 
    Tom Jones
@@ -1005,4 +933,20 @@ Internet-Draft           Session Careful Resume            November 2021
 
 
 
-Kuhn, et al.              Expires May 22, 2022                 [Page 18]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Kuhn, et al.              Expires May 27, 2022                 [Page 17]
