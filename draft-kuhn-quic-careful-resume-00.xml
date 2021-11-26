@@ -455,15 +455,17 @@
 			<t>
 			Reconnaissance: When resuming a session between 
 			the same pair of IP addresses,
-                        the server measure the path characteristics of a
-                        new flow to confirm the path is the same as
-                        observed previously (e.g. path with similar RTT).
+                        the server measures the path characteristics of a
+                        new flow to confirm the path appears the same as
+                        observed previously (e.g., path with similar RTT).
+			The server also seeks assurance that initial data
+			is not lost, to avoid resuming under congested conditions.
 			</t>
 			<t>
                         Unvalidated: Utilise the observed path
                         characteristics to send at a higher rate. The
                         convergence towards the previously measured rate
-                        may be quicker than traditionnal slow-start mechanisms
+                        may be quicker than traditionnal slow-start mechanisms,
                         but should not be instantaneous to avoid adding
                         congestion
                         in a congested network.
@@ -472,17 +474,15 @@
                                 If the previously measured rate has been
                                 reused without
                                 noticeable congestion in the network,
-                                a safe increase
-                                using the 'Normal' phase can
-                                proceed.
+                                the server can use the restorted values 
+				to continue in the 'Normal' phase.
 				</t>
 				<t>
-                                If the validation phase has measured
+                                If the validation phase determines
                                 that previous
-                                parameters are not suitable, be ready
-                                to withdraw rapidly to a safe
-                                rate and start 'Normal' phase start of
-                                connection.
+                                parameters are not suitable, the server must
+                                withdraw rapidly to a safe
+                                rate before entering the 'Normal' phase.
 				</t>
 			</list></t>
 			<t>
