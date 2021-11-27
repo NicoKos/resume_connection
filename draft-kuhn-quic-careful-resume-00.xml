@@ -156,6 +156,7 @@
 			(e.g., the capacity/rtt of a satellite access service that
 			provides connectivity to a certian location);
 			</t>
+			<t>
                         To resume sessions after a service disruption
 			where the network service has been temporarily
 			reduced (e.g, due to propagation conditions or movement of
@@ -174,33 +175,10 @@
                 connection to avoid this slow phase by providing an alternative
 		way to discover key path parameters,
 		including a way to more rapidly and safely grow the congestion
-		window (cwnd): 
-		<list style="numbers">
-			<t>
-                        During a previous session, the
-                        current RTT (current_rtt), bottleneck bandwidth
-                        (current_bb) and current client IP
-                        (current_client_ip) are
-                        stored as saved_rtt, saved_bb and
-                        saved_client_ip;
-			</t>
-			<t>
-                        When resuming a session between the same pair of IP addresses,
-                        the server can then utilize the
-                        current_rtt and the
-                        current_bb to the
-                        saved_rtt and saved_bb of a previous
-                        connection.
-			</t>
-		</list>
-                This method applies to any QUIC session that has saved previous
-		parameters: both
-                saved_session and recon_session can be a 0-RTT QUIC
-		connection or a 1-RTT QUIC connection.
-		</t>
-
+		window (cwnd).</t> 
+	
 		<t>
-                However, there are cases where the parameters of a previous session are not
+                There are cases where the parameters of a previous session are not
                 appropriate. Four cases are identified:
 		<list>
 		<t> (1) the network path has changed and the new path is known to be 
@@ -216,15 +194,15 @@
 		congestion control state would then increase congestion, and the flow needs
 		to adjust to a new safe rate; </t>
 		<t> (4) the stored information is too old. In this case, it may not longer
-		be reasonable to expect the path to have same characteristics.
+		be reasonable to expect the path to have same characteristics.</t>
 		</list></t>
-		
+	
 		<t>In all these case, the
 		new method should not be used, and a client needs to return to 
 		standard behaviour, but can be used to characterise the path
 		enabling other flows to use the method.</t>
 	
-		<t> (5) Another case arises when a client malicously uses parameters that are no 
+		<t>Another case arises when a client malicously uses parameters that are no 
 		longer appropriate, e.g.,
 		to intentionally try to use a CWND larger than appropriate either in an 
 		attempt to improve their own performance or to degrade the performance of others.</t>
@@ -462,15 +440,66 @@
 		</section>
 	</section>
 
+	<section anchor="sec:phase" title="Labels of the different phases">
+		<t>
+		The different phases are labeled as follows:
+		<list style="numbers">
+			<t>
+                        Observe: During a previous session, the
+                        current RTT (current_rtt), bottleneck bandwidth
+                        (current_bb) and current client IP
+                        (current_client_ip) are
+                        stored as saved_rtt, saved_bb and
+                        saved_client_ip;
+			</t>
+			<t>
+			Reconnaissance: When resuming a session between 
+			the same pair of IP addresses,
+                        the server measures the path characteristics of a
+                        new flow to confirm the path appears the same as
+                        observed previously (e.g., path with similar RTT).
+			The server also seeks assurance that initial data
+			is not lost, to avoid resuming under congested conditions.
+			</t>
+			<t>
+                        Unvalidated: Utilise the observed path
+                        characteristics to send at a higher rate. The
+                        convergence towards the previously measured rate
+                        may be quicker than traditionnal slow-start mechanisms,
+                        but should not be instantaneous to avoid adding
+                        congestion
+                        in a congested network.
+				<list style="numbers">	
+				<t>
+                                If the previously measured rate has been
+                                reused without
+                                noticeable congestion in the network,
+                                the server can use the restorted values 
+				to continue in the 'Normal' phase.
+				</t>
+				<t>
+                                If the validation phase determines
+                                that previous
+                                parameters are not suitable, the server must
+                                withdraw rapidly to a safe
+                                rate before entering the 'Normal' phase.
+				</t>
+			</list></t>
+			<t>
+			Normal: Resume using normal congestion control.
+			</t>
+		</list></t>
+
+	</section>
+
 	<section anchor="subsec:rationale_jump" title="Safe jump start">
 
 		<section title="Rationale behind the safety guidelines">
-
 			<t> ... MUST or SHOULD ...
                         To avoid potential congestion collapse a client
 			SHOULD NOT use previously measured saved_rtt and saved_bb
-                        to simply initialise a new flow. 
-                       
+				to simply initialise a new flow.</t>
+                	<t>       
                         <list style="symbols">
 				<t>
                                 Rationale #1: Internet path capacity
