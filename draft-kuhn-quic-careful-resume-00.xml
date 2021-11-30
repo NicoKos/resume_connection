@@ -353,6 +353,7 @@
 	</section>
 
 	<section anchor="sec:use_case" title="Scenarios of interest">
+		
 		<section anchor="subsec:rationale_satcom" title="Large BDP scenarios">
 			<t>
                         Using the transport parameters of a previous
@@ -438,6 +439,31 @@
                         client.
 			</t>
 		</section>
+		
+		<section anchor="subsec:client_server" title="Connection establishment, client and server">
+			<t>
+			In the previously detailed scenarios, the applications
+			are mostly unidirectionnal : the server pushing data 
+			to a client. As one example, a smartphone uploading a
+			photo is a server. Another examples concerns the a 
+			webbrowsing case where the server is the one hosting
+			the html content.
+			</t>
+			<t>
+			In the current version of the document, the client 
+			initiates the connection and the server pushes data to
+			a client. That being said, there are cases where the client 
+			initiates the connection and start a bidirectionnal service 
+			where both peers transmit data to each other.
+			</t>
+			<t>
+			In general, the guidelines proposed in this document applies
+			when a congestion control is concerned at a peer transmitting
+			data to another peer and that peer resumes a session. Both peers
+			being both a client and a server. 
+			</t>
+		</section>
+		
 	</section>
 
 	<section anchor="sec:phase" title="Labels of the different phases">
