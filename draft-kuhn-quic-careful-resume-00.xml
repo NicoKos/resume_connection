@@ -175,11 +175,13 @@
                 connection to avoid this slow phase by providing an alternative
 		way to discover key path parameters,
 		including a way to more rapidly and safely grow the congestion
-		window (cwnd).</t> 
+		window (cwnd).
+		</t> 
 	
 		<t>
                 There are cases where the parameters of a previous session are not
-                appropriate. Four cases are identified:
+		appropriate. 
+		<!-- </t> Four cases are identified:
 		<list>
 		<t> (1) the network path has changed and the new path is known to be 
                 different. This might be evident from a change of local interface, a change
@@ -206,7 +208,7 @@
 		longer appropriate, e.g.,
 		to intentionally try to use a CWND larger than appropriate either in an 
 		attempt to improve their own performance or to degrade the performance of others.</t>
-
+		--> 
 		<t>
 		The remainder of this document:
 		<list style="numbers">
@@ -230,6 +232,24 @@
 		</list>
 		</t>
 
+	</section>
+	
+	<section anchor="notation"title="Language, notations and terms"> 
+		
+		<section anchor="sec:req_language" title="Requirements Language">
+			<t>
+                        The keywords "MUST", "MUST NOT", "REQUIRED",
+                        "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+                        "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+                        "OPTIONAL" in this document are to be
+                        interpreted as described in BCP 14 
+                        <xref target="RFC2119"></xref>
+                        <xref target="RFC8174"></xref>
+                        when, and only when, they appear in all capitals, as
+                        shown here.
+			</t>
+		</section>
+		
 		<section anchor="sec:terms_def" title="Notations and Terms">
 			<t>
 			<list style="symbols">
@@ -247,18 +267,11 @@
 				BDP: defined below
 				</t>
 				<t>
-                                CWND: the congestion window used by
-                                server (maximum number of bytes allowed in flight by the CC)
-				</t>
-				<t>
 				current_bb : Current estimated bottleneck bandwidth
 				</t>
 				<t>
                                 saved_bb: Estimated bottleneck bandwidth preserved
                                 from a previous connection
-				</t>
-				<t>
-				RTT: Round-Trip Time
 				</t>
 				<t>
 				current_rtt: Current RTT
@@ -279,19 +292,6 @@
 				<t>
                                 remembered BDP parameters: a combination
                                 of saved_rtt and saved_bb
-				</t>
-				<t>
-				ITT : Interpacket Transmission Time
-				</t>
-				<t>
-				MSS : Maximum Message Size
-				</t>
-				<t>
-                                AEAD : Authenticated Encryption with
-                                Associated Data
-				</t>
-				<t>
-				LRU : Least Recently Used 
 				</t>
 			</list>
 			</t>
@@ -333,21 +333,6 @@
 			be used with caution.
  			</t>
 
-
-		</section>
-
-		<section anchor="sec:req_language" title="Requirements Language">
-			<t>
-                        The keywords "MUST", "MUST NOT", "REQUIRED",
-                        "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
-                        "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
-                        "OPTIONAL" in this document are to be
-                        interpreted as described in BCP 14 
-                        <xref target="RFC2119"></xref>
-                        <xref target="RFC8174"></xref>
-                        when, and only when, they appear in all capitals, as
-                        shown here.
-			</t>
 		</section>
 	
 	</section>
