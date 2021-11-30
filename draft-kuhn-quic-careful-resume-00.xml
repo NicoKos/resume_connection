@@ -862,6 +862,10 @@
 
 	<section anchor="sec:safety_guide" title="Safety guidelines"> 
 		<t>
+		The safety guidelines refer to the labeling proposed in 
+		<xref target="sec:phase"></xref>.
+		</t>
+		<t>
                 The safety guidelines are designed to avoid a
                 server adding excessive congestion to an already
                 congested path. The following
@@ -869,18 +873,19 @@
                 objective:
                 <list style="symbols">
 			<t>
-                        The server SHOULD compare the measured transport
+			(observation phase) The server SHOULD NOT store and/or send
+                        information related to the previously
+                        estimated bottleneck
+			bandwidth (saved_bb) (see <xref target="sec:terms_def"></xref> for more details on bottleneck bandwidth definition), if this estimation has not
+                        been computed after some rounds during the 1-RTT connection. At least, the 1-RTT connection should have reached the congestion avoidance phase. 
+			</t>
+			<t>
+                        (reconnaissance phase) The server SHOULD compare the measured transport
                         parameters (in particular current_rtt) of the 0-RTT connection with those of
                         the 1-RTT connection (in particular saved_rtt);
 			</t>
 			<t>
-                        The server SHOULD NOT consider the saved_bb
-                        parameter when there is any indicated congestion
-			(e.g., loss of packet during
-                        the first transmission of data or ECN-CE mark);
-			</t>
-			<t>
-                        The server MUST NOT send more than the recommended
+                        (reconnaissance phase) The server MUST NOT send more than the recommended
                         maximum IW (recom_iw) in the first transmission
                         of data. This value could be based on a local
                         understanding of the path characteristics. Knowing 
@@ -888,11 +893,10 @@
 			may help in increasing the recommended maximum IW.
 			</t>
 			<t>
-			The server SHOULD NOT store and/or send
-                        information related to the previously
-                        estimated bottleneck
-			bandwidth (saved_bb) (see <xref target="sec:terms_def"></xref> for more details on bottleneck bandwidth definition), if this estimation has not
-                        been computed after some rounds during the 1-RTT connection. At least, the 1-RTT connection should have reached the congestion avoidance phase. 
+                        (unvalidated phase) The server SHOULD NOT consider the saved_bb
+                        parameter when there is any indicated congestion
+			(e.g., loss of packet during
+                        the first transmission of data or ECN-CE mark);
 			</t>
 		</list></t>
 
@@ -905,15 +909,17 @@
                 particular, the maximum number of packets that can be
                 sent without acknowledgment needs to be chosen to avoid
                 the creation and the increase of congestion for the
-			path.</t>
-		<t>This extension should not provide 
+		path.
+		</t>
+		<t>
+		This extension should not provide 
                 an opportunity for the current connection to be a vector
                 of an amplification attack. The address validation
                 process, used to prevent amplification attacks, SHOULD
                 be performed 
                 <xref target="RFC9000"></xref>.
 		</t>
-
+		
 		<t>
                 The following mechanisms could be implemented:
                 <list style="symbols">
