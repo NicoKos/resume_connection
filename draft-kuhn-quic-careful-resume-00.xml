@@ -130,96 +130,69 @@
                 QUIC <xref target="RFC9000"></xref>
                 notes "Generally, implementations are advised to
 		be cautious when using previous values on a new path."
-		This draft discusses safe use of previous values.
+		This draft specifies safe use of previous congestion control parameters
+		by a new connection.
 		</t>
-
 		<t>
-                There are scenarios where sharing the previously
+                Congestion control algorithms 
+                require time to ramp-up the packet rate, called the slow-start phase. 
+		In Reno this takes a sequence increase, with an increase each
+		Round-Trip Time (RTT). This
+                document specifies a method that can improve traffic
+                delivery by allowing a QUIC
+                connection to reduce this slow phase by providing an alternative
+		way to discover initial key path parameters,
+		including a way to more rapidly and safely grow the congestion
+		window (cwnd).
+		</t> 
+		<t>
+                There are scenarios where sharing previously
                 computed parameters relating to path characteristics,
-                such as bottleneck bandwidth or RTT, can help to save
-                precious round-trip times at the beginning of a new
-		session. For example:
+                such as the bottleneck bandwidth or RTT, can help to save
+                round-trip times at the start of a new
+		connection. For example:
 		<list style="numbers">
 			<t>	
-                        To optimize applications that use a series of short flows, each of wich
-			has to learn the available capacity/rtt (such as a client using  Dynamic
+                        To optimize sessions that use a series of short flows over the 
+			same path, each of which
+			needs to learn the available capacity/rtt (such as a client using  Dynamic
                         Adaptive Streaming over HTTPS, DASH);
 			</t>
 			<t>
-                        To optimise usage across different applications, using multiple
-                        connections;
+                        To resume a paused session over the same path;
 			</t>
 			<t>
-                        To resume sessions to download an object over a
-                        a network segment where specific characteristics
-			have been learned and might be expected to be similar 
-			(e.g., the capacity/rtt of a satellite access service that
-			provides connectivity to a certian location);
-			</t>
-			<t>
-                        To resume sessions after a service disruption
-			where the network service has been temporarily
-			reduced (e.g, due to propagation conditions or movement of
+                        To resume a sessions after a service disruption
+			(e.g. where the network service has been temporarily
+			reduced due to propagation conditions or movement of
 			the user, such as a user travelling on a train journey through
 			different areas of connectivity).
 			</t>
 		</list></t>		
+		<t>
+			In all of these cases, specific characteristics of the path
+			may have been learned, 
+			including congestion control information, such as capacity and RTT.
+			This congetsion conttrol information might be expected to be similar if a
+			new connection is made to the same endpoint.
+		</t>
+	
+		<t>
+                There are cases where using the parameters of a previous connection are not
+		appropriate. The potential malicous use the method is also evaluated.
+		</t>
 
-		<t>
-                Congestion control algorithms 
-                require time to ramp-up the packet rate, the slow-start phase. 
-		In Reno this uses a sequence
-		of Round-Trip Time (RTT)-based increases. This
-                document specifies a method that can improve traffic
-                delivery by allowing a QUIC
-                connection to avoid this slow phase by providing an alternative
-		way to discover key path parameters,
-		including a way to more rapidly and safely grow the congestion
-		window (cwnd).
-		</t> 
-	
-		<t>
-                There are cases where the parameters of a previous session are not
-		appropriate. 
-		<!-- </t> Four cases are identified:
-		<list>
-		<t> (1) the network path has changed and the new path is known to be 
-                different. This might be evident from a change of local interface, a change
-		in the client or server IP address, or similar indication from the network.
-		Using the saved congestion control state could increase congestion.</t>
-		<t> (2) the network path has changed, but the new path is not known to be
-                different. This case might be accompanied by a change in the RTT, or 
-		evident by loss observed at the start of the new connection. </t>
-		<t> (3) the network conditions have changed and it is discovered that
-		the current capacity is
-                less than the previously estimated bottleneck bandwidth. Using the saved
-		congestion control state would then increase congestion, and the flow needs
-		to adjust to a new safe rate; </t>
-		<t> (4) the stored information is too old. In this case, it may not longer
-		be reasonable to expect the path to have same characteristics.</t>
-		</list></t>
-	
-		<t>In all these case, the
-		new method should not be used, and a client needs to return to 
-		standard behaviour, but can be used to characterise the path
-		enabling other flows to use the method.</t>
-	
-		<t>Another case arises when a client malicously uses parameters that are no 
-		longer appropriate, e.g.,
-		to intentionally try to use a CWND larger than appropriate either in an 
-		attempt to improve their own performance or to degrade the performance of others.</t>
-		--> 
 		<t>
 		The remainder of this document:
 		<list style="numbers">
 			<t>
                         discusses use-cases where carefully resuming
-                        QUIC sessions is of interest;
+                        QUIC sessions is expected to have benefit;
 			</t>
 			<t> 
                         proposes guidelines for how to
-                        carefully apply the previously stored
-                        parameters to a new session;
+                        carefully utilise the previously stored
+                        congestion control information;
 			</t>
 			<t>
                         describes implementation
@@ -254,7 +227,7 @@
 			<t>
 			<list style="symbols">
 				<t> 
-                                IW: Initial Window (e.g., from 
+                                IW: Initial Window (see 
                                 <xref target="RFC6928"></xref>);
 				</t>
 				<t> 
@@ -262,9 +235,6 @@
 				</t>
 				<t> 
                                 recom_iw: Recommended Initial Window
-				</t>
-				<t>
-				BDP: defined below
 				</t>
 				<t>
 				current_bb : Current estimated bottleneck bandwidth
@@ -324,10 +294,10 @@
                         current_bb for the previously estimated
                         bottleneck bandwidth. This value can be 
                         estimated when using a rate-based congestion controller,
-			such as BBR. Other congestion controllers,
+			such as BBR <xref target="BBR"></xref>. Other congestion controllers,
                         such as CUBIC or RENO, could estimate
                         the bottleneck bandwidth by utilizing a 
-			combinatioin of the cwnd
+			combination of the cwnd
                         and the minimum RTT. This approach could result in over
 			estimating the bottleneck bandwidth and ought to 
 			be used with caution.
@@ -342,65 +312,59 @@
 		<section anchor="subsec:rationale_satcom" title="Large BDP scenarios">
 			<t>
                         Using the transport parameters of a previous
-                        connection can reduce the transmission time of
-			data over any path with a larger than typical path delay.
+                        connection can reduce the transmission time for a transfer
+			 over any path RTT that is larger than typical Internet RTTs.
 			</t>
 			<t>
-                        A congestion control and transport
-                        initialization not adapted to a large path RTT
-                        results in a significantly longer page load time
-			for larger pages. For example, in a SATCOM context: downloading
-                        5.3 MB can take up to 9 seconds with a non
-                        specific congestion control, whereas the type of method described
-			can reduce this time
-                        to 4 seconds 
-                        <xref target="IJSCN"></xref>.
-                        By sharing the transport parameters of
-                        previous sessions, the transmission time for 1 MB
-                        was reduced by up to
-                        62 % on a public SATCOM
-                        access 
-                        <xref target="MAPRG111"></xref>.
+                        Using congestion control slow start method that is not adapted 
+			to a large path RTT will 
+                        result in a significantly longer transfer times when this incurs
+			many RTTs to complete the transfer.
+			In specific examples using a SATCOM access network, a
+                        5.3 MB transfer takes up to 9 seconds using standard 
+			congestion control, whereas using the specified method this
+			can reduce to 4 seconds 
+                        <xref target="IJSCN"></xref>; and the time to complete a 1 MB
+                        transfer could be reduced by 62 % <xref target="MAPRG111"></xref>.
 			</t>
 		</section>
 
 		<section anchor="subsec:rationale_drops" title="Accomodating from known reduction in bandwidth">
 			<t>
-                        There are cases where a client experiences a drops in
-                        bandwidth, such as mobile node undegoing a propagation event or a move to a less provisioned
-			area. The client may be aware of the re-availability of the service, e.g. 
+                        Transport protocols are not able to assume long-standing characteristics of
+			Internet paths that they use.
+			A client could measure the path characteristics and then could experience a reduction in
+                        bandwidth, such as a propagation event for a mobile node or a move to a less provisioned
+			area. In this case, a clients may be aware of the re-availability of the service, e.g. 
 			because of a local interface change.
-			When the service resumes, the client needs to again detect the path characteristics,
-			which may not have significantly changed from the previous usage. 
-			Saving round-trip to return to the previous speed
-                        can be achieved by sharing information related to the path
-                        characteristics. 
+			When the service resumes, the client would need again to measure the path characteristics.
+			If the path was to the same endpoint, then the characteristics might not have significantly 
+			changed from those previously measured. This provides an oportunity to save time
+			(eliminate RTTs consumed by slow start) taken to return to the previous speed
+                        by utilising saved congestion control information for the path. 
 			</t>
 		</section>
 
 		<section anchor="subsec:rationale_client" title="Optimizing client's requests">
 			<t>
-                        Some styles of usage do not use long-lasting connections at the transport later,
-			and instead use a series of shorter flows.
-			For example, when using Dynamic Adaptive
-                        Streaming over HTTPS (DASH), clients
-                        might encounter issues in reaching the best
-                        available video playback quality because they each video chunk
-			independently initialise the CC method. Information about
-			the path can allow a
-                        client to adapt requests based on
-                        information from the path
-                        characteristics (such as encouraging the
-                        client to increase the quality of video
-                        chunks, to fill the buffers and avoid
-                        video blocking or to send high quality
-                        addvertisements).
+                        Some styles of usage do not use long-lasting connections at the transport layer,
+			and instead use a series of shorter connections.
+			For example, a client using Dynamic Adaptive
+                        Streaming over HTTPS (DASH).
+                        This client might encounter issues in reaching the optimum
+                        available video playback quality because the transfer for
+			each video chunk 
+			independently measures the path capacity. A
+                        client is therefore unable to effectively adapt requests based on
+                        the path
+                        characteristics (e.g. to increase the  requested quality of video
+                        chunks, or to fill buffers to avoid stalling playback or to send high quality
+                        advertisements).
 			</t>
 			<t>
-                        In other cases, applications could provide
-                        additional services if clients can know
-                        the server estimation of the path
-                        characteristics.
+                        There are other cases where applications could provide
+                        additional services if a client knew
+                        the path characteristics.
 			</t>
 		</section>
 
@@ -1290,3 +1254,30 @@
 		
 	</back>
 </rfc>
+		<!-- </t> Four cases are identified:
+		<list style="numbers">
+		<t> The network path has changed and the new path is 
+                different. This might be evident from a change of local interface, a change
+		in the client or server IP address, or similar indication from the network.
+		Using the saved congestion control information could increase congestion.</t>
+		<t> The network path has changed, but the new path is not known to be
+                different. This case might be accompanied by a change in the RTT, or 
+		evident by loss observed at the start of the new connection and	
+		the saved congestion control information is not appropriate. </t>
+		<t> The network conditions have changed and it is discovered that
+		the current capacity is
+                less than the previously estimated bottleneck bandwidth. Using the saved
+		congestion control information would then increase congestion, and the flow needs
+		to adjust to a lower safe rate; </t>
+		<t> The stored information is too old. In this case, it is no longer
+		be reasonable to expect the path to have same characteristics, and the
+		the saved congestion control information is no longer appropriate.</t>
+		</list></t>
+	
+		<t>In all these case, the
+		careful increase method is not be used, and a client needs to return to 
+		a standard behaviour.  The method can still be used to characterise the new path,
+		enabling later flows to use this method.</t>
+
+-->
+
