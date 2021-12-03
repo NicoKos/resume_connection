@@ -876,8 +876,8 @@
 			(observation phase) The server SHOULD NOT store and/or send
                         information related to the previously
                         estimated bottleneck
-			bandwidth (saved_bb) (see <xref target="sec:terms_def"></xref> for more details on bottleneck bandwidth definition), if this estimation has not
-                        been computed after some rounds during the 1-RTT connection. At least, the 1-RTT connection should have reached the congestion avoidance phase. 
+			bandwidth (saved_bb) (see <xref target="sec:terms_def"></xref> for more details on bottleneck bandwidth definition), if the congestion window is not at least four times larger than the initial congestion window. <!-- this estimation has not
+                        been computed after some rounds during the 1-RTT connection. At least, the 1-RTT connection should have reached the congestion avoidance phase. -->
 			</t>
 			<t>
                         (reconnaissance phase) The server SHOULD compare the measured transport
@@ -893,10 +893,10 @@
 			may help in increasing the recommended maximum IW.
 			</t>
 			<t>
-                        (unvalidated phase) The server SHOULD NOT consider the saved_bb
+                        (unvalidated phase) The server MUST NOT use the parameters when unless the first IW packets have been acknowledged or ECN-marked. The loss of any of the first IW of packets sent is an indication of potential congestion and therefore a faster startup is not permitted; <!-- The server SHOULD NOT consider the saved_bb
                         parameter when there is any indicated congestion
 			(e.g., loss of packet during
-                        the first transmission of data or ECN-CE mark);
+                        the first transmission of data or ECN-CE mark); -->
 			</t>
 		</list></t>
 
@@ -912,7 +912,7 @@
 		path.
 		</t>
 		<t>
-		This extension should not provide 
+		This extension MUST NOT provide 
                 an opportunity for the current connection to be a vector
                 of an amplification attack. The address validation
                 process, used to prevent amplification attacks, SHOULD
