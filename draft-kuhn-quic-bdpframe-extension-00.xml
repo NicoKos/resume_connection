@@ -74,7 +74,7 @@
 			</address>
 		</author>
 
-		<date year="2021"/>
+		<date year="2022"/>
 
 		<!-- If the month and year are both specified and are the current ones, xml2rfc will fill
          in the current day for you. If only the current year is specified, xml2rfc will fill
@@ -217,7 +217,7 @@
         saved_bb and current_bb values by utilizing a combination of the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
-        controller, such as BBR <xref target="BBR"></xref>. It is important to
+        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
         consider whether the methods could result in over-estimating the
         bottleneck bandwidth, and the preserved values there ought to be used
 				with caution.</t>
@@ -471,8 +471,10 @@ BDP Frame {
 			<?rfc include="reference.RFC.9001.xml"?>
 			<?rfc include="reference.RFC.9002.xml"?>
 		</references>
-		<!-- 	
+			
 		<references title="Informative References">
+			<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+			<!--
 			<reference anchor="TMA18">
 				<front>
 					<title>Demystifying TCP Initial Window Configurations of Content Distribution Networks</title>
@@ -484,9 +486,8 @@ BDP Frame {
 				</front>
 				<seriesInfo name="2018 Network Traffic Measurement and Analysis Conference (TMA)" value=""/>
 			</reference>
-			
+			--> 
 		</references>
-		-->
 		<!-- <section anchor="appendix-numerical" title="Example">
 			<t> TBD </t>
 		</section> -->

@@ -282,7 +282,7 @@ keywords will be used for the search engine. -->
         saved_bb and current_bb values by utilizing a combination of the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
-        controller, such as BBR <xref target="BBR"></xref>. It is important to
+        controller, such as BBR  <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
         consider whether the methods could result in over-estimating the
         bottleneck bandwidth, and the preserved values there ought to be used
         with caution.</t>
@@ -632,7 +632,7 @@ keywords will be used for the search engine. -->
 |         |check      | congestion     | optim.        |Section 3  |
 +---------+-----------+----------------+---------------+-----------+
 |#2       |#1         |                |               |           |
-|Malicious|Local      |Enforced        |Client unable  |       |
+|Malicious|Local      |Enforced        |Client unable  |           |
 |client   |storage    | security       | to decide to  |           |
 |         |           |                | reject        |           |
 |         |           |                |Malicious      |           |
@@ -656,7 +656,7 @@ keywords will be used for the search engine. -->
 |         |           |                | trust client  |Section 4.3|
 |         +-----------+----------------+---------------+-----------+
 |         |#3         |                |               |           |
-|         |BDP        |Extended        |Malicious      |       |
+|         |BDP        |Extended        |Malicious      |           |
 |         |extension  | use-cases      | client could  |           |
 |         |           |Save resource   | change BDP    |           |
 |         |           | at server      | even if       |           |
@@ -668,9 +668,8 @@ keywords will be used for the search engine. -->
 |         |           |                |               |Section 4.4|
 +---------+-----------+----------------+---------------+-----------+
 
-
-
-XXX-Editor-Note: Need to clarify the text around changing the authenticated token.
+XXX-Editor-Note: Need to clarify the text around changing 
+the authenticated token.
 
 ]]></artwork>
           </figure>
@@ -891,13 +890,9 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
       <?rfc include="reference.RFC.6349.xml"?>
 
-      <?rfc include="reference.RFC.6928.xml"?>
-
       <?rfc include="reference.RFC.8174.xml"?>
 
       <?rfc include="reference.RFC.8446.xml"?>
-
-      <?rfc include="reference.I-D.ietf-tcpm-2140bis.xml"?>
 
       <?rfc include="reference.RFC.9000.xml"?>
 
@@ -908,9 +903,11 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     <references title="Informative References">
       <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
+	    
+      <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
 
-      <?rfc include="reference.RFC.6928.xml"?>
       <?rfc include="reference.RFC.5783.xml"?>
+      <?rfc include="reference.RFC.8867.xml"?>
       <?rfc include="reference.RFC.9040.xml"?>
 
       
@@ -929,7 +926,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
           <author initials="C" surname="Huitema"></author>
 
-          <date year="2021" />
+          <date year="2022" />
         </front>
 
         <seriesInfo name="IETF 111 - MAPRG meeting" value="" />
