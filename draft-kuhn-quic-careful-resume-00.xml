@@ -311,7 +311,7 @@ keywords will be used for the search engine. -->
 
       <section anchor="subsec:rationale_drops"
                title="Accomodating from a Known Reduction in Capacity">
-        <t>A transport protocol is not able to assume to assume that the path
+        <t>A transport protocol is not able to assume that the path
         characteristics it experiences remain the same. Variation can arise
         from a combination of various factors:</t>
 
