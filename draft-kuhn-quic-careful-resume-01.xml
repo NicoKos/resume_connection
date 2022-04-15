@@ -1,0 +1,1084 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc category="info" docName="draft-kuhn-quic-careful-resume-01"
+     ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+ipr values: full3667, noModification3667, noDerivatives3667
+you can add the attributes updates="NNNN" and obsoletes="NNNN"
+they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the
+full title is longer than 39 characters -->
+
+    <title abbrev="Carefully Resume QUIC Session">Carefully Resume QUIC
+    Session</title>
+
+    <author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
+      <organization>Thales Alenia Space</organization>
+
+      <address>
+        <email>nicolas.kuhn.ietf@gmail.com</email>
+      </address>
+    </author>
+
+    <author fullname="Emile Stephan" initials="E" surname="Stephan">
+      <organization>Orange</organization>
+
+      <address>
+        <email>emile.stephan@orange.com</email>
+      </address>
+    </author>
+
+    <author fullname="Godred Fairhurst" initials="G" surname="Fairhurst">
+      <organization>University of Aberdeen</organization>
+
+      <address>
+        <postal>
+          <street>Department of Engineering</street>
+
+          <street>Fraser Noble Building</street>
+
+          <city>Aberdeen</city>
+
+          <code>AB24 3UE</code>
+
+          <country>Scotland, UK</country>
+        </postal>
+
+        <email>gorry@erg.abdn.ac.uk</email>
+      </address>
+    </author>
+
+    <author fullname="Tom Jones" initials="T" surname="Jones">
+      <organization>University of Aberdeen</organization>
+
+      <address>
+        <postal>
+          <street>Department of Engineering</street>
+
+          <street>Fraser Noble Building</street>
+
+          <city>Aberdeen</city>
+
+          <code>AB24 3UE</code>
+
+          <country>Scotland, UK</country>
+        </postal>
+
+        <email>tom@erg.abdn.ac.uk</email>
+      </address>
+    </author>
+
+    <author fullname="Christian Huitema" initials="C" surname="Huitema">
+      <organization>Private Octopus Inc.</organization>
+
+      <address>
+        <email>huitema@huitema.net</email>
+      </address>
+    </author>
+
+    <date day="05" month="March" year="2022" />
+
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill
+in the current day for you. If only the current year is specified, xml2rfc will fill
+in the current day and month for you. If the year is not the current one, it is
+necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the
+purpose of calculating the expiry date).  With drafts it is normally sufficient to
+specify just the year. -->
+
+    <!-- Meta-data Declarations -->
+
+    <area>Transport</area>
+
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <!-- WG name at the upperleft corner of the doc,
+IETF is fine for individual submissions.
+If this element is not present, the default is "Network Working Group",
+which is used by the RFC Editor as a nod to the history of the IETF. -->
+
+    <keyword>QUIC, 0-RTT</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+files in a meta tag but they have no effect on text or nroff
+output. If you submit your draft to the RFC Editor, the
+keywords will be used for the search engine. -->
+
+    <abstract>
+      <t>This document provides a method to allow a QUIC session to carefully
+      resume using a previously utilised Internet path. </t>
+
+      <t>The method uses a set of computed congestion control parameters that
+      are based on the previously observed path characteristics, such as the
+      bottleneck bandwidth, available capacity, or the RTT. These parameters
+      are stored and can then used to modify the congestion control behaviour
+      of a subsequent connection. The draft discusses assumptions around how a
+      server ought to utilise the parameters to provide opportunities for a
+      new flow to more quickly get up to speed (i.e. utilise available
+      capacity). It discusses how these changes impact the capacity at a
+      shared network bottleneck and the response that is needed after any
+      indication that the new rate is inappropriate.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section anchor="sec:introduction" title="Introduction">
+      <t>The specification for the QUIC transport protocol <xref
+      target="RFC9000"></xref> notes "Generally, implementations are advised
+      to be cautious when using previous values on a new path." The method
+      uses a set of computed Congestion Control (CC) parameters that are based
+      on the previously observed path characteristics, such as the bottleneck
+      bandwidth, available capacity, or the Round Trip Time (RTT). These
+      parameters are stored and can then used to modify the congestion control
+      behaviour of a subsequent connection. </t>
+
+      <t>All Internet transports are required to use a CC method. In 2010, RFC
+      5783 provided a survey of alternative CC methods, and noted that there
+      are challenges when a CC operates across paths with a high and/or
+      variable bandwidth-delay product (BDP) <xref target="RFC5783"></xref>.
+      </t>
+
+      <t>A CC algorithm typically takes time to ramp-up the packet rate,
+      called the "slow-start phase", informally known as the time to "Get up
+      to speed". The slow start phase is a period in which a sender
+      intentionally uses less capacity than might be available with the
+      intention to avoid overshooting the actual capacity at a bottleneck,
+      which would result in increased queueing (latency/jitter) and/or
+      congestion packet loss. An overshoot in the capacity can also have a
+      detrimental effect on other flows sharing a common bottleneck. In the
+      extreme case, persistent congestion can result in unwanted starvation of
+      other flows <xref target="RFC8867"></xref> (i.e. Preventing other flows
+      from successfully sharing a common bottleneck). </t>
+
+      <t>In Reno, the slow-start phase consists of a sequence of increases in
+      the congestion window (cwnd) starting from the Initial Window (IW). Each
+      step lasts approximately one path RTT, until the sender estimate that
+      the capacity has reached (or is nearing) the capacity at the bottleneck
+      for the path). </t>
+
+      <t>To fully-utilise the capacity along a path with a certain path RTT,
+      the transport needs to determine an appropriate volume of bytes in
+      flight, based on the product of the available capacity and the RTT.
+      <xref target="RFC6349"></xref> defines the BDP as follows: "Derived from
+      Round-Trip Time (RTT) and network Bottleneck Bandwidth (BB), the
+      Bandwidth-Delay Product (BDP) determines the Send and Received Socket
+      buffer sizes required to achieve the maximum TCP Throughput." The BDP
+      estimated by a server includes all buffering experienced along a network
+      path. Various approaches are possible to determine the BDP, based on
+      measurements of the path characteristics. <xref target="RFC6349"></xref>
+      specifies one procedure for TCP. CC for QUIC is specified in <xref
+      target="RFC9002"></xref> and does not specify a required method to
+      measure the BDP, allowing the sender to implement an appropriate
+      method.</t>
+
+      <t>This document specifies a method for QUIC that can improve traffic
+      delivery (e.g. throughput) by allowing a QUIC connection to reduce the
+      total duration of the slow start phase under specific conditions. This
+      introduces an alternative way to discover initial key path parameters,
+      including a way to more rapidly and safely grow the cwnd. </t>
+
+      <t>There are scenarios where sharing previously computed parameters
+      relating to path characteristics, such as the bottleneck bandwidth or
+      RTT, can help to save round-trip times at the start of a new connection.
+      For example: <list style="numbers">
+          <t>To optimize sessions that use a series of short flows over the
+          same path, each of which needs to individually learn the available
+          capacity/rtt (e.g., a client using Dynamic Adaptive Streaming over
+          HTTPS, DASH);</t>
+
+          <t>After a pause in transmission (e.g., when a user uses a path,
+          pauses a session, and then wishes to resume the session over the
+          same path;</t>
+
+          <t>To resume a session after a service disruption (e.g., where the
+          network service temporarily reduced due to a link propagation
+          impairment, or where a user on a train journey travels through
+          different areas of connectivity with a temporary change in path
+          characteristics before the user returns to the original path
+          characteristics).</t>
+        </list></t>
+
+      <t>In all of these cases, specific characteristics of the path may have
+      been learned, including CC information, such as the available capacity
+      and RTT. This CC information might be expected to be similar when a new
+      connection is made between the same local and remote endpoints.</t>
+
+      <t>While the server could take optimization decisions without client's 
+      point-of-view, the client may have information that the server does not
+      have. In particular, the client may provide hints to upper layers (1) on
+      how the connection can be used, (2) related to information that the path
+      will be different, (3) related to information on the current hardware
+      limitations of the client or (4) other concurrent flows competing for the
+      shared media. As a result, the client may explicitely ask for tuning the 
+      slow start of the resumed connection. This is discussed in the document.</t>
+
+      <t>There are also cases where using the parameters of a previous
+      connection are not appropriate, and a need to evaluate the potential
+      malicious use of the method.</t>
+
+      <t>The remainder of this document: <list style="numbers">
+          <t>discusses use-cases where carefully resuming QUIC sessions is
+          expected to have benefit;</t>
+
+          <t>proposes guidelines for how to carefully utilise the previously
+          stored CC information;</t>
+
+          <t>describes implementation considerations for the proposed method
+          using QUIC;</t>
+
+          <t>discusses the trade-offs associated with the different
+          implementation solutions.</t>
+        </list></t>
+    </section>
+
+    <section anchor="notation" title="Language, notations and terms">
+      <t>This section provides a brief summary of key terms and the
+      requirements language that is used. The document uses language drawn
+      from a range of IETF RFCs. </t>
+
+      <section anchor="sec:req_language" title="Requirements Language">
+        <t>The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+        "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+        "OPTIONAL" in this document are to be interpreted as described in BCP
+        14 <xref target="RFC2119"></xref> <xref target="RFC8174"></xref> when,
+        and only when, they appear in all capitals, as shown here.</t>
+      </section>
+
+      <section anchor="sec-terms_def" title="Notations and Terms">
+        <t>This document defines current, and saved values for a set of CC
+        parameters:<list style="symbols">
+            <t>IW: Initial Window <xref target="RFC9002"></xref>;</t>
+
+            <t>current_iw: Current IW;</t>
+
+            <t>recom_iw: Recommended IW;</t>
+
+            <t>current_bb : Current estimated bottleneck bandwidth;</t>
+
+            <t>saved_bb: Estimated bottleneck bandwidth preserved from a
+            previous connection;</t>
+
+            <t>current_rtt: Current RTT;</t>
+
+            <t>saved_rtt: RTT measure RTT preserved from a previous
+            connection;</t>
+
+            <t>client_ip : IP address of the client;</t>
+
+            <t>current_client_ip : Current IP address of the client;</t>
+
+            <t>saved_client_ip : IP address of a previous connection by the
+            client;</t>
+
+            <t>remembered BDP parameters: a combination of saved_rtt and
+            saved_bb</t>
+          </list></t>
+
+        <t>Congestion controllers, such as CUBIC or RENO, could estimate the
+        saved_bb and current_bb values by utilizing a combination of the
+        cwnd/flight_size and the minimum RTT. A different method could be used
+        to estimate the same values when using a rate-based congestion
+        controller, such as BBR  <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
+        consider whether the methods could result in over-estimating the
+        bottleneck bandwidth, and the preserved values there ought to be used
+        with caution.</t>
+      </section>
+    </section>
+
+    <section anchor="sec-use_case" title="Scenarios of Interest">
+      <section anchor="subsec:rationale_satcom" title="Large BDP Scenarios">
+        <t>QUIC introduces the concept of transport parameters (section 4 of
+        <xref target="RFC9000"></xref>). This document notes that a new
+        connection can utilise a set of key transport parameters from a
+        previous connection to reduce the completion time for a transfer of
+        size much larger than the IW over paths where the available capacity
+        is also significantly larger than the IW. This benefit is particularly
+        evident for a path where the RTT is much larger than a typical
+        Internet RTT.</t>
+
+        <t>For example, a satellite access network, a 5.3 MB transfer takes up
+        to 9 seconds using standard congestion control, whereas using the
+        specified method this could reduce to 4 seconds <xref
+        target="IJSCN"></xref>; and the time to complete a 1 MB transfer could
+        be reduced by 62 % <xref target="MAPRG111"></xref>. Benefits is also
+        expected for other sizes of transfer and for different path
+        characteristics that also result in a higher BDP.</t>
+      </section>
+
+      <section anchor="subsec:rationale_drops"
+               title="Accomodating from a Known Reduction in Capacity">
+        <t>A transport protocol is not able to assume that the path
+        characteristics it experiences remain the same. Variation can arise
+        from a combination of various factors:</t>
+
+        <t><list style="symbols">
+            <t>Competing network traffic sharing a common bottleneck can
+            result in short or long term variation;</t>
+
+            <t>Changes in forward path can change the set of links/routers
+            over which the flow is forwarded (from routing/mobility/circuit
+            restoration/interface change), result in a change in the bandwidth
+            and the other traffic that shares all/part of the path;</t>
+
+            <t>Link conditions can result in a change of the total bandwidth
+            (e.g., as a result of changes in propagation conditions or sharing
+            of a medium);</t>
+
+            <t>Application/endpoint Behavior can change the capacity available
+            to a flow.</t>
+          </list>The characteristics of an Internet path therefore need to be
+        measured by the transport protocol, and may not reflect the actual
+        path used by a new connection. Older measurements, or cases where
+        measurements are known to vary significantly are more likely to be
+        invalid.</t>
+
+        <t>In some cases (e.g., after a change in the interface used by the
+        local endpoint), a client may be aware of such a change, and might be
+        able to infer that a previously available path has again become
+        available. However, to utilise the previous information, the client
+        would need assurance that the path was to the same endpoint, and that
+        the characteristics have not significantly changed from those
+        previously measured. When the path is expected to be the same, there
+        is then an opportunity to save time (eliminate RTTs consumed by slow
+        start) by utilising saved CC information for the path.</t>
+      </section>
+
+      <section anchor="subsec:rationale_client"
+               title="Optimizing Client Requests">
+        <t>Some styles of usage do not use long-lasting connections at the
+        transport layer. Instead, they use a series of shorter connections.
+        For example, a client using Dynamic Adaptive Streaming over HTTPS
+        (DASH). Such a client might be unable to reach the video playback
+        quality that is supported by the path, because for each video chunk,
+        the transport protocol needs to independently determine the path
+        capacity. The lower transfer rate is safe, but can also lead to an
+        overly conservative requested rate by the client, because clients
+        often adapt their application-layer requests based on the transport
+        performance (i.e., the client could fail to increase the requested
+        quality of video chunks, or to fill buffers to avoid stalling playback
+        or to send high quality advertisements).</t>
+
+        <t>There are other cases where applications could provide additional
+        services if a client knew the path characteristics.</t>
+      </section>
+
+      <section anchor="subsec:rationale_sharing"
+               title="Sharing Transport Information across Multiple Connections">
+        <t>There can be benefit in sharing transport information across
+        multiple concurrent connections. <xref target="RFC9040"></xref>
+        considers the sharing of transport parameters between TCP connections
+        that originate from the same host. The proposal in this document has
+        the advantage of storing server-generated information at the client
+        and not requiring the server to retain additional state for each
+        client.</t>
+      </section>
+
+      <section anchor="subsec:client_server"
+               title="Connection Establishment, Client and Server">
+        <t>In the previously detailed scenarios, the application data transfer
+        was unidirectional towards the client, i.e., the main flow of data was
+        from a server to a client (e.g., downloading a file or web page). This
+        is the focus of the current version of the document.</t>
+
+        <t>In a different example, the application data transfer can still be
+        unidirectional, but towards the server, e.g., uploading an image/video
+        is a server. </t>
+
+        <t>There are also use cases where a client initiates a connection for
+        a bidirectional service where both endpoints send appreciable data to
+        each other, such as to support a remote executing application, or a
+        video conference call.</t>
+
+        <t>In general, the guidelines proposed in this document apply when a
+        congestion controller is sending data to a remote peer and that remote
+        endpoint resumes the session. Both endpoints can assume the role of a
+        client or a server.</t>
+      </section>
+    </section>
+
+    <section anchor="sec-phase" title="The Phases of CC">
+      <t>This document defines a series of different phases through which the
+      CC algorithm moves as a connection gets up to speed. The phases are
+      labelled as follows: <list style="numbers">
+          <t>Observe: During a previous connection, the current RTT
+          (current_rtt), bottleneck bandwidth (current_bb) and current client
+          IP (current_client_ip) are stored as saved_rtt, saved_bb and
+          saved_client_ip;</t>
+
+          <t>Reconnaissance: When resuming a session between the same pair of
+          IP addresses, the server measures the path characteristics of a new
+          connection to confirm the path appears the same as observed
+          previously (e.g., path with similar RTT). The server also seeks
+          assurance that initial data is not lost, to avoid resuming under
+          congested conditions.</t>
+
+          <t>Unvalidated: Utilise the saved path characteristics to send at a
+          rate higher than allowed by slow start. The convergence towards the
+          previous rate is expected be quicker than when using traditional
+          slow-start mechanisms, but should not be instantaneous, to avoid
+          adding congestion to a congested bottleneck. <list style="numbers">
+              <t>If the unvalidated rate was used without inducing noticeable
+              congestion to the path, the server is permitted to continue
+              sending at this rate in the 'Normal' phase.</t>
+
+              <t>If the validation phase determines that previous parameters
+              are not valid (due to a change) or congestion was experienced,
+              the sender must withdraw rapidly to a safe rate, before it
+              enters the 'Normal' phase.</t>
+            </list></t>
+
+          <t>Normal: Resume using the normal CC method.</t>
+        </list></t>
+    </section>
+
+    <section anchor="sec-rationale" title="Safe Jump">
+      <section title="Rationale behind the Safety Guidelines">
+        <t>NOTE: The sender ought not to re-utilise all capacity it previously
+        used, to avoiding starving flows that started after the measurement.
+        How strong should this be stated: ... MUST or SHOULD ... What safety
+        factor is appropriate for the resuming sender? If using slow-start it
+        would anyway double the rate on the next RTT, so is capacity/2
+        appropriate to initially try?</t>
+
+        <t>A connection MUST NOT use the previously measured saved_rtt and
+        saved_bb to simply initialise a new flow to resume sending at the same
+        rate.</t>
+
+        <t><list style="symbols">
+            <t>Rationale #1: Bottleneck bandwidth and network traffic can
+            change at any time. An Internet method needs to be robust to
+            network conditions that can differ from one session to the next,
+            due to variations in the forwarding path, reconfiguration of
+            equipment or changes in the link conditions. An Internet method
+            needs to be robust to changes in network traffic, including the
+            arrival of new traffic flows that compete for the bottleneck
+            capacity. Behaviours need to be designed that avoid sending
+            excessive data into a congestion bottleneck because this can have
+            a material impact on any flows using that bottleneck, and the
+            ability of those flows to control their own sending rate.</t>
+
+            <t>Rationale #2: Information sent by a malicious client is not
+            relevant. A client could request a server to use a cwnd higher
+            than appropriate, to gain an unfair share of capacity for itself
+            or to induce congestion for other flows. A server might anyway
+            decide whether to fully use the new allowed rate.</t>
+          </list></t>
+      </section>
+
+      <section title="Rationale #1: Variable Network Conditions">
+        <t>The server MUST check the validity of any received saved_rtt and
+        saved_bb parameters, whether these are sent by a client or are stored
+        at the server. The following events indicates cases where the use of
+        these parameters is inappropriate: <list style="symbols">
+            <t>IP address change: If the client changes its local IP address
+            (i.e., the saved_client_ip is different from the
+            current_client_ip), the different source address is a assumed an
+            indication of a different network path. This new path does not
+            necessarily exhibit the same characteristics as the old one. If
+            the server changes its IP address after a migration, it would not
+            be safe to exploit previously estimated parameters. </t>
+
+            <t>RTT change: A significant change in RTT might be an indication
+            that the network conditions have changed. Since the CC information
+            is directly impacted by the RTT, a significant change in the RTT
+            is a strong indication that the previously estimated BDP
+            parameters are likely to not be valid for the current path. NOTE:
+            This document needs to define a significant change.</t>
+
+            <t>Lifetime of the information: The CC information is temporal.
+            Frequent connections to the same IP address are likely to track
+            changes, but long-term use of previous values is not appropriate.
+            NOTE: This document needs to define how long.</t>
+
+            <t>BB over-estimation: There are cases where using a measured cwnd
+            would inflate the bottleneck bandwidth. At the end of the CC slow
+            start phase, the value of cwnd can be significantly larger than
+            the minimum value needed to utilise the path (i.e., cwnd
+            overshoot). In most case, the cwnd finally converges to a stable
+            value after a few more RTTs. It would be inappropriate to use an
+            overshoot in the cwnd as a basis for estimating the bottleneck
+            bandwidth. NOTE: One mitigation could be to further restrict to
+            only a fraction (e.g., 1/2) of the previously used cwnd; another
+            mitigation might be to calculate the bottleneck bandwidth based on
+            the flight_size or an averaged cwnd.</t>
+
+            <t>Preventing Starvation of New Flows: It would not be appropriate
+            to fully use a bottleneck bandwidth estimate based on a previous
+            measurement of capacity, because new flows might have started
+            using the available capacity since that measurement was made. The
+            mitigation could be to restrict to only a fraction (e.g., 1/2) of
+            the previously used cwnd.</t>
+          </list></t>
+
+        <t>There are several solutions to mitigate the impact of changes in
+        network conditions: <list style="symbols">
+            <t>Rationale #1 - Solution #1 : When resuming a session, restore
+            the current_bb and current_rtt from the saved_bb and saved_rtt
+            parameters estimated from a previous connection.</t>
+
+            <t>Rationale #1 - Solution #2 : When resuming a session, implement
+            a safety check to measure avoid using the saved_bb and saved_rtt
+            parameters to cause congestion over the path. In this case, the
+            current_bb and current_rtt might not be set directly to the
+            saved_bb and saved_rtt: the server might wait for the completion
+            of the safety check before this is done.</t>
+          </list></t>
+
+        <t><xref target="sec-safety_guide"></xref> describes various
+        approaches for Rationale #1 - Solution #2.</t>
+      </section>
+
+      <section title="Rationale #2: Malicious clients">
+        <t>The server MUST check the integrity of the saved_rtt and saved_bb
+        parameters received from a client.</t>
+
+        <t>There are several solutions to avoid attacks by malicious clients:
+        <list style="symbols">
+            <t>Rationale #2 - Solution #1 : The server stores a local estimate
+            of the bottleneck bandwidth and RTT parameters as the saved_bb and
+            saved_rtt.</t>
+
+            <t>Rationale #2 - Solution #2 : The server sends the estimate of
+            the bottleneck bandwidth and RTT parameters to the client as the
+            saved_bb and saved_rtt in a block of information that is
+            authenticated. This information also could be encrypted by the
+            server. The client resends the same information when resuming a
+            connection. The server can use its local key information to
+            authenticate the information, without needing to keep a local
+            copy. </t>
+
+            <t>Rationale #2 - Solution #3 : This approach is the same as
+            above, except that the server sends an estimate of the saved_rtt
+            and saved_bb parameters in a form that may be read by the client.
+            The information might not be encrypted, or the information might
+            be duplicated outside of the encrypted block. This allows a client
+            to read, but not modify, the saved_rtt and saved_bb parameters and
+            could enable a client to decide whether it thinks the new
+            parameters are appropriate, based on client-side information about
+            the network conditions, connectivity, or needs of the session
+            using the connection.</t>
+          </list></t>
+
+        <t><xref target="sec-implem"></xref> describes various implementation
+        approaches for each of these solutions using local storage ( <xref
+        target="sec-local_storage"></xref> for Rationale #2 - Solution #1),
+        NEW_TOKEN Frame ( <xref target="sec-using_new_token"></xref> for
+        Rationale #2 - Solution #2), BDP extension Frame ( <xref
+        target="sec-bdp_frame_section"></xref> for Rationale #2 - Solution
+        #3).</t>
+      </section>
+
+      <section anchor="sec:discuss_bdp_default"
+               title="Trade-off between the different solutions">
+        <t>This section provides a description of several implementation
+        options and discusses their respective advantages and drawbacks. </t>
+
+        <t>While there are some discussions for the solutions regarding
+        Rationale #2, the server MUST consider Rationale #1 - Solution #2 and
+        avoid Rationale #1 - Solution #1: the server MUST implement a safety
+        check to measure whether the saved BDP parameters (i.e. saved_rtt and
+        saved_bb) are relevant or check that their usage would not cause
+        excessive congestion over the path. </t>
+
+        <t>Security consideration are discussed in <xref
+        target="sec-security"></xref> .</t>
+
+        <section title="Interoperability and Use Cases">
+          <t>A server that stores a resumption ticket for each client to
+          protect against replay on a third party IP, it could also store the
+          IP address (i.e., saved_client_ip) and BDP parameters (i.e.,
+          saved_rtt and saved_bb) of the previous session of the client.</t>
+
+          <t>When the BDP Frame extension is used, locally stored BDP
+          parameters at the server can provide a cross-check of the BDP
+          parameters sent by a client. The server can anyway enable a safe
+          jump, but without the BDP Frame extension. However, using the
+          parameters enables a client to choose whether to request this or
+          not, enabling it to utilize local knowledge of the network
+          conditions, connectivity, or session requirements.</t>
+
+          <t>XXX-Editor-note: Text to be improved: Storing local values
+          related to the BDP would help improve the ingress for 0-RTT
+          connections, however, not using a BDP Frame extension could reduce
+          the interest of the approach where (1) the client knows the BDP
+          estimation at the server, (2) the client decides to accept or reject
+          ingress optimization, (3) the client tunes application level
+          requests.</t>
+        </section>
+
+        <section title="Summary">
+          <t> Local storage of values can be secure and the BDP Frame
+          extension provides more information to the client and more
+          interoperability. The <xref target="fig-summary"></xref> provides a
+          summary of the advantages and drawbacks of each approach.</t>
+
+          <figure anchor="fig-summary" title="Comparing solutions">
+            <artwork><![CDATA[
++---------+-----------+----------------+---------------+-----------+
+|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
++---------+-----------+----------------+---------------+-----------+
+|#1       |#1         |                |               |           |
+|Variable |set        |Ingress optim.  |Risk of adding |MUST NOT   |
+|Network  |current_*  |                | congestion    |implement  |
+|         |to saved_* |                |               |           |
+|         +-----------+----------------+---------------+-----------+
+|         |#2         |                |               |           |
+|         |Implement  |Reduce risk of  |Negative impact|MUST       |
+|         |safety     | adding         | on ingress    |implement  |
+|         |check      | congestion     | optim.        |Section 3  |
++---------+-----------+----------------+---------------+-----------+
+|#2       |#1         |                |               |           |
+|Malicious|Local      |Enforced        |Client unable  |           |
+|client   |storage    | security       | to decide to  |           |
+|         |           |                | reject        |           |
+|         |           |                |Malicious      |           |
+|         |           |                | server could  |           |
+|         |           |                | fill client's |           |
+|         |           |                | buffer        |           |
+|         |           |                |Limited        |           |
+|         |           |                | use-cases     |Section 4.2|
+|         +-----------+----------------+---------------+-----------+
+|         |#2         |                |               |           |
+|         |NEW_TOKEN  |Save resource   |Malicious      |           |
+|         |           | at server      | client could  |           |
+|         |           |Opaque token    | change token  |           |
+|         |           | protected      | even if       |           |
+|         |           |                | protected     |           |
+|         |           |                |Malicious      |           |
+|         |           |                | server could  |           |
+|         |           |                | fill client's |           |
+|         |           |                | buffer        |           |
+|         |           |                |Server may not |           |
+|         |           |                | trust client  |Section 4.3|
+|         +-----------+----------------+---------------+-----------+
+|         |#3         |                |               |           |
+|         |BDP        |Extended        |Malicious      |           |
+|         |extension  | use-cases      | client could  |           |
+|         |           |Save resource   | change BDP    |           |
+|         |           | at server      | even if       |           |
+|         |           |Client can      | protected     |           |
+|         |           | read and decide|Server may not |           |
+|         |           | to reject      | trust client  |           |
+|         |           |BDP extension   |               |           |
+|         |           | protected      |               |           |
+|         |           |                |               |Section 4.4|
++---------+-----------+----------------+---------------+-----------+
+
+XXX-Editor-Note: Need to clarify the text around changing 
+the authenticated token.
+
+]]></artwork>
+          </figure>
+        </section>
+      </section>
+    </section>
+
+    <section anchor="sec-safety_guide" title="Safety Guidelines">
+      <t>The following safety guidelines refer to the labelling defined in
+      <xref target="sec-phase"></xref>.</t>
+
+      <t>The safety guidelines are designed to mitigate the risk that a server
+      adds excessive congestion to an already congested path. The following
+      mechanisms help in fulfilling this objective: <list style="symbols">
+          <t>(observation phase) The server SHOULD NOT store and/or send
+          information related to a previously estimated bottleneck bandwidth
+          (saved_bb) (see <xref target="sec-terms_def"></xref> for more
+          details on bottleneck bandwidth definition), if the cwnd is not at
+          least four times larger than the IW. <!-- this estimation has not
+been computed after some rounds during the 1-RTT connection. At least, the 1-RTT connection should have reached the congestion avoidance phase. --></t>
+
+          <t>(reconnaissance phase) The server MUST NOT send more than the
+          recommended maximum IW (recom_iw) in the first RTT of transmitting
+          data <xref target="RFC9000"></xref>. (When used in a controlled
+          network, additional information about local path characteristics
+          could be known that might be used to configure a non-standard
+          IW).</t>
+
+          <t>(reconnaissance phase) The server MUST compare the measured
+          transport parameters (in particular current_rtt) of the 0-RTT
+          connection with those of the 1-RTT connection (in particular
+          saved_rtt). The method MUST NOT be used when the path fails to be
+          validated;</t>
+
+          <t>(unvalidated phase) The server MUST NOT use the parameters unless
+          the first IW packets when packets are detected as lost or
+          acknowledgements indicate the packets were ECN CE-marked. These are
+          indication of potential congestion and therefore the method MUST NOT
+          be used; </t>
+
+          <t>(unvalidated phase) The server MUST implement the retreat method
+          when packets are detected as lost or acknowledgements indicate the
+          packets were ECN CE-marked. These are indication of potential
+          congestion and therefore the method MUST NOT be used.<!-- The server SHOULD NOT consider the saved_bb
+parameter when there is any indicated congestion
+(e.g., loss of packet during
+the first transmission of data or ECN-CE mark); --></t>
+        </list></t>
+
+      <t>The proposed mechanisms SHOULD be limited by any rate-limitation
+      mechanisms of QUIC, such as flow control mechanisms or amplification
+      attack prevention. In particular, it may be necessary to issue proactive
+      MAX_DATA frames to increase the flow control limits of a connection. In
+      particular, the maximum number of packets that can be sent without
+      acknowledgements needs to be chosen to avoid the creation and the
+      increase of congestion for the path.</t>
+
+      <t>This extension MUST NOT provide an opportunity for the current
+      connection to be a vector of an amplification attack. The address
+      validation process, used to prevent amplification attacks, SHOULD be
+      performed <xref target="RFC9000"></xref>.</t>
+
+      <t>XXX-Editor-note: This probbaly should be a range rather than an
+      inequality (current_rtt &lt; 1.2*saved_rtt).</t>
+
+      <t>The following mechanisms could be implemented: <list style="symbols">
+          <t>Exploit a standard IW:<list style="numbers">
+              <t>The server sends the first data packet using the IW - this is
+              a safe starting point for any path where there is no path
+              information or congestion control information. This avoids
+              adding excessive congestion to a path;</t>
+
+              <t>The sender monitors the reception of the IW data. If the path
+              characteristics resemble those of a recent previous session from
+              to the same server (i.e., current_rtt &lt; 1.2*saved_rtt) and
+              all data was acknowledged without reported congestion), the
+              method permits the sender to utilise the saved_bb as an input to
+              adapt current_bb to rapidly determine a new safe rate;</t>
+
+              <t>The sender needs to avoid a burst of packets resulting from a
+              step-increase in the congestion window <xref
+              target="RFC9000"></xref>. Pacing the packets as a function of
+              the current_rtt can provide this additional safety during the
+              period in which the CWND is increased by the method.</t>
+            </list></t>
+
+          <t>Identify a relevant pacing rhythm:<list style="symbols">
+              <t>The server estimates the pacing rhythm using saved_rtt and
+              saved_bb. The Inter-packet Transmission Time (ITT) is determined
+              by the ratio between the current Maximum Message Size (MMS) and
+              the ratio between the saved_bb and saved_rtt. A tunable safety
+              margin can avoid sending more than a recommended maximum IW
+              (recom_iw): <list style="symbols">
+                  <t>current_iw = min(recom_iw,saved_bb)</t>
+
+                  <t>ITT = MSS/(current_iw/saved_rtt)</t>
+                </list></t>
+
+              <t>When the successful receipt of the IW data is acknowledged,
+              the server returns to a standard slow-start mechanism.</t>
+            </list></t>
+
+          <t>Tune slow-start mechanisms: After transport parameters are set to
+          a previously estimated bottleneck bandwidth, if the slow-start
+          mechanisms continue, the sender can then overshoot the bottleneck
+          capacity. This can occur even when using the safety check described
+          in this section. <list style="symbols">
+              <t>For NewReno and CUBIC, it is recommended to exit slow-start
+              and enter the congestion avoidance phase.</t>
+
+              <t>For BBR, it is recommended to enter the "probe bandwidth"
+              state.</t>
+            </list></t>
+        </list></t>
+
+      <t>This follows the idea presented in <xref target="RFC4782"></xref>,
+      <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
+      <xref target="CONEXT15"></xref>.</t>
+
+      <!--
+<t>
+While safety recommendations are necessary, it
+seems important to note that some Content Delivery Networks
+(CDNs) can exploit a high Initial Window (IW)
+<xref target="TMA18"></xref> for a local path.
+</t>
+-->
+    </section>
+
+    <!--
+<section anchor="sec:discuss" title="Discussion">
+<section anchor="subsec:other_param_bdp_protect" title="BDP extension protected as much as initial_max_data">
+<t>
+The BDP metadata parameters are measured by
+the server during a previous
+connection. The BDP extension is
+protected by the mechanism that
+protects the exchange of the 0-RTT
+transport parameters. For version 1
+of QUIC, the BDP extension is protected
+using the mechanism that already
+protects the "initial_max_data"
+parameter. This is defined in sections
+4.5 to 4.7 of
+<xref target="RFC9001"></xref>.
+This provides a way for the server to
+verify that the parameters proposed by the
+client are the same as those that the server
+sent to the client during the previous
+connection.
+</t>
+</section>
+</section>
+-->
+
+    <section anchor="sec-acknowledgments" title="Acknowledgments">
+      <t>The authors would like to thank Gabriel Montenegro, Patrick McManus,
+      Ian Swett, Igor Lubashev, Robin Marx, Roland Bless and Franklin Simo for
+      their fruitful comments on earlier versions of this document.</t>
+    </section>
+
+    <section anchor="sec-IANA" title="IANA Considerations">
+      <t>TBD: Text is required to register the BDP Frame and the enable_bdp
+      transport parameter. Parameters are registered using the procedure
+      defined in <xref target="RFC9000"></xref>.</t>
+    </section>
+
+    <section anchor="sec-security" title="Security Considerations">
+      <t>Security considerations for QUIC are discussed in <xref
+      target="sec-safety_guide"></xref></t>
+
+      <t>The client can send information related to the saved_rtt and saved_bb
+      to the server with the BDP Frame extension using either Rationale #2 -
+      Solution #2 or Rationale #2 - Solution #3. However, the server SHOULD
+      NOT trust the client. Indeed, even if 0-RTT packets containing the BDP
+      Frame are encrypted, a client could modify the values within the
+      extension and encrypt the 0-RTT packet. Authentication mechanisms might
+      not guarantee that the values are safe. It is not an easy operation for
+      a client to modify authenticated or encrypted data without this being
+      detected by a server. Modification could be realized by malicious
+      clients. One way to avoid this is for a server to also store the
+      saved_rtt and saved_bb parameters.</t>
+
+      <t>A malicious client might modify the saved_bb parameter to convince
+      the server to use a larger CWND than appropriate. Using the algorithms
+      proposed in <xref target="sec-safety_guide"></xref>, the server may
+      reduce any intended harm and can check that part of the information
+      provided by the client are valid.</t>
+
+      <t>Storing the BDP parameters locally at the server reduces the
+      associated risks by allowing the client to transmit information related
+      to the BDP of the path in the case of a malicious client trying to break
+      the encryption mechanism that it had received.</t>
+
+      <t></t>
+    </section>
+  </middle>
+
+  <!--  *****BACK MATTER ***** -->
+
+  <back>
+    <!-- References split into informative and normative -->
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+(for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+Both are cited textually in the same manner: by using xref elements.
+If you use the PI option, xml2rfc will, by default, try to find included files in the same
+directory as the including file. You can also define the XML_LIBRARY environment variable
+with a value containing a set of directories to search.  These can be either in the local
+filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+    <references title="Normative References">
+      <?rfc include="reference.RFC.2119.xml"?>
+
+      <?rfc include="reference.RFC.4782.xml"?>
+
+      <?rfc include="reference.RFC.6349.xml"?>
+
+      <?rfc include="reference.RFC.8174.xml"?>
+
+      <?rfc include="reference.RFC.8446.xml"?>
+
+      <?rfc include="reference.RFC.9000.xml"?>
+
+      <!-- <?rfc include="reference.RFC.9001.xml"?> -->
+
+      <?rfc include="reference.RFC.9002.xml"?>
+    </references>
+
+    <references title="Informative References">
+      <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
+	    
+      <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+
+      <?rfc include="reference.RFC.5783.xml"?>
+      <?rfc include="reference.RFC.8867.xml"?>
+      <?rfc include="reference.RFC.9040.xml"?>
+
+      
+      <reference anchor="MAPRG111">
+        <front>
+          <title>Feedback from using QUIC's 0-RTT-BDP extension over SATCOM
+          public access</title>
+
+          <author initials="N" surname="Kuhn"></author>
+
+          <author initials="E" surname="Stephan"></author>
+
+          <author initials="G" surname="Fairhurst"></author>
+
+          <author initials="T" surname="Jones"></author>
+
+          <author initials="C" surname="Huitema"></author>
+
+          <date year="2022" />
+        </front>
+
+        <seriesInfo name="IETF 111 - MAPRG meeting" value="" />
+      </reference>
+
+      <reference anchor="IJSCN">
+        <front>
+          <title>Google QUIC performance over a public SATCOM access</title>
+
+          <author initials="L" surname="Thomas"></author>
+
+          <author initials="E" surname="Dubois"></author>
+
+          <author initials="N" surname="Kuhn"></author>
+
+          <author initials="E" surname="Lochin"></author>
+
+          <date year="2019" />
+        </front>
+
+        <seriesInfo name="International Journal of Satellite Communications and Networking"
+                    value="10.1002/sat.1301" />
+      </reference>
+
+      <reference anchor="CONEXT15">
+        <front>
+          <title>Halfback: Running Short Flows Quickly and Safely</title>
+
+          <author initials="Q" surname="Li"></author>
+
+          <author initials="M" surname="Dong"></author>
+
+          <author initials="P B" surname="Godfrey"></author>
+
+          <date year="2015" />
+        </front>
+
+        <seriesInfo name="ACM CoNEXT" value="" />
+      </reference>
+    </references>
+
+    <section anchor="sec-implem" title="Implementation Considerations">
+      <section anchor="sec-bdp_frame"
+               title="Rationale behind the different implementation options">
+        <t>The NewSessionTickets message of TLS can offer a solution. The
+        proposal is to add a 'bdp_metada' field in the NewSessionTickets,
+        which the client is able to read. The only extension currently defined
+        in TLS1.3 that can be seen by the client is max_early_data_size (see
+        Section 4.6.1 of <xref target="RFC8446"></xref>). However, in the
+        general design of QUIC, TLS sessions are managed by a TLS stack.</t>
+
+        <t>Three distinct approaches are presented: sending an opaque blob to
+        the client that the client may return to the server when establishing
+        a future new connection (see <xref
+        target="sec-using_new_token"></xref>), enabling local storage of the
+        BDP infromation (see <xref target="sec-local_storage"></xref>) and a
+        BDP Frame extension (see <xref
+        target="sec-bdp_frame_section"></xref>).</t>
+      </section>
+
+      <section anchor="sec-local_storage"
+               title="Independent Local Storage of Values">
+        <t>This approach independently lets both a client and a server store
+        their BDP parameters: <list style="symbols">
+            <t>During a 1-RTT session, the endpoint stores the RTT (as the
+            saved_rtt) and bottleneck bandwidth (as the saved_bb) together in
+            the session resume ticket. The client can also store the IP
+            address of the server;</t>
+
+            <t>The server maintains a table of previously issued tickets,
+            indexed by the random ticket identifier that is used to guarantee
+            uniqueness of the Authenticated Encryption with Associated Data
+            (AEAD) encryption. Old tokens are removed from the table using the
+            Least Recently Used (LRU) logic. For each ticket identifier, the
+            table holds the RTT and bottleneck bandwidth (i.e. saved_rtt and
+            saved_bb), and also the IP address of the client (i.e.
+            saved_client_ip).</t>
+          </list></t>
+
+        <t>During the 0-RTT session, the local endpoint waits for the first
+        RTT measurement from the remote endpoint IP address. This is used to
+        verify that the current_rtt has not significantly changed from the
+        saved_rtt (used as an indication that the BDP information is
+        appropriate for the current path).</t>
+
+        <t>If this RTT is confirmed, the endpoint also verifies that an IW of
+        data has been acknowledged without requiring retransmission or
+        resulting in an ECN CE-mark. This second check detects whether a path
+        is experiencing significant congestion (i.e., where it would not be
+        safe to update the cwnd based on the saved_bb). In practice, this
+        could be realized by a proportional increase in the cwnd, where the
+        increase is (saved_bb/IW)*proportion_of_IW_currently-ACKed.</t>
+
+        <t>This solution does not allow a client to request the server not to
+        use the BDP parameters. If the server does not want to store the
+        metrics from previous connections, an equivalent of the
+        tcp_no_metrics_save for QUIC may be necessary. This option could be
+        negotiated that allows a client to choose whether to use the saved
+        information.</t>
+      </section>
+
+      <section anchor="sec-using_new_token" title="Using NEW_TOKEN frames">
+        <t>A server can send a NEW_TOKEN Frame to the client. The token is an
+        opaque (encrypyted) blob and the client can not read its content (see
+        section 19.7 of <xref target="RFC9000"></xref>). The client sends the
+        received token in the header of an Initial packet of a later
+        connection.</t>
+      </section>
+
+      <section anchor="sec-bdp_frame_section" title="BDP Frame">
+        <t>Using BDP Frames, the server could send information relating to the
+        path characteristics to the client. The use of the BDP Frame is
+        negotiated with the client. The client can read its content. If the
+        client agrees with the usage of previous session parameters, it can
+        send the BDP Frame back to the server in an Initial packet of a later
+        connection.</t>
+      </section>
+    </section>
+  </back>
+</rfc>
+<!-- </t> Four cases are identified:
+<list style="numbers">
+<t> The network path has changed and the new path is
+different. This might be evident from a change of local interface, a change
+in the client or server IP address, or similar indication from the network.
+Using the saved congestion control information could increase congestion.</t>
+<t> The network path has changed, but the new path is not known to be
+different. This case might be accompanied by a change in the RTT, or
+evident by loss observed at the start of the new connection and
+the saved congestion control information is not appropriate. </t>
+<t> The network conditions have changed and it is discovered that
+the current capacity is
+less than the previously estimated bottleneck bandwidth. Using the saved
+congestion control information would then increase congestion, and the flow needs
+to adjust to a lower safe rate; </t>
+<t> The stored information is too old. In this case, it is no longer
+be reasonable to expect the path to have same characteristics, and the
+the saved congestion control information is no longer appropriate.</t>
+</list></t>
+
+<t>In all these case, the
+careful increase method is not be used, and a client needs to return to
+a standard behaviour.  The method can still be used to characterise the new path,
+enabling later flows to use this method.</t>
+
+-->
