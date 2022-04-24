@@ -216,14 +216,18 @@ keywords will be used for the search engine. -->
       and RTT. This CC information might be expected to be similar when a new
       connection is made between the same local and remote endpoints.</t>
 
-      <t>While the server could take optimization decisions without client's 
-      point-of-view, the client may have information that the server does not
-      have. In particular, the client may provide hints to upper layers (1) on
-      how the connection can be used, (2) related to information that the path
-      will be different, (3) related to information on the current hardware
-      limitations of the client or (4) other concurrent flows competing for the
-      shared media. As a result, the client may explicitely ask for tuning the 
-      slow start of the resumed connection. This is discussed in the document.</t>
+      <t>While the server could take optimization decisions without considering 
+      the client's preference, in some cases a client could have information that 
+      is not available at the server. A client may provide hints, for example:
+       (1) information abnout how the upper layers expect to use a connection - such as
+        the expected size of transfer;
+       (2) an indication that the path/local interface has changed;
+       (3) information related to  current hardware
+      limitations of the client or (4) an understanding about
+      the capacity needs of other concurrent flows that would compete for 
+      shared capacity. As a result, a client could explicitely ask for tuning the 
+      slow start of the resumed connection, or to inhibit tuning. 
+       This is discussed further later in the document.</t>
 
       <t>There are also cases where using the parameters of a previous
       connection are not appropriate, and a need to evaluate the potential
