@@ -90,7 +90,7 @@ full title is longer than 39 characters -->
       </address>
     </author>
 
-    <date day="05" month="March" year="2022" />
+    <date day="06" month="May" year="2022" />
 
     <!-- If the month and year are both specified and are the current ones, xml2rfc will fill
 in the current day for you. If only the current year is specified, xml2rfc will fill
