@@ -53,20 +53,6 @@
 			</address>
 		</author>
 	
-		<author fullname="Tom Jones" initials="T" surname="Jones">
-			<organization>University of Aberdeen</organization>
-			<address> 
-				<postal>
-          			<street>Department of Engineering</street>
-          			<street>Fraser Noble Building</street>
-          			<city>Aberdeen</city>
-          			<code>AB24 3UE</code>
-          			<country>Scotland, UK</country>
-        			</postal>
-				<email>tom@erg.abdn.ac.uk</email>
-			</address>
-		</author>
-
 		<author fullname="Christian Huitema" initials="C" surname="Huitema">
 			<organization>Private Octopus Inc.</organization>
 			<address>
@@ -433,6 +419,10 @@ BDP Frame {
                 Patrick McManus, Ian Swett, Igor Lubashev, Robin Marx,
                 Roland Bless and Franklin Simo for their fruitful
                 comments on earlier versions of this document.
+		</t>
+		<t>
+                The authors would like to particularly thank Tom Jones
+                for co-authoring previous versions of this document.
 		</t>
 	</section>
 
