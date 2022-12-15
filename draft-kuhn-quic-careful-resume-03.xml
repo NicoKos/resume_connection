@@ -62,26 +62,6 @@ full title is longer than 39 characters -->
       </address>
     </author>
 
-    <author fullname="Tom Jones" initials="T" surname="Jones">
-      <organization>University of Aberdeen</organization>
-
-      <address>
-        <postal>
-          <street>Department of Engineering</street>
-
-          <street>Fraser Noble Building</street>
-
-          <city>Aberdeen</city>
-
-          <code>AB24 3UE</code>
-
-          <country>Scotland, UK</country>
-        </postal>
-
-        <email>tom@erg.abdn.ac.uk</email>
-      </address>
-    </author>
-
     <author fullname="Christian Huitema" initials="C" surname="Huitema">
       <organization>Private Octopus Inc.</organization>
 
@@ -124,9 +104,11 @@ keywords will be used for the search engine. -->
       range of connections : 0RTT, new connections sharing the same
       peers, application-limited traffic.</t>
 
+      <!-- start new from v2 to v3 -->
       <t>The method contributes to providing in QUIC transport services that are
       currently available in TCP, such as TCP Control Block (TCB) caching or
       updates to support application-limited traffic.</t>
+      <!-- end new from v2 to v3 -->
 
       <t>The method uses a set of computed congestion control parameters that
       are based on the previously observed path characteristics, such as the
@@ -162,6 +144,7 @@ keywords will be used for the search engine. -->
       other flows <xref target="RFC8867"></xref> (i.e. Preventing other flows
       from successfully sharing a common bottleneck). </t>
 
+      <!-- start new from v2 to v3 (commented paragraph) -->
       <!--
       <t>In Reno, the slow-start phase consists of a sequence of increases in
       the congestion window (cwnd) starting from the Initial Window (IW). Each
@@ -184,6 +167,7 @@ keywords will be used for the search engine. -->
       measure the BDP, allowing the sender to implement an appropriate
       method.</t>
       -->
+      <!-- end new from v2 to v3 (commented paragraph) -->
 
       <t>The specification for the QUIC transport protocol <xref
       target="RFC9000"></xref> notes "Generally, implementations are advised
@@ -219,11 +203,13 @@ keywords will be used for the search engine. -->
           characteristics).</t>
         </list></t>
 
+      <!-- start new from v2 to v3 (commented paragraph) -->
       <!--
       <t>In these cases, specific characteristics of the path may have
       been learned, including CC information. This  information might be expected to be similar when a new
       connection is made between the same local and remote endpoints.</t>
       -->
+      <!-- end new from v2 to v3 (commented paragraph) -->
 
      
       <t>While a server could take optimization decisions without considering 
@@ -241,12 +227,14 @@ keywords will be used for the search engine. -->
       connection are not appropriate, and a need to evaluate the potential
       for malicious use of the method.</t>
 
+      <!-- start new from v2 to v3 -->
       <t>TCP offers services for resuming connection by exploiting cached values 
       <xref target="RFC9040"></xref>
       and support application-limited traffic <xref target="RFC7661"></xref>.
       The method contributes to providing in QUIC transport services that
       are currently available in TCP, such as TCP Control Block (TCB) caching
       or updates to support application-limited traffic.</t>
+      <!-- end new from v2 to v3 -->
 
       <t>The remainder of this document: <list style="numbers">
           <t>discusses use-cases where carefully resuming QUIC connections is
@@ -899,6 +887,8 @@ connection.
       <t>The authors would like to thank Gabriel Montenegro, Patrick McManus,
       Ian Swett, Igor Lubashev, Robin Marx, Roland Bless and Franklin Simo for
       their fruitful comments on earlier versions of this document.</t>
+      <t>The authors would like to particularly thank Tom Jones for co-authoring 
+      previous versions of this document.</t>
     </section>
 
     <section anchor="sec-IANA" title="IANA Considerations">
