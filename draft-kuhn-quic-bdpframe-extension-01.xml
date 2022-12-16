@@ -89,16 +89,18 @@
 
 	<abstract>
 		<t>
+		<!-- start new in v1 vs v0 -->
                 This draft describes the BDP Frame extension for QUIC.
                 It enables the exchange of information related to the
                 path characteristics between the client
                 and the server during a connection.
-                This information can later be exploited
+                This information can be exploited
                 when a new connection is established or for application-limited
                 traffic. 
                 This information can be exploited by the client to refuse the
-                exploitation of previously computed parameters and to fall back
-                to the server's default slow-start mechanism.
+		exploitation of previously computed parameters related to the 
+		path characteristics.
+		<!-- end new in v1 vs v0 -->
 		</t>
 	</abstract>
 	</front>
@@ -124,8 +126,14 @@
 			BDP_FRAME parameters; 
 			</t>
 			<t>
-                        When resuming a session to the same IP address,
-			the client is allowed to send the BDP_FRAME;
+			<!-- start new in v1 vs v0 -->
+                        When accepting the exploitation of previously
+                        computed parameters (for application limited
+                        traffic, for new connections (either 1-RTT or
+                        0-RTT), for connection resumption (wihtin 1-RTT
+                        connection)) the client sends the BDP-FRAME to
+                        the server;
+			<!-- end new in v1 vs v0 -->
 			</t>
 			<t>	
 			The server can then utilise the parameters from the 
