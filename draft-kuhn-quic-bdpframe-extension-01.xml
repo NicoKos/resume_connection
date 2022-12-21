@@ -405,7 +405,7 @@ BDP Frame {
 
 		<t>
                 The server SHOULD NOT trust
-                the content of the BDP Framne received from the client. 
+                the content of the BDP Frame received from the client. 
 		Even if 0-RTT
                 packets containing the BDP Frame are
                 encrypted, a client could modify the
