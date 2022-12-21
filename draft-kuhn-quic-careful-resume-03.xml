@@ -100,23 +100,24 @@ keywords will be used for the search engine. -->
     <abstract>
       <t>This document discusses careful convergence of congestion
       control in QUIC
-      with a cautious method that enables fast startup of a wide
+      with a cautious method that enables fast startup in a wide
       range of connections : 0RTT, new connections sharing the same
       peers, application-limited traffic.</t>
 
       <!-- start new from v2 to v3 -->
-      <t>The method contributes to providing in QUIC transport services that are
+      <t>The method provides QUIC with transport services that resemble 
+	those     
       currently available in TCP, such as TCP Control Block (TCB) caching or
       updates to support application-limited traffic.</t>
       <!-- end new from v2 to v3 -->
 
-      <t>The method uses a set of computed congestion control parameters that
+      <t>The method uses a set of computed Congestion Control (CC) parameters that
       are based on the previously observed path characteristics, such as the
       bottleneck bandwidth, available capacity, or the RTT. These parameters
-      are stored and can then used to modify the congestion control behaviour
-      of a subsequent connection. The draft discusses assumptions around how a
-      server ought to utilise these parameters to provide opportunities for a
-      new connection to more quickly get up to speed (i.e. utilise available
+      are stored allowing then to be later used to modify the congestion control behaviour
+      of a subsequent connection. The document discusses assumptions/requirements around how a
+      sender ought to utilise these parameters to provide opportunities for a
+      new connection to more quickly get up to speed (i.e. utilise the available
       capacity). It discusses how these changes impact the capacity at a
       shared network bottleneck and the response that is needed after any
       indication that the new rate is inappropriate.</t>
@@ -126,10 +127,10 @@ keywords will be used for the search engine. -->
   <middle>
     <section anchor="sec:introduction" title="Introduction">
       
-      <t>All Internet transports are required to use a CC method. In 2010, RFC
-      5783 provided a survey of alternative CC methods, and noted that there
+      <t>All Internet transports are required to use a Congestion Control (CC) method. In 2010, 
+       <xref target="RFC5783"></xref> provided a survey of alternative CC methods, and noted that there
       are challenges when a CC operates across an Internet path with a high and/or
-      variable bandwidth-delay product (BDP) <xref target="RFC5783"></xref>.
+      variable bandwidth-delay product (BDP).
       </t>
       
       <t>A CC algorithm typically takes time to ramp-up the packet rate,
@@ -146,7 +147,7 @@ keywords will be used for the search engine. -->
 
       <!-- start new from v2 to v3 (commented paragraph) -->
       <!--
-      <t>In Reno, the slow-start phase consists of a sequence of increases in
+      <t>In <xref target="RFC6582">Reno</xref> , the slow-start phase consists of a sequence of increases in
       the congestion window (cwnd) starting from the Initial Window (IW). Each
       step lasts approximately one path RTT, until the sender estimates that
       the capacity at the bottleneck
@@ -159,7 +160,7 @@ keywords will be used for the search engine. -->
       Round-Trip Time (RTT) and network Bottleneck Bandwidth (BB), the
       Bandwidth-Delay Product (BDP) determines the Send and Received Socket
       buffer sizes required to achieve the maximum TCP Throughput." The BDP
-      estimated by a server includes all buffering experienced along a network
+      estimated by a sender includes all buffering experienced along a network
       path. Various approaches are possible to determine the BDP, based on
       measurements of the path characteristics. <xref target="RFC6349"></xref>
       specifies one procedure for TCP. CC for QUIC is specified in <xref
@@ -212,14 +213,14 @@ keywords will be used for the search engine. -->
       <!-- end new from v2 to v3 (commented paragraph) -->
 
      
-      <t>While a server could take optimization decisions without considering 
-      the client's preference, in some cases a client could have information that 
-      is not available at the server. A client may provide hints, for example:
+      <t>While a sender could make optimization decisions without considering 
+      the receiver's preference, in some cases a receiver could have information that 
+      is not available at the server. A receievr may provide hints, for example:
        (1) an indication that the path/local interface has changed;
        (2) information related to  current hardware
-      limitations of the client or (3) an understanding about
+      limitations of the receiver or (3) an understanding about
       the capacity needs of other concurrent flows that would compete for 
-      shared capacity. As a result, a client could explicitely ask for tuning the 
+      shared capacity. As a result, a receiver could explicitely ask for tuning the 
       slow start when the application continues transmission, or to inhibit tuning. 
        This is discussed further later in the document.</t>
 
@@ -352,9 +353,9 @@ keywords will be used for the search engine. -->
 	  information may not be appropriate when a new connection uses the path.</t>
 
         <t>In some cases (e.g., after a change in the interface used by the
-        local endpoint), a client may be aware of such a change, and might be
+        local endpoint), a receiver may be aware of such a change, and might be
         able to infer that a previously available path has again become
-        available. However, to safetly utilise the previous information, the client
+        available. However, to safetly utilise the previous information, the receiver
         would need assurance that the path was to the same endpoint, and that
         the characteristics have not significantly changed from those
         previously measured. When the path is expected to be the same, there
@@ -376,11 +377,12 @@ keywords will be used for the search engine. -->
 	<!-- GF: Note we agreed to not specifically comment on DASH -->
 	<!-- Some styles of usage 
         For example, a client using Dynamic Adaptive Streaming over HTTPS
-        (DASH). Such a client might be unable to reach the video playback
+        (DASH). Such a client might be unable to receive sufficient data
+	to reach the video playback
         quality that is supported by the path, because for each video chunk,
         the transport protocol needs to independently determine the path
         capacity. The lower transfer rate is safe, but can also lead to an
-        overly conservative requested rate by the client, because clients
+        overly conservative requested rate to the serevre, because clients
         often adapt their application-layer requests based on the transport
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
@@ -402,21 +404,21 @@ keywords will be used for the search engine. -->
         multiple concurrent connections. <xref target="RFC9040"></xref>
         considers the sharing of transport parameters between TCP connections
         that originate from a host. The proposal in this document has
-        the advantage of storing server-generated information at the client
-        and not requiring the server to retain additional state for each
-        client.</t>
+        the advantage of storing sender-generated information at the receiver
+        and not requiring the sender to retain additional state for each
+        receiver.</t>
       </section>
 
       <section anchor="subsec:client_server"
                title="Connection Establishment, Client and Server">
         <t>In the previously detailed scenarios, the application data transfer
         was unidirectional towards the client, i.e., the main flow of data was
-        from a server to a client (e.g., downloading a file or web page). This
+        from a sender at the server to a receiver at the client (e.g., downloading a file or web page). This
         is the focus of the current version of the document.</t>
 
         <t>In a different example, the application data transfer can be
         unidirectional towards the server, e.g., uploading an image/video
-        is a server. </t>
+        from a sender at the client to the receiver at the server. </t>
 
         <t>There are also use cases where a client initiates a connection for
         a bidirectional service where both endpoints send data to
@@ -426,7 +428,7 @@ keywords will be used for the search engine. -->
         <t>In general, the guidelines proposed in this document apply when a
         congestion controller is sending data to a remote peer and that remote
         endpoint resumes the connection. Both endpoints can assume the role of a
-        client or a server.</t>
+        sender or a receiver.</t>
       </section>
     </section>
 
@@ -440,9 +442,9 @@ keywords will be used for the search engine. -->
           saved_client_ip;</t>
 
           <t>Reconnaissance: When an application resumes between the same pair of
-          IP addresses, the server measures the path characteristics of a new
+          IP addresses, the sender measures the path characteristics of a new
           connection to confirm the path appears to be similar to that observed
-          previously (e.g., a similar RTT). The server also seeks
+          previously (e.g., a similar RTT). The sender also seeks
           assurance that initial data is not lost, to avoid resuming under
           congested conditions.</t>
 
@@ -478,19 +480,19 @@ keywords will be used for the search engine. -->
         CC algorithm.
 	</t>
 	<t>
-        The "malicious client" relates to
-        the fact that a malicious client could try to send malicious
-        information to a server. Three approaches are then introduced
+        The "malicious receiver" relates to
+        the fact that a malicious receiver could try to send malicious
+        information to a sender. Three approaches are then introduced
         and compared : either (1) all the information related to
         previous
-        connections is stored at the server and never send to a client
+        connections is stored at the sender and never send to a receiver
         ("Local storage"), (2) some information is transmited to a
-        client
-        that can use it when reconnecting but the client cannot read the
-        information received from the server ("NEW TOKEN"), or (3) some
+        receiver
+        that can use it when reconnecting, but the receiver cannot read the
+        information received from the sender ("NEW TOKEN"), or (3) some
         information is
-        transmitted to a client that can use it when reconnecting and
-        the client can read it to accept or not the exploitation of
+        transmitted to a receiver that can use it when reconnecting and
+        the receiver can read it to accept or not the exploitation of
         previous congestion information (a.k.a. "BDP extension").
 	</t>
       <section title="Rationale behind the Safety Guidelines">
@@ -518,25 +520,25 @@ keywords will be used for the search engine. -->
             a material impact on any flows using that bottleneck, and the
             ability of those flows to control their own sending rate.</t>
 
-            <t>Rationale #2: Information sent by a malicious client is not
-            relevant. A client could request a server to use a cwnd higher
+            <t>Rationale #2: Information sent by a malicious receiver is not
+            relevant. A receiver could request a sender to use a cwnd higher
             than appropriate, to gain an unfair share of capacity for itself
-            or to induce congestion for other flows. A server might anyway
+            or to induce congestion for other flows. A sebder might anyway
             decide whether to fully use the new allowed rate.</t>
           </list></t>
       </section>
 
       <section title="Rationale #1: Variable Network Conditions">
-        <t>The server MUST check the validity of any received saved_rtt and
-        saved_bb parameters, whether these are sent by a client or are stored
-        at the server. The following events indicates cases where the use of
+        <t>The sender MUST check the validity of any received saved_rtt and
+        saved_bb parameters, whether these are sent by a receiver or are stored
+        at the snder. The following events indicates cases where the use of
         these parameters is inappropriate: <list style="symbols">
             <t>IP address change: If the client changes its local IP address
             (i.e., the saved_client_ip is different from the
             current_client_ip), the different source address is a assumed an
             indication of a different network path. This new path does not
             necessarily exhibit the same characteristics as the old one. If
-            the server changes its IP address after a migration, it would not
+            the sender changes its IP address after a migration, it would not
             be safe to exploit previously estimated parameters. </t>
 
             <t>RTT change: A significant change in RTT might be an indication
@@ -581,7 +583,7 @@ keywords will be used for the search engine. -->
             a safety check to measure avoid using the saved_bb and saved_rtt
             parameters to cause congestion over the path. In this case, the
             current_bb and current_rtt might not be set directly to the
-            saved_bb and saved_rtt: the server might wait for the completion
+            saved_bb and saved_rtt: the sender might wait for the completion
             of the safety check before this is done.</t>
           </list></t>
 
@@ -590,32 +592,32 @@ keywords will be used for the search engine. -->
       </section>
 
       <section title="Rationale #2: Malicious clients">
-        <t>The server MUST check the integrity of the saved_rtt and saved_bb
+        <t>The sender MUST check the integrity of the saved_rtt and saved_bb
         parameters received from a client.</t>
 
         <t>There are several solutions to avoid attacks by malicious clients:
         <list style="symbols">
-            <t>Rationale #2 - Solution #1 : The server stores a local estimate
+            <t>Rationale #2 - Solution #1 : The sender stores a local estimate
             of the bottleneck bandwidth and RTT parameters as the saved_bb and
             saved_rtt.</t>
 
-            <t>Rationale #2 - Solution #2 : The server sends the estimate of
+            <t>Rationale #2 - Solution #2 : The sender sends the estimate of
             the bottleneck bandwidth and RTT parameters to the client as the
             saved_bb and saved_rtt in a block of information that is
             authenticated. This information also could be encrypted by the
-            server. The client resends the same information for a new
-            connection. The server can use its local key information to
+            sender. The receiver resends the same information for a new
+            connection. The sender can use its local key information to
             authenticate the information, without needing to keep a local
             copy.</t>
 
             <t>Rationale #2 - Solution #3 : This approach is the same as
-            above, except that the server sends an estimate of the saved_rtt
-            and saved_bb parameters in a form that may be read by the client.
+            above, except that the sender provides an estimate of the saved_rtt
+            and saved_bb parameters in a form that may be read by the receiver.
             The information might not be encrypted, or the information might
-            be duplicated outside of the encrypted block. This allows a client
+            be duplicated outside of the encrypted block. This allows a receiver
             to read, but not modify, the saved_rtt and saved_bb parameters and
-            could enable a client to decide whether the new
-            parameters are thought appropriate, based on client-side information about
+            could enable a receiver to decide whether the new
+            parameters are thought appropriate, based on receiver-side information about
             the network conditions, connectivity, or needs of the new
             connection.</t>
           </list></t>
@@ -635,8 +637,8 @@ keywords will be used for the search engine. -->
         options and discusses their respective advantages and drawbacks. </t>
 
         <t>While there are some discussions for the solutions regarding
-        Rationale #2, the server MUST consider Rationale #1 - Solution #2 and
-        avoid Rationale #1 - Solution #1: the server MUST implement a safety
+        Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
+        avoid Rationale #1 - Solution #1: the sender MUST implement a safety
         check to measure whether the saved BDP parameters (i.e. saved_rtt and
         saved_bb) are relevant or check that their usage would not cause
         excessive congestion over the path. </t>
@@ -645,14 +647,14 @@ keywords will be used for the search engine. -->
         target="sec-security"></xref> .</t>
 
         <section title="Interoperability and Use Cases">
-          <t>A server that stores a resumption ticket for each client to
+          <t>A sender that stores a resumption ticket for each client to
           protect against replay on a third party IP, it could also store the
           IP address (i.e., saved_client_ip) and BDP parameters (i.e.,
           saved_rtt and saved_bb) of a previous connection.</t>
 
           <t>When the BDP Frame extension is used, locally stored BDP
-          parameters at the server can provide a cross-check of the BDP
-          parameters sent by a client. The server can anyway enable a safe
+          parameters at the sender can provide a cross-check of the BDP
+          parameters sent by a client. The sender can anyway enable a safe
           jump, but without the BDP Frame extension. However, using the
           parameters enables a client to choose whether to request this or
           not, enabling it to utilize local knowledge of the network
@@ -662,7 +664,7 @@ keywords will be used for the search engine. -->
           related to the BDP would help improve the ingress for new
           connections, however, not using a BDP Frame extension could reduce
           the interest of the approach where (1) the client knows the BDP
-          estimation at the server, (2) the client decides to accept or reject
+          estimation at the sender, (2) the client decides to accept or reject
           ingress optimization, (3) the client tunes application level
           requests.</t>
         </section>
@@ -689,38 +691,38 @@ keywords will be used for the search engine. -->
 |         |check      | congestion     | optim.        |Section 3  |
 +---------+-----------+----------------+---------------+-----------+
 |#2       |#1         |                |               |           |
-|Malicious|Local      |Enforced        |Client unable  |           |
-|client   |storage    | security       | to decide to  |           |
-|         |           |                | reject        |           |
-|         |           |                |Malicious      |           |
-|         |           |                | server could  |           |
-|         |           |                | fill client's |           |
-|         |           |                | buffer        |           |
+|Malicious|Local      |Enforced        |A receiver is  |           |
+|receiver |storage    | security       | ubable        |           |
+|         |           |                | to reject     |           |
+|         |           |                |Malicious      |          |
+|         |           |                | sender could  |           |
+|         |           |                | fill a        |           |
+|         |           |                | receive buffer|           |
 |         |           |                |Limited        |           |
 |         |           |                | use-cases     |Section 4.2|
 |         +-----------+----------------+---------------+-----------+
 |         |#2         |                |               |           |
-|         |NEW_TOKEN  |Save resource   |Malicious      |           |
-|         |           | at server      | client could  |           |
+|         |NEW_TOKEN  |Save resource   |A malicious    |           |
+|         |           | at sender      | receiver could|           |
 |         |           |Opaque token    | change token  |           |
 |         |           | protected      | even if       |           |
 |         |           |                | protected     |           |
-|         |           |                |Malicious      |           |
-|         |           |                | server could  |           |
-|         |           |                | fill client's |           |
-|         |           |                | buffer        |           |
-|         |           |                |Server may not |           |
-|         |           |                | trust client  |Section 4.3|
+|         |           |                |A malicious    |           |
+|         |           |                | sender could  |           |
+|         |           |                | fill the      |           |
+|         |           |                | receive buffer |           |
+|         |           |                |sender may not |           |
+|         |           |                | trust receiver|Section 4.3|
 |         +-----------+----------------+---------------+-----------+
 |         |#3         |                |               |           |
-|         |BDP        |Extended        |Malicious      |           |
-|         |extension  | use-cases      | client could  |           |
+|         |BDP        |Extended        |A malicious    |           |
+|         |extension  | use-cases      | receiver could|           |
 |         |           |Save resource   | change BDP    |           |
-|         |           | at server      | even if       |           |
-|         |           |Client can      | protected     |           |
-|         |           | read and decide|Server may not |           |
-|         |           | to reject      | trust client  |           |
-|         |           |BDP extension   |               |           |
+|         |           | at sender      | even if       |           |
+|         |           |A receiver can  | protected     |           |
+|         |           | read and decide|A sender may   |           |
+|         |           | to reject      | not trust a   |           |
+|         |           |BDP extension   | receiver      |           |
 |         |           | protected      |               |           |
 |         |           |                |               |Section 4.4|
 +---------+-----------+----------------+---------------+-----------+
@@ -738,10 +740,10 @@ the authenticated token.
       <t>The following safety guidelines refer to the labelling defined in
       <xref target="sec-phase"></xref>.</t>
 
-      <t>The safety guidelines are designed to mitigate the risk that a server
+      <t>The safety guidelines are designed to mitigate the risk that sender
       adds excessive congestion to an already congested path. The following
       mechanisms help in fulfilling this objective: <list style="symbols">
-          <t>(observation phase) The server SHOULD NOT store and/or send
+          <t>(observation phase) The sender SHOULD NOT store and/or send
           information related to a previously estimated bottleneck bandwidth
           (saved_bb) (see <xref target="sec-terms_def"></xref> for more
           details on bottleneck bandwidth definition), if the cwnd is not at
@@ -749,29 +751,30 @@ the authenticated token.
 been computed after some rounds during the 1-RTT connection. 
 At least, the 1-RTT connection should have reached the congestion avoidance phase. --></t>
 
-          <t>(reconnaissance phase) The server MUST NOT send more than the
+          <t>(reconnaissance phase) The sender MUST NOT send more than the
           recommended maximum IW (recom_iw) in the first RTT of transmitting
           data <xref target="RFC9000"></xref>. (When used in a controlled
           network, additional information about local path characteristics
           could be known that might be used to configure a non-standard
           IW).</t>
 
-          <t>(reconnaissance phase) The server MUST compare the measured
+          <t>(reconnaissance phase) The sender MUST compare the measured
           transport parameters (in particular current_rtt) of the 0-RTT
           connection with those of the 1-RTT connection (in particular
           saved_rtt). The method MUST NOT be used when the path fails to be
           validated;</t>
 
-          <t>(unvalidated phase) The server MUST NOT use the parameters unless
+          <t>(unvalidated phase) The sender MUST NOT use the parameters unless
           the first IW packets when packets are detected as lost or
           acknowledgements indicate the packets were ECN CE-marked. These are
           indication of potential congestion and therefore the method MUST NOT
           be used; </t>
 
-          <t>(unvalidated phase) The server MUST implement the retreat method
+          <t>(unvalidated phase) The sender MUST implement the retreat method
           when packets are detected as lost or acknowledgements indicate the
           packets were ECN CE-marked. These are indication of potential
-          congestion and therefore the method MUST NOT be used.<!-- The server SHOULD NOT consider the saved_bb
+          congestion and therefore the method MUST NOT be used.
+		  <!-- The sender SHOULD NOT consider the saved_bb
 parameter when there is any indicated congestion
 (e.g., loss of packet during
 the first transmission of data or ECN-CE mark); --></t>
@@ -795,14 +798,14 @@ the first transmission of data or ECN-CE mark); --></t>
 
       <t>The following mechanisms could be implemented: <list style="symbols">
           <t>Exploit a standard IW:<list style="numbers">
-              <t>The server sends the first data packet using the IW - this is
+              <t>The sender sends the first data packet using the IW - this is
               a safe starting point for any path where there is no path
               information or congestion control information. This avoids
               adding excessive congestion to a path;</t>
 
               <t>The sender monitors the reception of the IW data. If the path
               characteristics resemble those of a recent previous connection from
-              to the same server (i.e., current_rtt &lt; 1.2*saved_rtt) and
+              to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
               all data was acknowledged without reported congestion), the
               method permits the sender to utilise the saved_bb as an input to
               adapt current_bb to rapidly determine a new safe rate;</t>
@@ -815,7 +818,7 @@ the first transmission of data or ECN-CE mark); --></t>
             </list></t>
 
           <t>Identify a relevant pacing rhythm:<list style="symbols">
-              <t>The server estimates the pacing rhythm using saved_rtt and
+              <t>The sender estimates the pacing rhythm using saved_rtt and
               saved_bb. The Inter-packet Transmission Time (ITT) is determined
               by the ratio between the current Maximum Message Size (MMS) and
               the ratio between the saved_bb and saved_rtt. A tunable safety
@@ -827,7 +830,7 @@ the first transmission of data or ECN-CE mark); --></t>
                 </list></t>
 
               <t>When the successful receipt of the IW data is acknowledged,
-              the server returns to a standard slow-start mechanism.</t>
+              the sender returns to a standard slow-start mechanism.</t>
             </list></t>
 
           <t>Tune slow-start mechanisms: After transport parameters are set to
@@ -862,7 +865,7 @@ seems important to note that some Content Delivery Networks
 <section anchor="subsec:other_param_bdp_protect" title="BDP extension protected as much as initial_max_data">
 <t>
 The BDP metadata parameters are measured by
-the server during a previous
+the sender during a previous
 connection. The BDP extension is
 protected by the mechanism that
 protects the exchange of the 0-RTT
@@ -873,10 +876,10 @@ protects the "initial_max_data"
 parameter. This is defined in sections
 4.5 to 4.7 of
 <xref target="RFC9001"></xref>.
-This provides a way for the server to
+This provides a way for the sender to
 verify that the parameters proposed by the
-client are the same as those that the server
-sent to the client during the previous
+receiver are the same as those that the sender
+sent to the receievr during the previous
 connection.
 </t>
 </section>
@@ -901,27 +904,27 @@ connection.
       <t>Security considerations for QUIC are discussed in <xref
       target="sec-safety_guide"></xref></t>
 
-      <t>The client can send information related to the saved_rtt and saved_bb
-      to the server with the BDP Frame extension using either Rationale #2 -
-      Solution #2 or Rationale #2 - Solution #3. However, the server SHOULD
-      NOT trust the client. Indeed, even if 0-RTT packets containing the BDP
-      Frame are encrypted, a client could modify the values within the
+      <t>The receiver can send information related to the saved_rtt and saved_bb
+      to the sender with the BDP Frame extension using either Rationale #2 -
+      Solution #2 or Rationale #2 - Solution #3. However, the sender SHOULD
+      NOT trust the receiver. Indeed, even if 0-RTT packets containing the BDP
+      Frame are encrypted, a receiver could modify the values within the
       extension and encrypt the 0-RTT packet. Authentication mechanisms might
       not guarantee that the values are safe. It is not an easy operation for
-      a client to modify authenticated or encrypted data without this being
-      detected by a server. Modification could be realized by malicious
-      clients. One way to avoid this is for a server to also store the
+      a receiver to modify authenticated or encrypted data without this being
+      detected by a sender. Modification could be realized by a malicious
+      receiver. One way to avoid this is for a sender to also store the
       saved_rtt and saved_bb parameters.</t>
 
-      <t>A malicious client might modify the saved_bb parameter to convince
-      the server to use a larger CWND than appropriate. Using the algorithms
-      proposed in <xref target="sec-safety_guide"></xref>, the server may
+      <t>A malicious receiver might modify the saved_bb parameter to convince
+      the sender to use a larger CWND than appropriate. Using the algorithms
+      proposed in <xref target="sec-safety_guide"></xref>, the sender may
       reduce any intended harm and can check that part of the information
-      provided by the client are valid.</t>
+      provided by the receiver are valid.</t>
 
-      <t>Storing the BDP parameters locally at the server reduces the
-      associated risks by allowing the client to transmit information related
-      to the BDP of the path in the case of a malicious client trying to break
+      <t>Storing the BDP parameters locally at the sender reduces the
+      associated risks by allowing the receiver to transmit information related
+      to the BDP of the path in the case of a malicious receiver trying to break
       the encryption mechanism that it had received.</t>
 
       <t></t>
@@ -1040,7 +1043,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         general design of QUIC, TLS sessions are managed by a TLS stack.</t>
 
         <t>Three distinct approaches are presented: sending an opaque blob to
-        the client that the client may return to the server when establishing
+        the client that the client may return to the sender when establishing
         a future new connection (see <xref
         target="sec-using_new_token"></xref>), enabling local storage of the
         BDP infromation (see <xref target="sec-local_storage"></xref>) and a
@@ -1129,7 +1132,7 @@ the saved congestion control information is no longer appropriate.</t>
 </list></t>
 
 <t>In all these case, the
-careful increase method is not be used, and a client needs to return to
+careful increase method is not be used, and a server needs to return to
 a standard behaviour.  The method can still be used to characterise the new path,
 enabling later flows to use this method.</t>
 
