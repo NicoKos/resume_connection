@@ -90,16 +90,17 @@
 	<abstract>
 		<t>
 		<!-- start new in v1 vs v0 -->
-                This draft describes the BDP Frame extension for QUIC.
-                It enables the exchange of information related to the
+                This dcoument describes the BDP Frame extension for QUIC.
+                The frame enables the exchange of information related to the
                 path characteristics between the client
                 and the server during a connection.
                 This information can be exploited
                 when a new connection is established or for application-limited
                 traffic. 
-                This information can be exploited by the client to refuse the
-		exploitation of previously computed parameters related to the 
-		path characteristics.
+                This information can also be used by the client to refuse the
+		use of previously computed parameters related to the 
+		path characteristics, when the client has additional information
+		about the path or traffic to be sent.
 		<!-- end new in v1 vs v0 -->
 		</t>
 	</abstract>
@@ -127,8 +128,8 @@
 			</t>
 			<t>
 			<!-- start new in v1 vs v0 -->
-                        When accepting the exploitation of previously
-                        computed parameters (for application limited
+                        When accepting the use of previously
+                        computed parameters (for application-limited
                         traffic, for new connections (either 1-RTT or
                         0-RTT), for connection resumption (wihtin 1-RTT
                         connection)) the client sends the BDP-FRAME to
@@ -140,7 +141,7 @@
 			BDP_FRAME in a later new connection to the same endpoint.
 			</t>
 		</list>
-                This method applies to any resumed QUIC session: both
+                This method can apply to any resumed QUIC session: both
                 a saved_session and a recon_session can be a 0-RTT QUIC
 		connection or a 1-RTT QUIC connection.
 		</t>
@@ -197,26 +198,27 @@
                         buffer sizes required to achieve the maximum
                         TCP Throughput."
                         This document considers the BDP
-                        estimated by a server that includes all
+                        estimated by a server. This includes all
                         buffering along the network path.
-		        The estimated BDP estimated is related to the amount of 
+		        The estimated BDP is related to the volume of 
 			bytes in flight and the measured path RTT.
 			</t> 
                         
 			<t>
-			A QUIC connection could use the procedure detailed in 
+			A QUIC connection is allowed to use the procedure detailed in 
                         <xref target="RFC6349"></xref>
                         to measure the BDP, but is permitted to choose another
-			method <xref target="RFC9002"></xref> . A server might be able to utilise
-                        an other information to provide an estimate of the BDP. 
+			method <xref target="RFC9002"></xref> . 
+			A server might be able to also utilise
+                        other information to provide an estimate of the BDP. 
 			</t>
 
 			<t> Congestion controllers, such as CUBIC or RENO, could estimate the
-        saved_bb and current_bb values by utilizing a combination of the
+        saved_bb and current_bb values by combining the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
-        consider whether the methods could result in over-estimating the
+        consider whether a method could result in over-estimating the
         bottleneck bandwidth, and the preserved values there ought to be used
 				with caution.</t>
  			
@@ -332,9 +334,9 @@ BDP Frame {
                 	enable_bdp (0xTBD): in the 1-RTT
                 	connection, the client indicates to the
                 	server that it wishes to receive BDP
-                	extension Frames for improving ingress
-                	of 0-RTT connection. The default value is 0.
-                	Values larger than 3 are invalid, and
+                	extension Frames. The default value is 0.
+                	Values larger than 3 are reserved for future use. 
+			In this specification, the
                 	receipt of these values MUST be treated
                 	as a connection error of type
                 	TRANSPORT_PARAMETER_ERROR.
@@ -344,27 +346,26 @@ BDP Frame {
                 	        0: Default value. If the client
                 	        does not send this parameter,
                 	        the server considers that the
-                	        client does not support or does
-                	        not wish to activate the BDP
+                	        client does not support, or does
+                	        not wish to activate, the BDP
                 	        extension.
 				</t>
 				<t>
                 	        1: The client indicates to the
                 	        server that it wishes to receive
-                	        BDP Frame and activates the
-                	        ingress optimization for the
-                	        0-RTT connection.
+                	        BDP Frames and activates the
+                	        the optimization.
 				</t>
 				<t>
                 	        2: The client indicates that it
                 	        does not wish to receive BDP
-                	        Frames but activates ingress
+                	        Frames but activates the
                 	        optimization.
 				</t>
 				<t>
                 	        3: The client indicates that it
                 	        wishes to receive BDP Frames, but
-                	        does not activate ingress
+                	        does not activate the
                 	        optimization.
 				</t>
 			</list></t>
@@ -378,8 +379,9 @@ BDP Frame {
 
 	<section anchor="sec:discuss" title="Discussion">
 		<t>
-                With the BDP Frame extension, the client has the choice
-                of accepting the reuse of the previous parameters or not.
+                A client using the BDP Frame extension has the choice
+                of accepting the reuse of the previous parameters,
+		or requesting the servert to not reuse previous parameters.
 		</t>
 		<t>
                 The BDP metadata parameters are measured by
@@ -403,7 +405,8 @@ BDP Frame {
 
 		<t>
                 The server SHOULD NOT trust
-                the client. Indeed, even if 0-RTT
+                the content of the BDP Frame received from the client. 
+		Even if 0-RTT
                 packets containing the BDP Frame are
                 encrypted, a client could modify the
                 values within the extension and
