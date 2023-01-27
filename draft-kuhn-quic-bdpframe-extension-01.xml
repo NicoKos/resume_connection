@@ -406,11 +406,11 @@ BDP Frame {
 		<t>
                 The server SHOULD NOT trust
                 the content of the BDP Frame received from the client. 
-		Even if 0-RTT
+		Even if the QUIC 
                 packets containing the BDP Frame are
                 encrypted, a client could modify the
                 values within the extension and
-                encrypt the 0-RTT packet.
+                encrypt the QUIC packet.
                 Authentication mechanisms
                 might not guarantee that
                 the values are safe.
