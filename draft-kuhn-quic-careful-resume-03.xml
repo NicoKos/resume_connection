@@ -643,6 +643,17 @@ keywords will be used for the search engine. -->
         saved_bb) are relevant or check that their usage would not cause
         excessive congestion over the path. </t>
 
+        <t>
+        The method used to carry out or store the transport parameters
+        SHOULD be associated with a lifetime. If no lifetime expiration
+        is provided, safety guidelines should help guarantee that the
+        session resumption is carefull. While the server may not specify
+        how long the data is stored at its level (for the local storage
+        solution), BDP extension Frame proposes a extension_lifetime
+        parameter and "token SHOULD have an expiration time" 
+        <xref target="RFC9000"></xref>.
+        </t>
+
         <t>Security consideration are discussed in <xref
         target="sec-security"></xref> .</t>
 
