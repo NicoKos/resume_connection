@@ -101,8 +101,8 @@ keywords will be used for the search engine. -->
       <t>This document discusses careful convergence of congestion
       control in QUIC
       with a cautious method that enables fast startup in a wide
-      range of connections : 0RTT, new connections sharing the same
-      peers, application-limited traffic.</t>
+      range of connections : 0-RTT, new connections sharing the same
+      peers (but not using 0-RTT (but not using 0-RTT)), application-limited traffic.</t>
 
       <!-- start new from v2 to v3 -->
       <t>The method provides QUIC with transport services that resemble 
@@ -770,8 +770,8 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
           IW).</t>
 
           <t>(reconnaissance phase) The sender MUST compare the measured
-          transport parameters (in particular current_rtt) of the 0-RTT
-          connection with those of the 1-RTT connection (in particular
+          transport parameters (in particular current_rtt) of the new session
+          with those of the previous session (in particular
           saved_rtt). The method MUST NOT be used when the path fails to be
           validated;</t>
 
@@ -918,9 +918,9 @@ connection.
       <t>The receiver can send information related to the saved_rtt and saved_bb
       to the sender with the BDP Frame extension using either Rationale #2 -
       Solution #2 or Rationale #2 - Solution #3. However, the sender SHOULD
-      NOT trust the receiver. Indeed, even if 0-RTT packets containing the BDP
+      NOT trust the receiver. Indeed, even if the QUIC packets containing the BDP
       Frame are encrypted, a receiver could modify the values within the
-      extension and encrypt the 0-RTT packet. Authentication mechanisms might
+      extension and encrypt the QUIC packet. Authentication mechanisms might
       not guarantee that the values are safe. It is not an easy operation for
       a receiver to modify authenticated or encrypted data without this being
       detected by a sender. Modification could be realized by a malicious
@@ -1081,7 +1081,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
             saved_client_ip).</t>
           </list></t>
 
-        <t>During the 0-RTT session, the local endpoint waits for the first
+        <t>During the new session establishment (0-RTT or 1-RTT), the local endpoint waits for the first
         RTT measurement from the remote endpoint IP address. This is used to
         verify that the current_rtt has not significantly changed from the
         saved_rtt (used as an indication that the BDP information is
