@@ -1,0 +1,65 @@
+A text blob on design of an Endpoint Token
+
+This proposes an Endpoint Token to allow a sender to identify its own view of the network path it is using This can be shared and used as an opaque path identifier to other parties and the sender can verify if this is one of its current paths.
+
+The Problem
+
+In a simple network scenario, the sending endpoint could use the IP source address to identify a path. This could work when one globally-allocated IP address is set per interface. 
+
+There are many cases where the IP address would not an acceptable to identify a path. Section 8 of RFC9040 describes cases where the IP address is not a suitable value when performing TCP control block sharing. 
+
+In general the IP address of the sender is made public in the network-layer header of IP packets.
+When sharing internal state, RFC6973 identifies relevant privacy considerations. 
+
+Examples of network uses where a source address is not suitable endpoint token include:
+- The sending endpoint might not be identifiable remotely from its IP address because a device on the network path translates the address using a form or NAT/NAPT. In this case, a private IP address might be used. This does not identify a specific endpoint.
+- In some cases a sender can choose to vary the src IP address over time to avoid likability in the observable IP header. e.g. because the source address embeds private information, such as the endpoint's MAC address/EID.
+
+Note: There are use-cases where for the purpose of identifying a path, the token does not need to be globally unique, but needs to be sufficiently unique to prevent attempts to misrepresent the path being used such as an attack the congestion controller or. Using a smaller size of token can add to the ambiguity set, reducing likability.
+
+Creating an Endpoint Token
+
+When computing the token, the sender includes information to identify the path on which it sends, for example:
+- it must include a unique identifier for itself (e.g. globally assigned address/prefix; or randomly chosen value).
+- it must include any identifier for the destination (e.g. destination IP address or name).
+- an interface identifier, (e.g. a MAC address to associate the endpoint with the interface on which it was sent);
+- it could include other information such as DSCP, ports, flow label, etc (recognising that this might improve the path differentiation, but can this can reduce the re-usability of the token);
+- it could include any other information the sender chooses to include, and potentially including PvD information [RFC8801] or information relating to its public-facing IP address;
+- it could include a nonce;
+- it could include time-dependent value to define the validity period of the token.
+
+NOTE: The Endpoint Token is used independently by clients and servers. A client might decide not to provide an Endpoint Token to a server, to avoid exposing additional linkable information (but also preventing use of any mechanism that relies on the token).
+
+When creating an Endpoint Token, the sender has to ensure:
+
+1. To reduce the likelihood of misuse of the token, the value should be encoded in a way that hides the component information from the recipient and any eavesdropper on the path.
+2. The sender can recalculate the token if it needs to validate a previously issued token; and that the token itself can be included in the computed integrity check for any path information it provides.
+3. The token is design to prevent another party from deriving private data from the token, or to use the token to perform unwanted likability with other information. This implies that the token must necessarily be different when used to identify different interfaces.
+
+
+Use of an Endpoint Token
+
+The sender computes an Endpoint Token that seeks to uniquely identify the path that it uses to communicate with the receiver (1) this is associated with the path information it sends. The Endpoint Token ought to be encrypted to avoid sending linkable information observable eavesdroppers on the path. The receiver stores the path information together with the Endpoint Token, together with the server's address/name (2). When the receiver later wishes the server to use the stored path information it returns the information to the sender (3) together with the Endpoint Token. The sender recomputes the Endpoint Token and compares this with the received Endpoint Token before using the path information. The Endpoint Token ought to be encrypted while in transit on the path to avoid providing observable linkable information to eavesdroppers on the path. 
+
+
+1. Sender -------> Receiver
+                   |
+	        2. Receiver holds an endpoint token
+                   |
+3. Sender <------- Receiver
+
+
+
+What happens if the source address changes ...
+
+When the source address changes (i.e., is derived from randomised information, and changes from use to use [RFC4941]). In this case the Endpoint Token needs to be consistent across the change, and the remote receiver will need to also be able identify the original sender to return the corresponding Endpoint Token. 
+
+Security reacting to use of the Endpoint Token
+
+A number of security-related topics have been discussed, mostly concerning the potential exposure of the identity. This information can also be visible in the IP source address or higher-layer data, but can be hidden from a remote endpoint using methods such as MASQUE proxy. When used to inform the transport system using a layered proxy, the transport endpoint token refers to the endpoints of the outer QUIC header, and hence the proxy itself, not the end-to-end communication relayed by the proxy.
+
+A sender might decide to not use this method if it wishes to prevent flows being linkable with previous flows to the same endpoint. A decision not to provide an Endpoint Token necessarily prevents the sender from requesting the receiver to return path information to allow the same transport information to be re-used, potentially strengthening privacy but consequently eliminating any performance benefits.
+
+ 
+
+
