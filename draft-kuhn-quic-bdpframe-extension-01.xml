@@ -116,8 +116,8 @@
 			<t>
                         For an established connection, the
                         current RTT (current_rtt), bottleneck bandwidth
-                        (current_bb) and current client IP
-                        (current_client_ip) are
+                        (current_bb) and current client Endpoint Token 
+                        (current_endpoint_token) are
                         stored as saved_rtt, saved_bb and
                         saved_client_ip within a BDP_FRAME;
 			</t>
@@ -144,7 +144,11 @@
                 This method can apply to any resumed QUIC session: both
                 a saved_session and a recon_session can be a 0-RTT QUIC
 		connection or a 1-RTT QUIC connection.
-		</t>
+	        </t>
+
+                <t>
+		Details on the Endpoint Token are available in <xref target="I-D.kuhn-quic-careful-resume"></xref>.
+	        </t>
 			
 		<section anchor="sec:terms_def" title="Notations and terms">
 			<t>
@@ -173,13 +177,13 @@
                                 saved_rtt: RTT preserved from a previous connection
 				</t>
 				<t>
-				client_ip : IP address of the client
+				client_endpoint_token : Endpoint Token of the client
 				</t>
 				<t>
-                                current_client_ip : Current IP address of the client
+                                current_endpoint_token : Current Endpoint Token of the client
 				</t>
 				<t>
-                                saved_client_ip : IP address of the
+                                saved_endpoint_token : Endpoint Token of the
                                 client preserved from a previous connection
 				</t>
 				<t>
@@ -264,8 +268,7 @@ BDP Frame {
   Lifetime (i),
   Saved BB (i),
   Saved RTT (i),
-  Saved IP length (i),
-  Saved IP (...)
+  Saved Endpoint Token (...)
 }
 </artwork>
 </figure>
@@ -310,14 +313,8 @@ BDP Frame {
                         connection.
 			</t>
 			<t>
-			Saved IP length (saved_ip_length) : The 
-			length of the IP address in octets is set to either 4
-			(IPv4) or 16 (IPv6).
-			</t>
-			<t>
-                        Saved IP (saved_client_ip) : The
-                        saved_client_ip could be set to
-                        the IP address of the client.
+                        Saved Endpoint Token (saved_endpoint_token) : The
+			saved_endpoint_token (More details in <xref target="I-D.kuhn-quic-careful-resume"></xref>). 
 			</t>
 			</list>
 			</t>
@@ -479,6 +476,7 @@ BDP Frame {
 			
 		<references title="Informative References">
 			<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+			<?rfc include="reference.I-D.kuhn-quic-careful-resume.xml"?>
 			<!--
 			<reference anchor="TMA18">
 				<front>
