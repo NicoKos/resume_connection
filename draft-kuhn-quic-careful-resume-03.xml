@@ -1073,20 +1073,20 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </t>
 
     <t>
-    Examples of network uses where a source address is not suitable endpoint
+    Examples of network uses where a source address is not a suitable endpoint
     token include:
     <list style="symbols">
 	    <t>
             The sending endpoint might not be identifiable remotely from its
             IP address because a device on the network path translates the
-            address using a form or NAT/NAPT. In this case, a private IP
-            address might be used. This does not identify a specific
+            address using a form of NAT/NAPT. In this case, a private IP
+            address might be used, which does not identify a specific
 	    endpoint.
 	    </t>
 	    <t>
-            In some cases a sender can choose to vary the src IP address
-            over time to avoid likability in the observable IP header. e.g.
-            because the source address embeds private information, such as
+            In some cases, a sender can choose to vary the source address
+            over time to avoid likability in the observable IP header, e.g.,
+            because the used source address embeds private information, such as
             the endpoint's MAC address/EID.
             </t>
     </list> </t>
@@ -1094,32 +1094,32 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     Note: There are use-cases where for the purpose of identifying a path,
     the token does not need to be globally unique, but needs to be
     sufficiently unique to prevent attempts to misrepresent the path being
-    used such as an attack the congestion controller or. Using a smaller
-    size of token can add to the ambiguity set, reducing likability.
+    used such as an attack on the congestion controller. Using a smaller
+    size of token can add to the ambiguity set, reducing this likability.
     </t>
     </section>
 
     <section title="Creating an Endpoint Token">
     <t>
-    When computing the token, the sender includes information to identify
+    When computing the Endpoint Token, the sender includes information to identify
     the path on which it sends, for example:
     <list style="symbols">
 	    <t>
-            it must include a unique identifier for itself (e.g. globally
+            it must include a unique identifier for itself (e.g., a globally
             assigned address/prefix; or randomly chosen value).
 	    </t>
 	    <t>
-            it must include any identifier for the destination (e.g.
+            it must include an identifier for the destination (e.g., a
             destination IP address or name).
 	    </t>
 	    <t>
-            an interface identifier, (e.g. a MAC address to associate the
-            endpoint with the interface on which it was sent);
+            it should an interface identifier (e.g., an index value or a MAC address to associate the
+            endpoint with the interface on which the path starts);
 	    </t>
 	    <t>
-            it could include other information such as DSCP, ports, flow
-            label, etc (recognising that this might improve the path
-            differentiation, but can this can reduce the re-usability of the
+            it could include other information such as the DSCP, ports, flow
+            label, etc (recognising that this additional infromation might improve the path
+            differentiation, but that this can can reduce the re-usability of the
             token);
 	    </t>
 	    <t>
@@ -1131,7 +1131,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
             it could include a nonce;
 	    </t>
 	    <t>
-            it could include time-dependent value to define the validity
+            it could include a time-dependent value to define the validity
             period of the token.
 	    </t>
     </list></t> 
@@ -1144,31 +1144,31 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </t>
 
     <t>
-    When creating an Endpoint Token, the sender has to ensure:
+    When creating an Endpoint Token, the sender has to ensure the following:
     <list style="numbers">
 	    <t>
-            To reduce the likelihood of misuse of the token, the value
+            To reduce the likelihood of misuse of the Endpoint Token, the value
             should be encoded in a way that hides the component information
 	    from the recipient and any eavesdropper on the path.
             </t>
 	    <t>
-            The sender can recalculate the token if it needs to validate a
-            previously issued token; and that the token itself can be
+            The sender can recalculate the Endpoint Token if it needs to validate a
+            previously issued token; and that the Endpoint Token itself can be
             included in the computed integrity check for any path
             information it provides.
 	    </t>
 	    <t>
-            The token is design to prevent another party from deriving
+            The Endpoint Token is design to prevent another party from deriving
             private data from the token, or to use the token to perform
             unwanted likability with other information. This implies that
-            the token must necessarily be different when used to identify
+            the Endpoint Token MUST necessarily be different when used to identify
             different interfaces.
             </t>
     </list> </t>
 
     </section>
 
-    <section title="Use of an Endpoint Token">
+    <section title="Example use of an Endpoint Token">
     <t>
     The sender computes an Endpoint Token that seeks to uniquely identify
     the path that it uses to communicate with the receiver (1) this is
@@ -1181,8 +1181,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     together with the Endpoint Token. The sender recomputes the Endpoint
     Token and compares this with the received Endpoint Token before using
     the path information. The Endpoint Token ought to be encrypted while in
-    transit on the path to avoid providing observable linkable information
-    to eavesdroppers on the path.
+    transit on the path to avoid provideing an eavesdropper on the path 
+	  with linkable information.
     </t>
 
     <list style="numbers">
@@ -1190,7 +1190,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 	    The Sender transmits the Endpoint Token to the Receiver
 	    </t>
 	    <t> 
-	    The Receiver holds an endpoint token 
+	    The Receiver holds an Endpoint Token 
 	    </t> 
 	    <t>                    
 	    The Receiver transmits the Endpoint Token to the Sender 
@@ -1198,11 +1198,11 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </list>
     </section>
 
-    <section title="What happens if the source address changes">
+    <section title="A Change of the Source Address">
     <t>
-    When the source address changes (i.e., is derived from randomised
+    When the source address changes (e.g. it is derived from randomised
     information, and changes from use to use <xref target="RFC4941"></xref>). In this case the
-    Endpoint Token needs to be consistent across the change, and the remote
+    Endpoint Token might need to be consistent across this change, and the remote
     receiver will need to also be able identify the original sender to
     return the corresponding Endpoint Token.
     </t>
@@ -1220,7 +1220,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     relayed by the proxy.
     </t>
     <t>
-    A sender might decide to not use this method if it wishes to prevent
+    A sender might decide to not use this method if it has a stroing requirement to prevent
     flows being linkable with previous flows to the same endpoint. A
     decision not to provide an Endpoint Token necessarily prevents the
     sender from requesting the receiver to return path information to allow
