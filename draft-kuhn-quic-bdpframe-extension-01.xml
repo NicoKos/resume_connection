@@ -130,7 +130,7 @@
 			The receiver can read most of the BDP_FRAME parameters but not 
 			modify any of them. The sender computes a secured hash with 
 			its own selection of the parameters of the BDP_FRAME,
-			encrypts the hash and send it within the BDP_FRAME.  
+			encrypts the hash and sends it within the BDP_FRAME.  
 			The receiver can not read the hash.
  			</t>
 			<t>
