@@ -177,14 +177,14 @@
                                 saved_rtt: RTT preserved from a previous connection
 				</t>
 				<t>
-				client_endpoint_token : Endpoint Token of the client
+				receiver_endpoint_token : Endpoint Token of the receiver
 				</t>
 				<t>
-                                current_endpoint_token : Current Endpoint Token of the client
+                                current_receiver_endpoint_token : Current Endpoint Token of the receiver
 				</t>
 				<t>
-                                saved_endpoint_token : Endpoint Token of the
-                                client preserved from a previous connection
+                                saved_receiver_endpoint_token : Endpoint Token of the
+                                receiver preserved from a previous connection
 				</t>
 				<t>
                                 remembered BDP parameters: a combination
