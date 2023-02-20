@@ -99,8 +99,8 @@ keywords will be used for the search engine. -->
 
     <abstract>
       <t>This document discusses careful convergence of congestion
-      control in QUIC
-      with a cautious method that enables fast startup in a wide
+      control in QUIC, providing
+      a cautious method that enables fast startup in a wide
       range of connections : 0-RTT, new connections sharing the same
       peers (but not using 0-RTT (but not using 0-RTT)), application-limited traffic.</t>
 
@@ -112,9 +112,10 @@ keywords will be used for the search engine. -->
       <!-- end new from v2 to v3 -->
 
       <t>The method uses a set of computed Congestion Control (CC) parameters that
-      are based on the previously observed path characteristics, such as the
+      are based on the previously observed path characteristics between the
+	the same pair of transport endpoints, such as the
       bottleneck bandwidth, available capacity, or the RTT. These parameters
-      are stored allowing then to be later used to modify the congestion control behavior
+      are stored, allowing then to be later used to modify the congestion control behavior
       of a subsequent connection. The document discusses assumptions/requirements around how a
       sender ought to utilize these parameters to provide opportunities for a
       new connection to more quickly get up to speed (i.e. utilize the available
@@ -127,7 +128,7 @@ keywords will be used for the search engine. -->
   <middle>
     <section anchor="sec:introduction" title="Introduction">
       
-      <t>All Internet transports are required to use a Congestion Control (CC) method. In 2010, 
+      <t>All Internet transports are required to use a CC method. In 2010, 
        <xref target="RFC5783"></xref> provided a survey of alternative CC methods, and noted that there
       are challenges when a CC operates across an Internet path with a high and/or
       variable bandwidth-delay product (BDP).
@@ -139,11 +140,11 @@ keywords will be used for the search engine. -->
       intentionally uses less capacity than might be available with the
       intention to avoid overshooting the actual capacity at a bottleneck,
       which would result in increased queuing (latency/jitter) and/or
-      congestion packet loss. An overshoot in the capacity can have a
+      congestion packet loss to the dlow. Any overshoot in the capacity can also have a
       detrimental effect on other flows sharing a common bottleneck. In the
       extreme case, persistent congestion can result in unwanted starvation of
       other flows <xref target="RFC8867"></xref> (i.e. Preventing other flows
-      from successfully sharing a common bottleneck). </t>
+      from successfully sharing a common bottleneck).</t>
 
       <!-- start new from v2 to v3 (commented paragraph) -->
       <!--
@@ -156,7 +157,7 @@ keywords will be used for the search engine. -->
       <t>To fully-utilize the capacity along a path with a certain RTT,
       the transport needs to determine an appropriate volume of bytes in
       flight, based on the product of the available capacity and the path RTT.
-      <xref target="RFC6349"></xref> defines the BDP as follows: "Derived from
+      <xref target="RFC6349"></xref> defines the bandwidth-delay product as follows: "Derived from
       Round-Trip Time (RTT) and network Bottleneck Bandwidth (BB), the
       Bandwidth-Delay Product (BDP) determines the Send and Received Socket
       buffer sizes required to achieve the maximum TCP Throughput." The BDP
@@ -173,21 +174,21 @@ keywords will be used for the search engine. -->
       <t>The specification for the QUIC transport protocol <xref
       target="RFC9000"></xref> notes "Generally, implementations are advised
       to be cautious when using previous values on a new path." The method
-      uses a set of computed Congestion Control (CC) parameters that are based
+      uses a set of computed CC parameters that are based
       on the previously observed path characteristics, such as the bottleneck
-      bandwidth, available capacity, or the Round Trip Time (RTT). These
+      bandwidth or available capacity, and the RTT. These
       parameters are stored and can then used to modify the CC
       behavior of a subsequent connection. </t>
 
       <t>This document specifies a method that can improve throughput by 
-      reducing the time to get up to speed, and hence the
+      reducing the time to get up to speed, and hence reduce the
       total duration of a transfer. It
       introduces an alternative method to select initial CC parameters,
       including a way to more rapidly and safely grow the cwnd.</t>
 
       <t>There are scenarios where temporal sharing of previously parameters
-      relating to observed path characteristics, such as the bottleneck bandwidth or
-      RTT, can help to save round-trip times at the start of a new connection.
+      relating to observed path characteristics
+      can help to save round-trip times at the start of a new connection.
       For example: <list style="numbers">
           <t>To optimize applications that use a series of short connections over the
           same path, each of which needs to individually learn the available
@@ -198,7 +199,7 @@ keywords will be used for the search engine. -->
           same path);</t>
 
           <t>To connect after a service disruption where the
-          network service was temporarily reduced (e.g. due to a link propagation
+          network service was temporarily reduced (e.g., due to a link propagation
           impairment, or where a user on a train journey travels through
           different areas of connectivity before the user returns to a path with the original
           characteristics).</t>
@@ -206,7 +207,7 @@ keywords will be used for the search engine. -->
 
       <!-- start new from v2 to v3 (commented paragraph) -->
       <!--
-      <t>In these cases, specific characteristics of the path may have
+      <t>In these scenarios, specific characteristics of the path may have
       been learned, including CC information. This  information might be expected to be similar when a new
       connection is made between the same local and remote endpoints.</t>
       -->
@@ -215,30 +216,38 @@ keywords will be used for the search engine. -->
      
       <t>While a sender could make optimization decisions without considering 
       the receiver's preference, in some cases a receiver could have information that 
-      is not available at the server. A receiver may provide hints, for example:
+      is not available at the server. A receiver could provide hints, for example:
        (1) an indication that the path/local interface has changed;
        (2) information related to  current hardware
       limitations of the receiver or (3) an understanding about
       the capacity needs of other concurrent flows that would compete for 
       shared capacity. As a result, a receiver could explicitly ask for tuning the 
-      slow start when the application continues transmission, or to inhibit tuning. 
-       This is discussed further later in the document.</t>
+      slow start when the application continues transmission.
+	There are also cases where using the parameters of a previous
+      connection are not appropriate, where a reeceiver could  ask to inhibit tuning. 
+      This is discussed further later in the document together with an evaluation
+	for potential malicious use of the method.</t>
 
-      <t>There are also cases where using the parameters of a previous
-      connection are not appropriate, and a need to evaluate the potential
-      for malicious use of the method.</t>
+	          <section anchor="subsec:rationale_sharing"
+               title="Sharing Transport Information across Multiple Connections">
+	      
+        <t>Performance benefits can arise from sharing transport information across
+        multiple concurrent connections. <xref target="RFC9040"></xref>
+        considers the sharing of transport parameters between TCP connections
+        that originate from a host. The proposal in this document has
+        the advantage of storing sender-generated information at the receiver
+        and not requiring the sender to retain additional state for each
+        receiver.</t>
+      </section>
 
-      <!-- start new from v2 to v3 -->
-      <t>TCP offers services for resuming connection by exploiting cached values 
-      (TCP Control Block (TCB)) <xref target="RFC9040"></xref>
-      and support application-limited traffic <xref target="RFC7661"></xref>.
-      The method contributes to providing in QUIC transport services that
-      are currently available in TCP.
+      <t>The method described in this document contributes to providing similar QUIC transport services to
+      methods currently available in TCP for resuming a connection by exploiting cached values 
+      in the TCP Control Block (TCB) <xref target="RFC9040"></xref>, 
+      and by supporting application-limited traffic <xref target="RFC7661"></xref>.
       </t>
-      <!-- end new from v2 to v3 -->
 
       <t>The remainder of this document: <list style="numbers">
-          <t>discusses use-cases where carefully resuming QUIC connections is
+          <t>discusses use-cases where a careful resume for a QUIC connection is
           expected to have benefit;</t>
 
           <t>proposes guidelines for how to carefully utilize the previously
@@ -296,17 +305,14 @@ keywords will be used for the search engine. -->
           </list></t>
 
         <t>
-	Details on the Endpoint Token are available in <xref target="endpoint_token"></xref>.
+	The Endpoint Token is described in <xref target="endpoint_token"></xref>.
 	</t>
 
         <t>Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by utilizing a combination of the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
-        controller, such as BBR  <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
-        consider whether the methods could result in over-estimating the
-        bottleneck bandwidth, and the preserved values ought to be used
-        with caution.</t>
+        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>
       </section>
     </section>
 
@@ -316,7 +322,7 @@ keywords will be used for the search engine. -->
         <xref target="RFC9000"></xref>). This document notes that a new
         connection can utilize a set of key transport parameters from a
         previous connection to reduce the completion time for a transfer with a
-        size much larger than the IW over paths where the available capacity
+        size much larger than the IW, over paths where the available capacity
         is also significantly larger than the IW. This benefit is particularly
         evident for a path where the RTT is much larger than for typical
         Internet paths.</t>
@@ -325,56 +331,79 @@ keywords will be used for the search engine. -->
         to 9 seconds using standard congestion control, whereas using the
         specified method this could reduce to 4 seconds <xref
         target="IJSCN"></xref>; and the time to complete a 1 MB transfer could
-        be reduced by 62 % <xref target="MAPRG111"></xref>. Benefits is also
+        be reduced by 62 % <xref target="MAPRG111"></xref>. Benefit is also
         expected for other sizes of transfer and for different path
-        characteristics that also result in a higher BDP.</t>
+        characteristics that also result in a high BDP.</t>
       </section>
+	    
+<section anchor="subsec:rationale_sharing"
+               title="Sharing Transport Information across Multiple Connections">
+	      
+        <t>Performance benefits can arise from sharing transport information across
+        multiple concurrent connections. <xref target="RFC9040"></xref>
+        considers the sharing of transport parameters between TCP connections
+        that originate from a host. The proposal in this document has
+        the advantage of storing sender-generated information at the receiver
+        and not requiring the sender to retain additional state for each
+        receiver.</t>
+      </section>
+
 
       <section anchor="subsec:rationale_drops"
                title="Accommodating from a Known Reduction in Capacity">
-        <t>A transport protocol is not able to assume that the path
-        characteristics remain the same. Variation can arise
-        from a combination of various factors:</t>
+
+	      <t>
+	A transport protocol can have information about a previously
+	  used path. However, the path characteristics can change when it tries to reuse this path.
+	However, the available capacity can be different when the transport next tries to re-use the path.
+	Variation can arise from a combination of factors:</t>
 
         <t><list style="symbols">
             <t>Competing network traffic sharing a common bottleneck can
             result in short or long term variation;</t>
 
-            <t>Changes in the forward path can change the set of links/routers
-            over forming the path (from routing/mobility/circuit
-            restoration/interface change), resulting in a change in the bandwidth
-            and the other traffic that shares a bottleneck on the path;</t>
+            <t>Changes in the forward path 
+	    (routing/mobility/circuit
+            restoration/interface change) can change the set of links/routers
+            that form this path, accompanined by a change in the bandwidth
+            and the other traffic that share the bottleneck on the new path;</t>
 
-            <t>Link conditions can change, resulting in a change of the bottleneck bandwidth
-            (e.g., as a result of changes in propagation conditions or sharing
+            <t>The conditions on a newwork link can change, resulting in a change of the bottleneck bandwidth
+            (e.g., changes in radio propagation conditions or sharing
             of a medium);</t>
 
-            <t>Application/endpoint behavior can change the capacity available
+            <t>Application/endpoint behavior can change the pattern of traffic sharing the bottleneck,
+		changing the capacity available
             to a flow.</t>
           </list>
-	  Although a transport protocol can have information about a previously
-	  used path, the path characteristics can change, and previous
-	  information may not be appropriate when a new connection uses the path.</t>
+	      </t>	
 
-        <t>In some cases (e.g., after a change in the interface used by the
-        local endpoint), a receiver may be aware of such a change, and might be
-        able to infer that a previously available path has again become
-        available. However, to safely utilize the previous information, the receiver
-        would need assurance that the path was to the same endpoint, and that
+        <t>In some cases, a receiver could be aware of a change in the path
+	(e.g., a change in the local interface), and might be
+		able to determine that the current path is different.</t>
+	<t>In other cases, a receiver could discover
+	that a previously characterised path has again become
+        available providing an opportunity to reduce the time to get up 
+	to speed by utilizing saved CC information for this path.
+	To safely utilize this information, the receiver
+        would need assurance that this path was to the same endpoint, and that
         the characteristics have not significantly changed from those
-        previously measured. When the path is expected to be the same, there
-        is then an opportunity to reduce the time to get up to speed by utilizing saved CC information for the path.</t>
+        previously measured.</t>
       </section>
 
       <section anchor="subsec:rationale_client"
                title="Optimizing Client Requests">
         <!--
-        <t>Some designs of application do not use long-lasting connections at the
-        transport layer. Instead, they use a series of shorter connections, typically
+	<t>Where the receiver is aware of a high BDP, it can adapt other parameters
+	to better utilize the available capacity, such as 
+	increasing the value of flow control pararemeters.</t>
+
+        <t>Some designs of application do not use long-lasting transport connections. 
+        Instead, they use a series of shorter connections, typically
 	each using the same path. This style of application can benefit 
 	from this method, and could be enhanced by allowing the application
 	to receive an estimate of the expected characteristics, which could help
-	in selecting an appropriate usage of the new connection (e.g.,
+	to appropriately use the new connection (e.g.,
 	adapting the content of quality for a video application; or anticipating
 	the time taken to complete the transmission of an object). <t>
 	--> 
@@ -391,6 +420,7 @@ keywords will be used for the search engine. -->
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
         or to send high quality advertisements). -->
+	      
         <!-- When using Dynamic Adaptive Streaming over HTTPS (DASH), clients
 	might encounter issues in knowing the available path capacity or DASH
 	can encounter issues in reaching the best available video playback
@@ -398,20 +428,9 @@ keywords will be used for the search engine. -->
 	traffic could utilize the previously observed path characteristics (such
 	as encouraging the client to increase the quality of video chunks, to
 	fill the buffers and avoid video blocking or to send high quality
-	adds).
-        -->
+	adds). -->
       </section>
 
-      <section anchor="subsec:rationale_sharing"
-               title="Sharing Transport Information across Multiple Connections">
-        <t>There can be benefit in sharing transport information across
-        multiple concurrent connections. <xref target="RFC9040"></xref>
-        considers the sharing of transport parameters between TCP connections
-        that originate from a host. The proposal in this document has
-        the advantage of storing sender-generated information at the receiver
-        and not requiring the sender to retain additional state for each
-        receiver.</t>
-      </section>
 
       <section anchor="subsec:client_server"
                title="Connection Establishment, Client and Server">
@@ -554,13 +573,13 @@ keywords will be used for the search engine. -->
             Frequent connections to the same Endpoint Token are likely to track
             changes, but long-term use of previous values is not appropriate.
             NOTE: This document needs to define how long.</t>
-
+		
             <t>BB over-estimation: There are cases where using a measured cwnd
             would inflate the bottleneck bandwidth. At the end of the CC slow
             start phase, the value of cwnd can be significantly larger than
             the minimum value needed to utilize the path (i.e., cwnd
             overshoot). In most case, the cwnd finally converges to a stable
-            value after a few more RTTs. It would be inappropriate to use an
+            value after several more RTTs. It would be inappropriate to use an
             overshoot in the cwnd as a basis for estimating the bottleneck
             bandwidth. NOTE: One mitigation could be to further restrict to
             only a fraction (e.g., 1/2) of the previously used cwnd; another
