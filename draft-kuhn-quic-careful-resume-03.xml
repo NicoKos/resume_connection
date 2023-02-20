@@ -614,7 +614,7 @@ keywords will be used for the search engine. -->
             above, except that the sender provides an estimate of the saved_rtt
             and saved_bb parameters in a form that may be read by the receiver.
             Using the security mechanisms provided in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>,
-            the sender can guarantee that the receiver did not change the parameters inside the frame.
+            the sender can verify that the receiver did not change the parameters inside the frame.
 	    The receiver can 
             read, but not modify, the saved_rtt and saved_bb parameters and
             could enable a receiver to decide whether the new
@@ -934,7 +934,7 @@ connection.
       reduce any intended harm and can check that part of the information
       provided by the receiver are valid. Using the security mechanisms provided
       in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>, the sender can 
-      guarantee that the receiver did not change the parameters inside the frame.</t>
+      verify that the receiver did not change the parameters inside the frame.</t>
 
       <t>Storing the BDP parameters locally at the sender reduces the
       associated risks by allowing the receiver to transmit information related
