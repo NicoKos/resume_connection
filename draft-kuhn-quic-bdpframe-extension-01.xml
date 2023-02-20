@@ -225,9 +225,7 @@
         consider whether a method could result in over-estimating the
         bottleneck bandwidth, and the preserved values therefore ought to be used
 				with caution.</t>
- 			
-
-
+ 		
 		</section>
 
 		<section anchor="sec:req_language" title="Requirements Language">
