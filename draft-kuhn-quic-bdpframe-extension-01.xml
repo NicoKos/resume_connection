@@ -94,12 +94,12 @@
                 The frame enables the exchange of information related to the
                 path characteristics between the client
                 and the server during a connection.
-                This information can be exploited
+                This information can be utilised
                 when a new connection is established or for application-limited
                 traffic. 
-                This information can also be used by the client to refuse the
-		use of previously computed parameters related to the 
-		path characteristics, when the client has additional information
+                This information can also be used by the client to request that
+		previously computed parameters related to the 
+		path characteristics, are not used, when the client has additional information
 		about the path or traffic to be sent.
 		<!-- end new in v1 vs v0 -->
 		</t>
@@ -147,7 +147,7 @@
 	        </t>
 
                 <t>
-		Details on the Endpoint Token are available in <xref target="I-D.kuhn-quic-careful-resume"></xref>.
+		Details of the Endpoint Token are available in <xref target="I-D.kuhn-quic-careful-resume"></xref>.
 	        </t>
 			
 		<section anchor="sec:terms_def" title="Notations and terms">
@@ -157,7 +157,7 @@
 				BDP: defined below
 				</t>
 				<t>
-                                CWND: the congestion window used by
+                                CWND: the congestion window used by a
                                 server (maximum number of bytes allowed in flight by the CC)
 				</t>
 				<t>
@@ -202,8 +202,8 @@
                         buffer sizes required to achieve the maximum
                         TCP Throughput."
                         This document considers the BDP
-                        estimated by a server. This includes all
-                        buffering along the network path.
+                        estimated by a sender for the path to the receiver. This includes all
+                        buffering along this network path.
 		        The estimated BDP is related to the volume of 
 			bytes in flight and the measured path RTT.
 			</t> 
@@ -212,18 +212,18 @@
 			A QUIC connection is allowed to use the procedure detailed in 
                         <xref target="RFC6349"></xref>
                         to measure the BDP, but is permitted to choose another
-			method <xref target="RFC9002"></xref> . 
-			A server might be able to also utilise
-                        other information to provide an estimate of the BDP. 
-			</t>
-
-			<t> Congestion controllers, such as CUBIC or RENO, could estimate the
+				method <xref target="RFC9002"></xref>.</t>
+			
+			<t>A server might be able to also utilise
+                        other information to estimate the BDP. 
+			Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by combining the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
-        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
+        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>
+			<t>It is important to
         consider whether a method could result in over-estimating the
-        bottleneck bandwidth, and the preserved values there ought to be used
+        bottleneck bandwidth, and the preserved values therefore ought to be used
 				with caution.</t>
  			
 
@@ -242,6 +242,8 @@
                         when, and only when, they appear in all capitals, as
                         shown here.
 			</t>
+			<t>
+			Variable-length integer encoding is defined in section 16 of <xref target="RFC9000"></xref>.  
 		</section>
 	
 	</section>
@@ -250,7 +252,7 @@
 
 		<t>
                 This section describes the use of a new Frame, the BDP Frame.
-                The BDP Frame MUST be considered by the congestion controller
+                The BDP Frame can be utilized by the congestion controller
                 and its data is not be limited by flow control limits. The server and the client MAY
                 send multiple BDP Frames in both 1-RTT and 0-RTT connections. 
 		</t>
@@ -278,7 +280,7 @@ BDP Frame {
 			<t>
                         Lifetime (extension_lifetime):
                         The extension_lifetime is a value in milliseconds,
-                        encoded as a variable length integer. This follows the design
+                        encoded as a variable-length integer. This follows the design
                         of a NewSessionTicket of TLS  <xref target="RFC8446"></xref>.
 			This represents the validity in time of this extension.
 			</t> 
@@ -286,13 +288,13 @@ BDP Frame {
 			<t>
                         Saved BB
                         (saved_bb): The
-                        saved_bb is a value in bytes, encoded as a variable length integer. The
+                        saved_bb is a value in bytes, encoded as a variable-length integer. The
                         bottleneck bandwidth estimated for the previous connection by
 			the server.
 			Using the previous values of bytes_in_flight defined in 
                         <xref target="RFC9002"></xref>
 			can result in overshoot of
-			the bottleneck capacity and is not advised.
+			the bottleneck capacity, and is not advised.
 			</t>
 
 			<t>
@@ -300,7 +302,7 @@ BDP Frame {
                         (saved_rtt): The
                         saved_rtt is a value in
                         milliseconds, encoded as
-                        a variable length integer.
+                        a variable-length integer.
                         This could be set to 
                         the minimum RTT (min_rtt). The
                         saved_rtt can be set to the
@@ -332,16 +334,14 @@ BDP Frame {
                 	connection, the client indicates to the
                 	server that it wishes to receive BDP
                 	extension Frames. The default value is 0.
-                	Values larger than 3 are reserved for future use. 
-			In this specification, the
-                	receipt of these values MUST be treated
-                	as a connection error of type
-                	TRANSPORT_PARAMETER_ERROR.
+			In this specification, enable_bdp values larger than 3 are reserved for future,
+			and the receipt of these values MUST be treated
+                	as a connection error of type TRANSPORT_PARAMETER_ERROR <xref target="RFC9000"></xref>.
 			</t>
 			<t><list style="symbols">
 				<t>
                 	        0: Default value. If the client
-                	        does not send this parameter,
+                	        does not send an enable_bdp parameter,
                 	        the server considers that the
                 	        client does not support, or does
                 	        not wish to activate, the BDP
@@ -378,12 +378,12 @@ BDP Frame {
 		<t>
                 A client using the BDP Frame extension has the choice
                 of accepting the reuse of the previous parameters,
-		or requesting the servert to not reuse previous parameters.
+		or requesting the server to not reuse the previous parameters.
 		</t>
 		<t>
                 The BDP metadata parameters are measured by
-                the server during a previous
-                connection. The BDP extension is
+                the sender during a previous
+                connection to the same receiver. The BDP extension is
                 protected by the mechanism that
                 protects the exchange of the 0-RTT
                 transport parameters. For version 1 of
@@ -393,19 +393,19 @@ BDP Frame {
                 parameter. This is defined in sections
                 4.5 to 4.7 of 
                 <xref target="RFC9001"></xref>.
-                This provides a way for the server to
+                This provides a way for the sender to
                 verify that the parameters proposed by the
-                client are the same as those that the server
-                sent to the client during the previous
+                receiver are the same as those that the sender
+                sent to the receiver during a previous
                 connection.
 		</t>
 
 		<t>
-                The server SHOULD NOT trust
-                the content of the BDP Frame received from the client. 
+                The sender SHOULD NOT trust
+                the content of the BDP Frame received from the receiver. 
 		Even if the QUIC 
                 packets containing the BDP Frame are
-                encrypted, a client could modify the
+                encrypted, a receiver could modify the
                 values within the extension and
                 encrypt the QUIC packet.
                 Authentication mechanisms
