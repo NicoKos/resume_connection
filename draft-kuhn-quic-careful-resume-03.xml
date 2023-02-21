@@ -645,9 +645,10 @@ keywords will be used for the search engine. -->
             <t>Solution #3 : This approach is the same as
             above, except that the sender provides an estimate of the saved_rtt
             and saved_bb parameters in a form that may be read by the receiver.
-            The information might not be encrypted, or the information might
-            be duplicated outside of the encrypted block. This allows a receiver
-            to read, but not modify, the saved_rtt and saved_bb parameters and
+            Using the security mechanisms provided in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>,
+            the sender can verify that the receiver did not change the parameters inside the frame.
+	    The receiver can 
+            read, but not modify, the saved_rtt and saved_bb parameters and
             could enable a receiver to decide whether the new
             parameters are thought appropriate, based on receiver-side information about
             the network conditions, connectivity, or needs of the new
@@ -934,7 +935,9 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
       the sender to use a larger CWND than appropriate. Using the algorithms
       proposed in <xref target="sec-safety_guide"></xref>, the sender may
       reduce any intended harm and can check that part of the information
-      provided by the receiver are valid.</t>
+      provided by the receiver are valid. Using the security mechanisms provided
+      in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>, the sender can 
+      verify that the receiver did not change the parameters inside the frame.</t>
 
       <t>Storing the BDP parameters locally at the sender reduces the
       associated risks by allowing the receiver to transmit information related
@@ -986,7 +989,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
       <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
 	    
       <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
-
+      <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
+	    
       <?rfc include="reference.RFC.5783.xml"?>
       <?rfc include="reference.RFC.7661.xml"?>
       <?rfc include="reference.RFC.8867.xml"?>
