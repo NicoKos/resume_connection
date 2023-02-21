@@ -119,7 +119,7 @@
                         (current_bb) and current receiver Endpoint Token 
                         (current_endpoint_token) are
                         stored as saved_rtt, saved_bb and
-                        saved_receiver_endpoint_token within a BDP_FRAME;
+                        saved_endpoint_token within a BDP_FRAME;
 			</t>
 			<t>
                         The BDP_FRAME can be sent to the receiver and
@@ -184,13 +184,13 @@
                                 saved_rtt: RTT preserved from a previous connection
 				</t>
 				<t>
-				receiver_endpoint_token : Endpoint Token of the receiver
+				endpoint_token : Endpoint Token of the receiver
 				</t>
 				<t>
-                                current_receiver_endpoint_token : Current Endpoint Token of the receiver
+                                current_endpoint_token : Current Endpoint Token of the receiver
 				</t>
 				<t>
-                                saved_receiver_endpoint_token : Endpoint Token of the
+                                saved_endpoint_token : Endpoint Token of the
                                 receiver preserved from a previous connection
 				</t>
 				<t>
