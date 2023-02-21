@@ -222,7 +222,7 @@ keywords will be used for the search engine. -->
 
       	        <t>While a sender could make optimization decisions without considering 
       	        the receiver's preference, in some cases a receiver could have information that 
-      	        is not available at the server, which could be used to
+      	        is not available at the sender, which could be used to
 		inhibit optimization. This could be useful when:
       	       <list>
       			<t>A receiver discovers the path has changed, 
@@ -257,14 +257,10 @@ keywords will be used for the search engine. -->
         	Internet paths.</t>
 		
 		<t>The method can be used by a sender performing a unidirectional data transfer
-        	towards the receiver, (e.g., a client downloading a file or a web page). This
+        	towards the receiver, (e.g., a receiver downloading a file or a web page). This
         	is the focus of the current version of the document.</t>
 
-        	<t>Data can also be uploaded using a unidirectional data transfer 
-		(e.g., a client uploading an image/video
-        	to a server).</t>
-
-        	<t>Clients can also perform a bidirectional data transfer,
+        	<t>Receivers can also perform a bidirectional data transfer,
 		where both endpoints simulatenouysly send data to
        		each other (e.g.,  remote executing application, or a
         	video conference call).</t>
@@ -346,7 +342,7 @@ keywords will be used for the search engine. -->
         quality that is supported by the path, because for each video chunk,
         the transport protocol needs to independently determine the path
         capacity. The lower transfer rate is safe, but can also lead to an
-        overly conservative requested rate to the server, because clients
+        overly conservative requested rate to the sender, because clients
         often adapt their application-layer requests based on the transport
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
@@ -432,12 +428,12 @@ keywords will be used for the search engine. -->
             <t>saved_rtt: RTT measure RTT preserved from a previous
             connection;</t>
 
-            <t>endpoint_token : Endpoint Token of the client;</t>
+            <t>endpoint_token : Endpoint Token of the receiver;</t>
 
-            <t>current_endpoint_token : Current Endpoint Token of the client;</t>
+            <t>current_endpoint_token : Current Endpoint Token of the receiver;</t>
 
             <t>saved_endpoint_token : Endpoint Token of a previous connection by the
-            client;</t>
+            receiver;</t>
 
             <t>remembered BDP parameters: a combination of saved_rtt and
             saved_bb</t>
@@ -464,7 +460,7 @@ keywords will be used for the search engine. -->
           <t>Observe: During a previous connection, information about the path
 	  to an endpoint is saved. This is used to characterise the path and
 	  to indicate the capacity available. It includes the current RTT
-          (current_rtt), bottleneck bandwidth (current_bb) and current client
+          (current_rtt), bottleneck bandwidth (current_bb) and current receiver
           Endpoint Token (current_endpoint_token) are stored as saved_rtt, saved_bb and
           saved_endpoint_token.</t>
 
@@ -530,7 +526,7 @@ keywords will be used for the search engine. -->
     <section anchor="sec-rationale" title="Safety Guidelines">
 	<t> This section introduces the rationale behind safety guidelines
         for the usage of saved infromation: variable
-	network conditions and malicious client.</t>
+	network conditions and malicious receviver.</t>
 	
 	<section  title="Internet Paths">
 	<t>Paths and capacity can change with respect to time, resulting
@@ -623,18 +619,18 @@ keywords will be used for the search engine. -->
           </list></t>
       </section> <!-- End of Safety: Network Conditions --->
 
-      <section title="Protecting from Malicious clients">
+      <section title="Protecting from Malicious receivers">
         <t>The sender MUST check the integrity of the saved_rtt and saved_bb
-        parameters received from a client.</t>
+        parameters received from a receiver.</t>
 
-        <t>There are several solutions to avoid attacks by malicious clients:
+        <t>There are several solutions to avoid attacks by malicious receivers:
         <list style="symbols">
             <t>Solution #1 : The sender stores a local estimate
             of the bottleneck bandwidth and RTT parameters as the saved_bb and
             saved_rtt.</t>
 
             <t>Solution #2 : The sender sends the estimate of
-            the bottleneck bandwidth and RTT parameters to the client as the
+            the bottleneck bandwidth and RTT parameters to the receiver as the
             saved_bb and saved_rtt in a block of information that is
             authenticated. This information also could be encrypted by the
             sender. The receiver resends the same information for a new
@@ -680,7 +676,7 @@ keywords will be used for the search engine. -->
         The method used to store the transport parameters
         SHOULD be associated with a lifetime. If no lifetime expiration
         is provided, safety guidelines should help guarantee that the
-        session resumption is careful. While the server may not specify
+        session resumption is careful. While the sender may not specify
         how long the data is stored at its level (for the local storage
         solution), BDP extension Frame proposes a extension_lifetime
         parameter and "token SHOULD have an expiration time" 
@@ -691,25 +687,25 @@ keywords will be used for the search engine. -->
         target="sec-security"></xref> .</t>
 
         <section title="Interoperability and Use Cases">
-          <t>A sender that stores a resumption ticket for each client to
+          <t>A sender that stores a resumption ticket for each receiver to
           protect against replay on a third party, it could also store the
           Endpoint Token (i.e., saved_endpoint_token) and BDP parameters (i.e.,
           saved_rtt and saved_bb) of a previous connection.</t>
 
           <t>When the BDP Frame extension is used, locally stored BDP
           parameters at the sender can provide a cross-check of the BDP
-          parameters sent by a client. The sender can anyway enable a safe
+          parameters sent by a receiver. The sender can anyway enable a safe
           jump, but without the BDP Frame extension. However, using the
-          parameters enables a client to choose whether to request this or
+          parameters enables a receiver to choose whether to request this or
           not, enabling it to utilize local knowledge of the network
           conditions, connectivity, or connection requirements.</t>
 
           <t>XXX-Editor-note: Text to be improved: Storing local values
           related to the BDP would help improve the ingress for new
           connections, however, not using a BDP Frame extension could reduce
-          the interest of the approach where (1) the client knows the BDP
-          estimation at the sender, (2) the client decides to accept or reject
-          ingress optimization, (3) the client tunes application level
+          the interest of the approach where (1) the receiver knows the BDP
+          estimation at the sender, (2) the receiver decides to accept or reject
+          ingress optimization, (3) the receiver tunes application level
           requests.</t>
         </section> <!-- End of Safety: Tradeoff: Use Cases --->
 	</section> </section> <!-- End of Safety: Tradeoff --->
@@ -717,7 +713,7 @@ keywords will be used for the search engine. -->
 
         <section title="Summary">
           <t> Local storage of values can be secure and the BDP Frame
-          extension provides more information to the client and more
+          extension provides more information to the receiver and more
           interoperability. The <xref target="fig-summary"></xref> provides a
           summary of the advantages and drawbacks of each approach.</t>
 
@@ -1142,8 +1138,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </list></t> 
 
     <t>
-    NOTE: The Endpoint Token is used independently by clients and servers. A
-    client might decide not to provide an Endpoint Token to a server, to
+    NOTE: The Endpoint Token is used independently by receivers and senders. A
+    receiver might decide not to provide an Endpoint Token to a sender, to
     avoid exposing additional linkable information (but also preventing use
     of any mechanism that relies on the token).
     </t>
@@ -1180,8 +1176,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     associated with the path information it sends. The Endpoint Token ought
     to be encrypted to avoid sending linkable information observable
     eavesdroppers on the path. The receiver stores the path information
-    together with the Endpoint Token, together with the server's
-    address/name (2). When the receiver later wishes the server to use the
+    together with the Endpoint Token, together with the sender's
+    address/name (2). When the receiver later wishes the sender to use the
     stored path information it returns the information to the sender (3)
     together with the Endpoint Token. The sender recomputes the Endpoint
     Token and compares this with the received Endpoint Token before using
@@ -1239,13 +1235,13 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
                title="Rationale behind the different implementation options">
         <t>The NewSessionTickets message of TLS can offer a solution. The
         proposal is to add a 'bdp_metada' field in the NewSessionTickets,
-        which the client is able to read. The only extension currently defined
-        in TLS1.3 that can be seen by the client is max_early_data_size (see
+        which the receiver is able to read. The only extension currently defined
+        in TLS1.3 that can be seen by the receiver is max_early_data_size (see
         Section 4.6.1 of <xref target="RFC8446"></xref>). However, in the
         general design of QUIC, TLS sessions are managed by a TLS stack.</t>
 
         <t>Three distinct approaches are presented: sending an opaque blob to
-        the client that the client may return to the sender when establishing
+        the receiver that the receiver may return to the sender when establishing
         a future new connection (see <xref
         target="sec-using_new_token"></xref>), enabling local storage of the
         BDP information (see <xref target="sec-local_storage"></xref>) and a
@@ -1255,20 +1251,20 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
       <section anchor="sec-local_storage"
                title="Independent Local Storage of Values">
-        <t>This approach independently lets both a client and a server store
+        <t>This approach independently lets both a receiver and a sender store
         their BDP parameters: <list style="symbols">
             <t>During a 1-RTT session, the endpoint stores the RTT (as the
             saved_rtt) and bottleneck bandwidth (as the saved_bb) together in
             the session resume ticket. 
             </t>
 
-            <t>The server maintains a table of previously issued tickets,
+            <t>The sender maintains a table of previously issued tickets,
             indexed by the random ticket identifier that is used to guarantee
             uniqueness of the Authenticated Encryption with Associated Data
             (AEAD) encryption. Old tokens are removed from the table using the
             Least Recently Used (LRU) logic. For each ticket identifier, the
             table holds the RTT and bottleneck bandwidth (i.e. saved_rtt and
-            saved_bb), and also the Endpoint Token of the client (i.e.
+            saved_bb), and also the Endpoint Token of the receiver (i.e.
             saved_endpoint_token).</t>
           </list></t>
 
@@ -1286,28 +1282,28 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         could be realized by a proportional increase in the cwnd, where the
         increase is (saved_bb/IW)*proportion_of_IW_currently-ACKed.</t>
 
-        <t>This solution does not allow a client to request the server not to
-        use the BDP parameters. If the server does not want to store the
+        <t>This solution does not allow a receiver to request the sender not to
+        use the BDP parameters. If the sender does not want to store the
         metrics from previous connections, an equivalent of the
         tcp_no_metrics_save for QUIC may be necessary. This option could be
-        negotiated that allows a client to choose whether to use the saved
+        negotiated that allows a receiver to choose whether to use the saved
         information.</t>
       </section>
 
       <section anchor="sec-using_new_token" title="Using NEW_TOKEN frames">
-        <t>A server can send a NEW_TOKEN Frame to the client. The token is an
-        opaque (encrypted) blob and the client can not read its content (see
-        section 19.7 of <xref target="RFC9000"></xref>). The client sends the
+        <t>A sender can send a NEW_TOKEN Frame to the receiver. The token is an
+        opaque (encrypted) blob and the receiver can not read its content (see
+        section 19.7 of <xref target="RFC9000"></xref>). The receiver sends the
         received token in the header of an Initial packet of a later
         connection.</t>
       </section>
 
       <section anchor="sec-bdp_frame_section" title="BDP Frame">
-        <t>Using BDP Frames, the server could send information relating to the
-        path characteristics to the client. The use of the BDP Frame is
-        negotiated with the client. The client can read its content. If the
-        client agrees with the usage of previous parameters, it can
-        send the BDP Frame back to the server in an Initial packet of a later
+        <t>Using BDP Frames, the sender could send information relating to the
+        path characteristics to the receiver. The use of the BDP Frame is
+        negotiated with the receiver. The receiver can read its content. If the
+        receiver agrees with the usage of previous parameters, it can
+        send the BDP Frame back to the sender in an Initial packet of a later
         connection.</t>
       </section>
     </section>
@@ -1317,7 +1313,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 <list style="numbers">
 <t> The network path has changed and the new path is
 different. This might be evident from a change of local interface, a change
-in the client or server IP address, or similar indication from the network.
+in the client or sender IP address, or similar indication from the network.
 Using the saved congestion control information could increase congestion.</t>
 <t> The network path has changed, but the new path is not known to be
 different. This case might be accompanied by a change in the RTT, or
@@ -1334,7 +1330,7 @@ the saved congestion control information is no longer appropriate.</t>
 </list></t>
 
 <t>In all these case, the
-careful increase method is not be used, and a server needs to return to
+careful increase method is not be used, and a sender needs to return to
 a standard behavior.  The method can still be used to characterize the new path,
 enabling later flows to use this method.</t>
 

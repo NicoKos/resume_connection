@@ -92,14 +92,14 @@
 		<!-- start new in v1 vs v0 -->
                 This dcoument describes the BDP_FRAME extension for QUIC.
                 The frame enables the exchange of information related to the
-                path characteristics between the client
-                and the server during a connection.
+                path characteristics between the receiver
+                and the sender during a connection.
                 This information can be utilised
                 when a new connection is established or for application-limited
                 traffic. 
-                This information can also be used by the client to request that
+                This information can also be used by the receiver to request that
 		previously computed parameters related to the 
-		path characteristics, are not used, when the client has additional information
+		path characteristics, are not used, when the receiver has additional information
 		about the path or traffic to be sent.
 		<!-- end new in v1 vs v0 -->
 		</t>
@@ -116,10 +116,10 @@
 			<t>
                         For an established connection, the
                         current RTT (current_rtt), bottleneck bandwidth
-                        (current_bb) and current client Endpoint Token 
+                        (current_bb) and current receiver Endpoint Token 
                         (current_endpoint_token) are
                         stored as saved_rtt, saved_bb and
-                        saved_client_ip within a BDP_FRAME;
+                        saved_endpoint_token within a BDP_FRAME;
 			</t>
 			<t>
                         The BDP_FRAME can be sent to the receiver and
@@ -165,7 +165,7 @@
 				</t>
 				<t>
                                 CWND: the congestion window used by a
-                                server (maximum number of bytes allowed in flight by the CC)
+                                sender (maximum number of bytes allowed in flight by the CC)
 				</t>
 				<t>
 				current_bb : Current estimated bottleneck bandwidth
@@ -184,13 +184,13 @@
                                 saved_rtt: RTT preserved from a previous connection
 				</t>
 				<t>
-				receiver_endpoint_token : Endpoint Token of the receiver
+				endpoint_token : Endpoint Token of the receiver
 				</t>
 				<t>
-                                current_receiver_endpoint_token : Current Endpoint Token of the receiver
+                                current_endpoint_token : Current Endpoint Token of the receiver
 				</t>
 				<t>
-                                saved_receiver_endpoint_token : Endpoint Token of the
+                                saved_endpoint_token : Endpoint Token of the
                                 receiver preserved from a previous connection
 				</t>
 				<t>
@@ -226,7 +226,7 @@
                         to measure the BDP, but is permitted to choose another
 				method <xref target="RFC9002"></xref>.</t>
 			
-			<t>A server might be able to also utilise
+			<t>A sender might be able to also utilise
                         other information to estimate the BDP. 
 			Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by combining the
@@ -263,7 +263,7 @@
 		<t>
                 This section describes the use of a new Frame, the BDP_FRAME.
                 The BDP_FRAME can be utilized by the congestion controller
-                and its data is not be limited by flow control limits. The server and the client MAY
+                and its data is not be limited by flow control limits. The sender and the receiver MAY
                 send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections. 
 		</t>
 
@@ -360,7 +360,7 @@ BDP_FRAME {
                 	        0: Default value. If the receiver
                 	        does not send an enable_bdp parameter,
                 	        the sender considers that the
-                	        client does not support, or does
+                	        receiver does not support, or does
                 	        not wish to activate, the BDP
                 	        extension.
 				</t>
