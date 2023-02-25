@@ -413,7 +413,7 @@ keywords will be used for the search engine. -->
         parameters:
 	<list style="symbols">
 
-<!--- GF: Why is IW in this information block??? --->
+<!--- GF: Why is IW in this information block??? it could potentially be in BDP but is not needed here --->
 <!---	<t>IW: Initial Window <xref target="RFC9002"></xref>;</t> --->
 <!---            <t>current_iw: Current IW;</t> --->
 <!---            <t>recom_iw: Recommended IW;</t> --->
@@ -604,6 +604,7 @@ keywords will be used for the search engine. -->
             the previously used cwnd.</t>
           </list></t>
 
+	<t>{XXX-Editor note: Decide on mittigation.}</t>
         <t>The impact of changes can be mitigated by 2 potential solutions: 
 	<list style="symbols">
             <t> When resuming, restore
@@ -611,7 +612,7 @@ keywords will be used for the search engine. -->
             parameters estimated from a previous connection.</t>
 
             <t>When resuming, implement
-            a safety check to measure avoid using the saved_bb and saved_rtt
+            a safety check to measure and avoid using the saved_bb and saved_rtt
             parameters to cause congestion over the path. In this case, the
             current_bb and current_rtt might not be set directly from the
             saved_bb and saved_rtt: the sender might wait for the completion
@@ -619,7 +620,8 @@ keywords will be used for the search engine. -->
           </list></t>
       </section> <!-- End of Safety: Network Conditions --->
 
-      <section title="Protecting from Malicious receivers">
+<!--- BDP Frame -->
+      <section title="Protecting from Malicious Receivers">
         <t>The sender MUST check the integrity of the saved_rtt and saved_bb
         parameters received from a receiver.</t>
 
@@ -660,32 +662,12 @@ keywords will be used for the search engine. -->
         #3).</t>
       </section> <!-- End of Safety: Malicous Clients --->
 
-      <section anchor="sec:discuss_bdp_default"
-               title="Trade-off between the different solutions">
-        <t>This section provides a description of several implementation
-        options and discusses their respective advantages and drawbacks. </t>
-
-        <t>While there are some discussions for the solutions regarding
-        Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
-        avoid Rationale #1 - Solution #1: the sender MUST implement a safety
-        check to measure whether the saved BDP parameters (i.e. saved_rtt and
-        saved_bb) are relevant or check that their usage would not cause
-        excessive congestion over the path. </t>
-
-        <t>
-        The method used to store the transport parameters
-        SHOULD be associated with a lifetime. If no lifetime expiration
-        is provided, safety guidelines should help guarantee that the
-        session resumption is careful. While the sender may not specify
-        how long the data is stored at its level (for the local storage
-        solution), BDP extension Frame proposes a extension_lifetime
-        parameter and "token SHOULD have an expiration time" 
-        <xref target="RFC9000"></xref>.
-        </t>
-
         <t>Security consideration are discussed in <xref
         target="sec-security"></xref> .</t>
+	    </section>
 
+ <!--- BDP Frame --->
+	      
         <section title="Interoperability and Use Cases">
           <t>A sender that stores a resumption ticket for each receiver to
           protect against replay on a third party, it could also store the
@@ -700,88 +682,21 @@ keywords will be used for the search engine. -->
           not, enabling it to utilize local knowledge of the network
           conditions, connectivity, or connection requirements.</t>
 
-          <t>XXX-Editor-note: Text to be improved: Storing local values
+          <t>{XXX-Editor-note: Text to be improved: Storing local values
           related to the BDP would help improve the ingress for new
           connections, however, not using a BDP Frame extension could reduce
           the interest of the approach where (1) the receiver knows the BDP
           estimation at the sender, (2) the receiver decides to accept or reject
           ingress optimization, (3) the receiver tunes application level
-          requests.</t>
+          requests.}</t>
         </section> <!-- End of Safety: Tradeoff: Use Cases --->
 	</section> </section> <!-- End of Safety: Tradeoff --->
 
-
-        <section title="Summary">
-          <t> Local storage of values can be secure and the BDP Frame
-          extension provides more information to the receiver and more
-          interoperability. The <xref target="fig-summary"></xref> provides a
-          summary of the advantages and drawbacks of each approach.</t>
-
-          <figure anchor="fig-summary" title="Comparing solutions">
-            <artwork><![CDATA[
-+---------+-----------+----------------+---------------+-----------+
-|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
-+---------+-----------+----------------+---------------+-----------+
-|#1       |#1         |                |               |           |
-|Variable |set        |Ingress optim.  |Risk of adding |MUST NOT   |
-|Network  |current_*  |                | congestion    |implement  |
-|         |to saved_* |                |               |           |
-|         +-----------+----------------+---------------+-----------+
-|         |#2         |                |               |           |
-|         |Implement  |Reduce risk of  |Negative impact|MUST       |
-|         |safety     | adding         | on ingress    |implement  |
-|         |check      | congestion     | optim.        |Section 3  |
-+---------+-----------+----------------+---------------+-----------+
-|#2       |#1         |                |               |           |
-|Malicious|Local      |Enforced        |A receiver is  |           |
-|receiver |storage    | security       | unable        |           |
-|         |           |                | to reject     |           |
-|         |           |                |Malicious      |           |
-|         |           |                | sender could  |           |
-|         |           |                | fill a        |           |
-|         |           |                | receive buffer|           |
-|         |           |                |Limited        |           |
-|         |           |                | use-cases     |Section 4.2|
-|         +-----------+----------------+---------------+-----------+
-|         |#2         |                |               |           |
-|         |NEW_TOKEN  |Save resource   |A malicious    |           |
-|         |           | at sender      | receiver could|           |
-|         |           |Opaque token    | change token  |           |
-|         |           | protected      | even if       |           |
-|         |           |                | protected     |           |
-|         |           |                |A malicious    |           |
-|         |           |                | sender could  |           |
-|         |           |                | fill the      |           |
-|         |           |                | receive buffer|           |
-|         |           |                |sender may not |           |
-|         |           |                | trust receiver|Section 4.3|
-|         +-----------+----------------+---------------+-----------+
-|         |#3         |                |               |           |
-|         |BDP        |Extended        |A malicious    |           |
-|         |extension  | use-cases      | receiver could|           |
-|         |           |Save resource   | change BDP    |           |
-|         |           | at sender      | even if       |           |
-|         |           |A receiver can  | protected     |           |
-|         |           | read and decide|A sender may   |           |
-|         |           | to reject      | not trust a   |           |
-|         |           |BDP extension   | receiver      |           |
-|         |           | protected      |               |           |
-|         |           |                |               |Section 4.4|
-+---------+-----------+----------------+---------------+-----------+
-
-XXX-Editor-Note: Need to clarify the text around changing 
-the authenticated token.
-
-]]></artwork>
-          </figure>
-        </section> <!-- End of Safety: Summary --->
-    </section> <!-- End of Safety -->
-
-<section anchor="sec-safety_guide" title="Safety Guidelines">
+<section anchor="sec-safety_guide" title="CC Safety Guidelines">
       <t>The following safety guidelines refer to the labeling defined in
       <xref target="sec-phase"></xref>.</t>
 
-      <t>The safety guidelines are designed to mitigate the risk that sender
+      <t>These safety guidelines are designed to mitigate the risk that sender
       adds excessive congestion to an already congested path. The following
       mechanisms help in fulfilling this objective: <list style="symbols">
           <t>(observation phase) The sender SHOULD NOT store and/or send
@@ -818,47 +733,51 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
 
         </list></t>
 
-      <t>The proposed mechanisms SHOULD be limited by any rate-limitation
-      mechanisms of QUIC, such as flow control mechanisms or amplification
-      attack prevention. In particular, it may be necessary to issue proactive
-      MAX_DATA frames to increase the flow control limits of a connection. In
-      particular, the maximum number of packets that can be sent without
+      <t>The sender is limited by any rate-limitation of the transport
+      protocol with which the method is used.
+      For QUIC this includes: flow control mechanisms or amplification
+      attack prevention. In particular, a QUIC receiver may need to issue proactive
+      MAX_DATA frames to increase the flow control limits of a connection
+	that is started with this method.
+	<!---The maximum number of packets that can be sent without
       acknowledgments needs to be chosen to avoid the creation and the
-      increase of congestion for the path.</t>
+      increase of congestion for the path.-->
+	</t>
 
+<!--- I think this relates to the BDP Frame --
       <t>This extension MUST NOT provide an opportunity for the current
-      connection to be a vector of an amplification attack. The address
+      connection to be a vector for an amplification attack. The QUIC address
       validation process, used to prevent amplification attacks, SHOULD be
-      performed <xref target="RFC9000"></xref>.</t>
+      performed <xref target="RFC9000"></xref>.</t> -->
 
-      <t>XXX-Editor-note: This probably should be a range rather than an
-      inequality (current_rtt &lt; 1.2*saved_rtt).</t>
+      <t{>XXX-Editor-note: This should be a range rather than an
+      inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
 
       <t>The following mechanisms could be implemented: <list style="symbols">
           <t>Exploit a standard IW:<list style="numbers">
-              <t>The sender sends the first data packet using the IW - this is
-              a safe starting point for any path where there is no path
+              <t>The sender sends the first data using the IW - this is
+              assumed a safe starting point for any path where there is no path
               information or congestion control information. This avoids
               adding excessive congestion to a path;</t>
 
-              <t>The sender monitors the reception of the IW data. If the path
+              <t>The sender monitors reception of the IW data. If the path
               characteristics resemble those of a recent previous connection from
               to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
               all data was acknowledged without reported congestion), the
               method permits the sender to utilize the saved_bb as an input to
               adapt current_bb to rapidly determine a new safe rate;</t>
 
-              <t>The sender needs to avoid a burst of packets resulting from a
+              <t>The sender needs to avoid sending a burst of packets as a result of a
               step-increase in the congestion window <xref
               target="RFC9000"></xref>. Pacing the packets as a function of
               the current_rtt can provide this additional safety during the
-              period in which the CWND is increased by the method.</t>
+              unvalidated period.</t>
             </list></t>
 
           <t>Identify a relevant pacing rhythm:<list style="symbols">
-              <t>The sender estimates the pacing rhythm using saved_rtt and
+              <t>The sender estimates a pacing rhythm using saved_rtt and
               saved_bb. The Inter-packet Transmission Time (ITT) is determined
-              by the ratio between the current Maximum Message Size (MMS) and
+              from the ratio between the current Maximum Message Size (MMS) and
               the ratio between the saved_bb and saved_rtt. A tunable safety
               margin can avoid sending more than a recommended maximum IW
               (recom_iw): <list style="symbols">
@@ -867,8 +786,8 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
                   <t>ITT = MSS/(current_iw/saved_rtt)</t>
                 </list></t>
 
-              <t>When the successful receipt of the IW data is acknowledged,
-              the sender returns to a standard slow-start mechanism.</t>
+              <t>A  successful receipt of the IW data confirms the path can be used with
+		 the method specified in this document.</t>
             </list></t>
 
           <t>Tune slow-start mechanisms: After transport parameters are set to
@@ -879,7 +798,7 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
               <t>For NewReno and CUBIC, it is recommended to exit slow-start
               and enter the congestion avoidance phase.</t>
 
-              <t>For BBR, it is recommended to enter the "probe bandwidth"
+              <t>For BBR CC, it is recommended to enter the "probe bandwidth"
               state.</t>
             </list></t>
         </list></t>
@@ -905,8 +824,20 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
 </section>
 
 <section anchor="sec-security" title="Security Considerations">
-      <t>Security considerations for QUIC are discussed in <xref
+
+	<t>Security considerations for QUIC are discussed in <xref
       target="sec-safety_guide"></xref></t>
+
+	<t> This section provides security considerations for Careful Resume.</t>
+
+    </section> <!--- Sec Considerations>
+	    
+<!--- BDP FRAME-->
+     <section  title="Security Considerations for the BDP Frame">
+
+	<t>Security considerations for QUIC are discussed in <xref
+     	 target="sec-safety_guide"></xref>.
+	The security considerations for Careful Resume provide considerations for that method.</t>
 
       <t>The receiver can send information related to the saved_rtt and saved_bb
       to the sender with the BDP Frame extension using either Rationale #2 -
@@ -940,8 +871,7 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
       to the BDP of the path in the case of a malicious receiver trying to break
       the encryption mechanism that it had received.</t>
 
-      <t></t>
-    </section>
+ 	 </section> <!--- Sec Considerations>
   </middle>
 
   <!--  *****BACK MATTER ***** -->
@@ -1059,7 +989,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     this is one of its current paths.
     </t>
 
-    <section title="The Problem">
+    <section title="The Problem of identifying the Path">
 
     <t>
     In a simple network scenario, the sending endpoint could use the IP
@@ -1169,6 +1099,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     </section>
 
+<!--- This is BDP frame -->
     <section title="Example use of an Endpoint Token">
     <t>
     The sender computes an Endpoint Token that seeks to uniquely identify
@@ -1187,17 +1118,14 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </t>
 
     <list style="numbers">
-	    <t> 
-	    The Sender transmits the Endpoint Token to the Receiver
+	    <t>The Sender transmits the Endpoint Token to the Receiver
 	    </t>
-	    <t> 
-	    The Receiver holds an Endpoint Token 
+	    <t>The Receiver holds an Endpoint Token 
 	    </t> 
-	    <t>                    
-	    The Receiver transmits the Endpoint Token to the Sender 
+	    <t>The Receiver transmits the Endpoint Token to the Sender 
 	    </t>
     </list>
-    </section>
+    </section> <!-- 
 
     <section title="A Change of the Source Address">
     <t>
@@ -1209,10 +1137,11 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </t>
     </section>
 
-    <section title="Security reacting to use of the Endpoint Token">
+<!--- BDP Frame
+    <section title="Security Related to use of the Endpoint Token">
     <t>
     A number of security-related topics have been discussed, mostly
-    concerning the potential exposure of the identity. This information can
+    concerning the potential exposure of the identity on the path. This information can
     also be visible in the IP source address or higher-layer data, but can
     be hidden from a remote endpoint using methods such as MASQUE proxy.
     When used to inform the transport system using a layered proxy, the
@@ -1230,7 +1159,32 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </t>
     </section>
 
-    <section anchor="sec-implem" title="Implementation Considerations">
+<!--- BDP Frame --->
+      <section anchor="sec:discuss_bdp_default"
+               title="Trade-off between the different solutions">
+        <t>This section provides a description of several implementation
+        options and discusses their respective advantages and drawbacks. </t>
+
+        <t>While there are some discussions for the solutions regarding
+        Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
+        avoid Rationale #1 - Solution #1: the sender MUST implement a safety
+        check to measure whether the saved BDP parameters (i.e. saved_rtt and
+        saved_bb) are relevant or check that their usage would not cause
+        excessive congestion over the path. </t>
+
+        <t>
+        The method used to store the transport parameters
+        SHOULD be associated with a lifetime. If no lifetime expiration
+        is provided, safety guidelines should help guarantee that the
+        session resumption is careful. While the sender may not specify
+        how long the data is stored at its level (for the local storage
+        solution), BDP extension Frame proposes a extension_lifetime
+        parameter and "token SHOULD have an expiration time" 
+        <xref target="RFC9000"></xref>.
+        </t>
+
+<!--- BDP frame --->
+<section anchor="sec-implem" title="Implementation Considerations">
       <section anchor="sec-bdp_frame"
                title="Rationale behind the different implementation options">
         <t>The NewSessionTickets message of TLS can offer a solution. The
@@ -1306,6 +1260,85 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         send the BDP Frame back to the sender in an Initial packet of a later
         connection.</t>
       </section>
+	
+	<section title="Summary">
+        <!--- BDP ---   <t> Local storage of values can be secure and the BDP Frame
+          extension provides more information to the receiver and more
+          interoperability. The <xref target="fig-summary"></xref> provides a
+          summary of the advantages and drawbacks of each approach.</t> --->
+
+          <figure anchor="fig-summary" title="Comparing Careful Resume solutions">
+            <artwork><![CDATA[
++---------+-----------+----------------+---------------+-----------+
+|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
++---------+-----------+----------------+---------------+-----------+
+|#1       |#1         |                |               |           |
+|Variable |set        |Ingress optim.  |Risk of adding |MUST NOT   |
+|Network  |current_*  |                | congestion    |implement  |
+|         |to saved_* |                |               |           |
+|         +-----------+----------------+---------------+-----------+
+|         |#2         |                |               |           |
+|         |Implement  |Reduce risk of  |Negative impact|MUST       |
+|         |safety     | adding         | on ingress    |implement  |
+|         |check      | congestion     | optim.        |Section 3  |
++---------+-----------+----------------+---------------+-----------+
+
+
+]]></artwork>
+          </figure>
+		
+<!--- BDP frame -->
+
+<figure anchor="fig-summary" title="Comparing BDP-Frame Solutions">
+            <artwork><![CDATA[
++---------+-----------+----------------+---------------+-----------+
+|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
++---------+-----------+----------------+---------------+-----------+
+|#2       |#1         |                |               |           |
+|Malicious|Local      |Enforced        |A receiver is  |           |
+|receiver |storage    | security       | unable        |           |
+|         |           |                | to reject     |           |
+|         |           |                |Malicious      |           |
+|         |           |                | sender could  |           |
+|         |           |                | fill a        |           |
+|         |           |                | receive buffer|           |
+|         |           |                |Limited        |           |
+|         |           |                | use-cases     |Section 4.2|
+|         +-----------+----------------+---------------+-----------+
+|         |#2         |                |               |           |
+|         |NEW_TOKEN  |Save resource   |A malicious    |           |
+|         |           | at sender      | receiver could|           |
+|         |           |Opaque token    | change token  |           |
+|         |           | protected      | even if       |           |
+|         |           |                | protected     |           |
+|         |           |                |A malicious    |           |
+|         |           |                | sender could  |           |
+|         |           |                | fill the      |           |
+|         |           |                | receive buffer|           |
+|         |           |                |sender may not |           |
+|         |           |                | trust receiver|Section 4.3|
+|         +-----------+----------------+---------------+-----------+
+|         |#3         |                |               |           |
+|         |BDP        |Extended        |A malicious    |           |
+|         |extension  | use-cases      | receiver could|           |
+|         |           |Save resource   | change BDP    |           |
+|         |           | at sender      | even if       |           |
+|         |           |A receiver can  | protected     |           |
+|         |           | read and decide|A sender may   |           |
+|         |           | to reject      | not trust a   |           |
+|         |           |BDP extension   | receiver      |           |
+|         |           | protected      |               |           |
+|         |           |                |               |Section 4.4|
++---------+-----------+----------------+---------------+-----------+
+
+{XXX-Editor-Note: Need to clarify the text around changing 
+the authenticated token.}
+
+]]></artwork>
+          </figure>
+		
+		
+        </section> <!-- End of Safety: Summary --->
     </section>
   </back>
 </rfc>
