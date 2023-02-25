@@ -121,12 +121,12 @@ keywords will be used for the search engine. -->
       <t>This document discusses careful resumption of congestion control parameters in QUIC
       with a cautious method that enables faster startup of new connections.</t>
 
-      <t>The method uses a set of computed congestion control parameters that
+      <t>The method reuses a set of computed congestion control parameters that
       are based on the previously observed path characteristics, such as the
       bottleneck bandwidth, available capacity, or the RTT. These parameters
-      are stored and can then used to modify the congestion control behaviour
-      of a subsequent connection. The draft discusses assumptions around how a
-      server ought to utilise these parameters to provide opportunities for a
+      are stored and can later be used to modify the congestion control behaviour
+      of a subsequent connection. The draft describes how a
+      sender ought to utilise these parameters to provide opportunities for a
       new connection to more quickly get up to speed (i.e. utilise available
       capacity). It discusses how these changes impact the capacity at a
       shared network bottleneck and the response that is needed after any
@@ -137,7 +137,8 @@ keywords will be used for the search engine. -->
   <middle>
     <section anchor="sec:introduction" title="Introduction">
       
-      <t>All Internet transports are required to use a CC method. In 2010, RFC
+      <t>All Internet transports are required to use a congestion control
+      (CC) method or constrain there rate of transmission. In 2010, RFC
       5783 provided a survey of alternative CC methods, and noted that there
       are challenges when a CC operates across an Internet path with a high and/or
       variable bandwidth-delay product (BDP) <xref target="RFC5783"></xref>.
@@ -147,9 +148,9 @@ keywords will be used for the search engine. -->
       called the "slow-start phase", informally known as the time to "Get up
       to speed". The slow start phase is a period in which a sender
       intentionally uses less capacity than might be available with the
-      intention to avoid overshooting the actual capacity at a bottleneck,
-      which would result in increased queueing (latency/jitter) and/or
-      congestion packet loss. An overshoot in the capacity can have a
+      intention to avoid overshooting the actual capacity available at a bottleneck,
+      which would otherwise result in increased queueing (latency/jitter) and/or
+      congestion packet loss. An overshoot in the used capacity can have a
       detrimental effect on other flows sharing a common bottleneck. In the
       extreme case, persistent congestion can result in unwanted starvation of
       other flows <xref target="RFC8867"></xref> (i.e. Preventing other flows
@@ -157,86 +158,92 @@ keywords will be used for the search engine. -->
 
       <t>In Reno, the slow-start phase consists of a sequence of increases in
       the congestion window (cwnd) starting from the Initial Window (IW). Each
-      step lasts approximately one path RTT, until the sender estimates that
-      the capacity at the bottleneck
-      for the path has been (or is nearing) reached.</t>
+      step lasts approximately one path RTT and increases the cwnd until the sender estimates it
+      has reached (or is nearing) the capacity available at the bottleneck
+      for the path.</t>
 
-      <t>To fully-utilise the capacity along a path with a certain RTT,
+      <t>
+      To fully-utilise the capacity along a path with a certain Round-Trip Time (RTT),
       the transport needs to determine an appropriate volume of bytes in
       flight, based on the product of the available capacity and the path RTT.
       <xref target="RFC6349"></xref> defines the BDP as follows: "Derived from
       Round-Trip Time (RTT) and network Bottleneck Bandwidth (BB), the
       Bandwidth-Delay Product (BDP) determines the Send and Received Socket
-      buffer sizes required to achieve the maximum TCP Throughput." The BDP
-      estimated by a server includes all buffering experienced along a network
+      buffer sizes required to achieve the maximum TCP Throughput." This BDP
+      estimated by a sender includes all buffering experienced along a network
       path. Various approaches are possible to determine the BDP, based on
       measurements of the path characteristics. <xref target="RFC6349"></xref>
       specifies one procedure for TCP. CC for QUIC is specified in <xref
-      target="RFC9002"></xref> and does not specify a required method to
+      target="RFC9002"></xref>, but does not specify a required method to
       measure the BDP, allowing the sender to implement an appropriate
       method.</t>
+	
+      <t>This document specifies a method that can improve performance by 
+      reducing the time to get up to speed, and hence reduce the
+      total duration of a transfer. 
+      It introduces an alternative method to select initial CC parameters,
+      including a way to more rapidly and safely grow the cwnd.
+      This method is based on temporal sharing (sometimes known as
+      caching) of a set of computed CC parameters related to a previously 
+      observed path, such as the bottleneck
+      bandwidth, available capacity,  and RTT. These stored
+      parameters are later used to modify the CC
+      behaviour of a subsequent connection between the same local and remote endpoints.</t>
 
-      <t>The specification for the QUIC transport protocol <xref
-      target="RFC9000"></xref> notes "Generally, implementations are advised
-      to be cautious when using previous values on a new path." The method
-      uses a set of computed Congestion Control (CC) parameters that are based
-      on the previously observed path characteristics, such as the bottleneck
-      bandwidth, available capacity, or the Round Trip Time (RTT). These
-      parameters are stored and can then used to modify the CC
-      behaviour of a subsequent connection. </t>
+      <t>Examples of scenarios where temporal sharing of CC parameters, 
+	can eliminate round-trip times at the start of a new connection
+	include: <list style="numbers">
+          <t>To optimize applications that use a series of connections over the
+          same path, each of which otherwsie would need to individually learn the available
+	  capacit and rtt;</t>
 
-      <t>This document specifies a method that can improve throughput by 
-      reducing the time to get up to speed, and hence the
-      total duration of a transfer. It
-      introduces an alternative method to select initial CC parameters,
-      including a way to more rapidly and safely grow the cwnd.</t>
+          <t>To resume using capacity after a pause in transmission (e.g., when an application
+          pauses, and then connects over the same path);</t>
 
-      <t>There are scenarios where temporal sharing of previously parameters
-      relating to observed path characteristics, such as the bottleneck bandwidth or
-      RTT, can help to save round-trip times at the start of a new connection.
-      For example: <list style="numbers">
-          <t>To optimize applications that use a series of short connections over the
-          same path, each of which needs to individually learn the available
-	  capacity/rtt;</t>
-
-          <t>After a pause in transmission (e.g., when transmission
-          pauses, and then the transport protocol wishes to connect over the
-          same path);</t>
-
-          <t>To connect after a service disruption where the
-          network service was temporarily reduced (e.g. due to a link propagation
-          impairment, or where a user on a train journey travels through
+          <t>To reconnect after a disruption temporarilly reduces the
+          network capacity (e.g., due to a link propagation
+          impairment, oran example  where a user on a train journey travels through
           different areas of connectivity before the user returns to a path with the original
           characteristics).</t>
         </list></t>
-
-      <t>In these cases, specific characteristics of the path may have
-      been learned, including CC information. This  information might be expected to be similar when a new
-      connection is made between the same local and remote endpoints.</t>
-
-      <t>While a server could take optimization decisions without considering 
-      the client's preference, in some cases a client could have information that 
-      is not available at the server. A client may provide hints, for example:
-       (1) an indication that the path/local interface has changed;
-       (2) information related to  current hardware
-      limitations of the client or (3) an understanding about
-      the capacity needs of other concurrent flows that would compete for 
-      shared capacity. As a result, a client could explicitely ask for tuning the 
-      slow start when the application continues transmission, or to inhibit tuning. 
-       This is discussed further later in the document.</t>
-
-      <t>There are also cases where using the parameters of a previous
+	    
+	<t>Care is needed in the use of any temporal information
+	to assure safe use of the Internet and to robust to changes
+	in traffic patterns, network routing and link/node failures.
+	There are also cases where using the parameters of a previous
       connection are not appropriate, and a need to evaluate the potential
-      for malicious use of the method.</t>
+      for malicious use of the method.
+	The specification for the QUIC transport protocol <xref
+      target="RFC9000"></xref> notes "Generally, implementations are advised
+      to be cautious when using previous values on a new path."</t>
 
-      <t>The remainder of this document: <list style="numbers">
-          <t>discusses use-cases where carefully resuming QUIC connections is
+      <t>Whilst a sender could take optimization decisions without considering 
+      the receiver's preference, there are cases where a client at the receiver
+      could have information that 
+      is not available at the sender. In these cases a client could
+      could explicitely ask for tuning the 
+      slow start when the application continues transmission, or to to inhibit tuning. 
+      Examples where this could have benfit include:</t>
+	<list style="numbers">
+		<t>when a receiver understands that the pattern of traffic that will use a connection 
+		(e.g., the volume of data to be sent, the length of the session, or the maximum transfer rate required);
+		<t>when a receiver has a local indication that the path/local interface has changed;</t>
+		<t>when there is information related to the current hardware limitations at the receiver;</t>
+     <t>where the receiver understanda the capacity needs of other concurrent flows that might be expected to compete for 
+	     shared capacity;</t>
+	      </list>
+	<t>The topic of receiver preference for the QUIC protocol is discussed further in a separate document <xref="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
+
+      <t>The remainder of this document: 
+      <list>
+	      <t>specifies the method;</t>
+	      <t>discusses use-cases where carefully resuming QUIC connections is
           expected to have benefit;</t>
 
           <t>proposes guidelines for how to carefully utilise the previously
           stored CC information;</t>
 
-          <t>describes implementation considerations for the proposed method
+          <t>describes implementation considerations for the method
           using QUIC;</t>
 
           <t>discusses the trade-offs associated with the different
@@ -258,13 +265,13 @@ keywords will be used for the search engine. -->
       </section>
 
       <section anchor="sec-terms_def" title="Notations and Terms">
-        <t>This document defines current, and saved values for a set of CC
+        <t>This document defines current, and saved values for the following set of CC
         parameters:<list style="symbols">
-            <t>IW: Initial Window <xref target="RFC9002"></xref>;</t>
+           <!--- <t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
 
-            <t>current_iw: Current IW;</t>
+            <!--- <t>current_iw: Current IW;</t> -->
 
-            <t>recom_iw: Recommended IW;</t>
+            <!--- <t>recom_iw: Recommended IW;</t>--->
 
             <t>current_bb : Current estimated bottleneck bandwidth;</t>
 
@@ -287,14 +294,6 @@ keywords will be used for the search engine. -->
             saved_bb</t>
           </list></t>
 
-        <t>Congestion controllers, such as CUBIC or RENO, could estimate the
-        saved_bb and current_bb values by utilizing a combination of the
-        cwnd/flight_size and the minimum RTT. A different method could be used
-        to estimate the same values when using a rate-based congestion
-        controller, such as BBR  <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
-        consider whether the methods could result in over-estimating the
-        bottleneck bandwidth, and the preserved values ought to be used
-        with caution.</t>
       </section>
     </section>
 
@@ -391,6 +390,16 @@ keywords will be used for the search engine. -->
 
       <section anchor="subsec:rationale_sharing"
                title="Sharing Transport Information across Multiple Connections">
+	     
+	              <t>Congestion controllers, such as CUBIC or RENO, could estimate the
+        saved_bb and current_bb values by utilizing a combination of the
+        cwnd/flight_size and the minimum RTT. A different method could be used
+        to estimate the same values when using a rate-based congestion
+        controller, such as BBR  <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>. It is important to
+        consider whether the methods could result in over-estimating the
+        bottleneck bandwidth, and the preserved values ought to be used
+        with caution.</t>
+
         <t>There can be benefit in sharing transport information across
         multiple concurrent connections. <xref target="RFC9040"></xref>
         considers the sharing of transport parameters between TCP connections
@@ -953,9 +962,9 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </references>
 
     <references title="Informative References">
-      <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
-	    
+      <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>	    
       <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+      <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
 
       <?rfc include="reference.RFC.5783.xml"?>
       <?rfc include="reference.RFC.8867.xml"?>
