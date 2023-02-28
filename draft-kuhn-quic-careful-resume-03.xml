@@ -98,8 +98,8 @@ output. If you submit your draft to the RFC Editor, the
 keywords will be used for the search engine. -->
 
     <abstract>
-      <t>This document discusses careful convergence of congestion
-      control in QUIC, providing
+      <t>This document discusses careful convergence of 
+      Congestion Control (CC) in QUIC, providing
       a cautious method that enables fast startup in a wide
       range of connections : 0-RTT, new connections sharing the same
       peers (but not using 0-RTT (but not using 0-RTT)), application-limited traffic.</t>
@@ -111,17 +111,17 @@ keywords will be used for the search engine. -->
       updates to support application-limited traffic.</t>
       <!-- end new from v2 to v3 -->
 
-      <t>The method reuses a set of computed Congestion Control (CC) parameters that
+      <t>The method reuses a set of computed CC parameters that
       are based on the previously observed path characteristics between the
-	the same pair of transport endpoints, such as the
+      the same pair of transport endpoints, such as the
       bottleneck bandwidth, available capacity, or the RTT. These parameters
-      are stored, allowing then to be later used to modify the congestion control behavior
-      of a subsequent connection. The document discusses assumptions
+      are stored, allowing then to be later used to modify the CC behavior
+      of a subsequent connection. The document also discusses assumptions
       and defines requirements around how a
       sender utilizes these parameters to provide opportunities for a
       new connection to more quickly get up to speed (i.e. utilize the available
       capacity). It discusses how these changes impact the capacity at a
-      shared network bottleneck and the response that is needed after any
+      shared network bottleneck and the safe response that is needed after any
       indication that the new rate is inappropriate.</t>
     </abstract>
   </front>
@@ -131,44 +131,45 @@ keywords will be used for the search engine. -->
       
 	<t>All Internet transports are required to either use a CC method, or
 	to constrain there rate of transmission <xref target="RFC8085"></xref>. In 2010, 
-	<xref target="RFC5783"></xref> provided a survey of alternative CC methods, and noted that there
+	a survey of alternative CC methods <xref target="RFC5783"></xref>, noted that there
 	are challenges when a CC operates across an Internet path with a high and/or
 	variable bandwidth-delay product (BDP).</t>
       
-      	<t>A CC algorithm typically takes time to ramp-up the packet rate,
+      	<t>A CC method typically takes time to ramp-up the packet rate,
       	called the "slow-start phase", informally known as the time to "Get up
-      	to speed". The slow start phase is a period in which a sender
-      	intentionally uses less capacity than might be available with the
-      	intention to avoid overshooting the actual capacity at a bottleneck.
-      	This would result in increased queuing (latency/jitter) and/or
-      	congestion packet loss to the dlow. Any overshoot in the capacity can also have a
+      	to speed". This slow start phase is a period in which a sender
+      	intentionally uses less capacity than might be available, with the
+      	intention to avoid or limit overshooting the actual capacity at a bottleneck.
+      	This can result in increased queuing (latency/jitter) and/or
+      	congestion packet loss to the flow. Any overshoot in the capacity can also have a
       	detrimental effect on other flows sharing a common bottleneck. In the
-      	extreme case, persistent congestion can result in unwanted starvation of
-      	other flows <xref target="RFC8867"></xref> (i.e. Preventing other flows
+      	extreme case, persistent congestion could result in unwanted starvation of
+      	other flows <xref target="RFC8867"></xref> (i.e., Preventing other flows
       	from successfully sharing a common bottleneck).</t
 
       <t>This document specifies a method that can improve performance by 
-      reducing the time to get up to speed, and hence reduce the
+      reducing the time to get up to speed, and hence can reduce the
       total duration of a transfer.  
-	It introduces an alternative method to select initial CC parameters,
-       including a way to more rapidly and safely grow the cwnd.
+      It introduces an alternative method to select initial CC parameters,
+       including a way to more rapidly and safely grow the congestion
+       window (cwnd).
        This method is based on temporal sharing (sometimes known as
-       caching) of a set of computed CC parameters related to a previously 
+       caching) of a set of computed CC parameters that relate to a previously 
        observed path, such as the bottleneck
-       bandwidth, available capacity,  and RTT. These stored
-       parameters are later used to modify the CC
+       bandwidth, available capacity, and RTT. These
+       parameters are stored and used to modify the CC
        behaviour of a subsequent connection between the same local and remote endpoints.</t>
 
         <Section title="Using the Information with Care">
-      		<t>Care is needed in the use of any temporal information
- 	to assure safe use of the Internet and to robust to changes
+      	<t>Care is needed in the use of any temporal information
+ 	to assure safe use of the Internet and to be robust to changes
  	in traffic patterns, network routing and link/node failures.
  	There are also cases where using the parameters of a previous
-       connection are not appropriate, and a need to evaluate the potential
-       for malicious use of the method.
+        connection are not appropriate, and a need to evaluate the potential
+        for malicious use of the method.
 	The specification for the QUIC transport protocol <xref
-      		target="RFC9000"></xref> therefore notes "Generally, implementations are advised
-      		to be cautious when using previous values on a new path." </t>
+      	target="RFC9000"></xref> therefore notes "Generally, implementations are advised
+      	to be cautious when using previous values on a new path." </t>
       	</section>  <!--- end of use with care --> 
           
 	<section title="Receiver Preference">
@@ -179,177 +180,106 @@ keywords will be used for the search engine. -->
              is not available at the sender. In these cases, a client could
              could explicitely ask for tuning the 
              slow start when the application continues transmission, or to to inhibit tuning. 
-              Examples where this could have benfit include:</t>
+             Examples where this could have benfit include:</t>
 			
-		<list style="numbers">
- 		<t>when a receiver understands that the pattern of traffic that will use a connection 
+	     <list style="numbers">
+ 		<t>when a receiver understands that the pattern of traffic that a connection will use
  		(e.g., the volume of data to be sent, the length of the session, or the maximum transfer rate required);
- 		<t>when a receiver has a local indication that the path/local interface has changed;</t>
+ 		<t>when a receiver has a local indication that the path/local interface has changed since CC parameters were stored;</t>
  		<t>when there is information related to the current hardware limitations at the receiver;</t>
-      		<t>where the receiver understanda the capacity needs of other concurrent flows that might be expected to compete for 
- 	     shared capacity;</t>
+      		<t>where the receiver understands the capacity that will be needed for other concurrent flows 
+		that might be expected to share the capacity of the path;</t>
  	      </list>
 			
- 		<t>A related document complements this CC method by allowing storage
-      	    	of the sender-generated transport information at the receiver
+ 		<t>A related document complements this CC method by allowing 
+		the sender-generated transport information to be stored at the receiver
 		<xref="I-D.kuhn-quic-bdpframe-extension"></xref>. 
-		This
-      	    	enables a receiver to implement a policy to inform a sender
-      	    	whether it desires to reuse the transport information.<
-		It also avoids
-		a sender being required to retain additional state for each
-		receiver. /t>
-		</section> <!--- end of Receiver Preference -->
+		This 
+      	    	enables a receiver to implement a policy that informs a sender
+      	    	whether the receiver desires the sender to reuse the CC parameters.
+		By transfering the information to a receiver, it also releases the
+		sender from needing to retain CC parameter state for each
+		receiver. </t>
+	</section> <!--- end of Receiver Preference -->
 
 	<section anchor="sec-use_case" title="Examples of Scenarios of Interest">
     
-    	 <t> This secion provides a set of examples where the method is expected to improve performance.</t>
-	   <t>QUIC introduces the concept of transport parameters (section 4 of
-        	<xref target="RFC9000"></xref>). This document notes that a new
+    	        <t> This secion provides a set of examples where the method is expected to improve performance.</t>
+	        <t>QUIC introduces the concept of transport parameters (Section 4 of
+        	<xref target="RFC9000"></xref>). The present document
+		adds to this by noting that a new
         	connection can utilize a set of key transport parameters from a
-        	previous connection to reduce the completion time for a transfer 
-		where the transfer
+        	previous connection to reduce the completion time for a transfer. 
+		This is expected to have benefit when the transfer
        		is significantly larger than the IW, and the BDP is also significantly 
 		more than the IW. This benefit is particularly
         	evident for a path where the RTT is much larger than for typical
         	Internet paths.</t>
 		
 		<t>The method can be used by a sender performing a unidirectional data transfer
-        	towards the receiver, (e.g., a receiver downloading a file or a web page). This
+        	towards the receiver, (e.g., a receiver downloading a file or a web page). This applies to a
+        	CC that sends data to a remote endpoint and that remote
+        	endpoint resumes the connection, which 
         	is the focus of the current version of the document.</t>
 
-        	<t>Receivers can also perform a bidirectional data transfer,
-		where both endpoints simulatenouysly send data to
-       		each other (e.g.,  remote executing application, or a
-        	video conference call).</t>
+		<t>Both endpoints can assume the role of a
+        	sender or a receiver. Receivers can therefore 
+		also perform a bidirectional data transfer,
+		where both endpoints simulatenously send data to
+       		each other (e.g.,  remote execution of an application, or a
+        	bidirectional video conference call).</t>
 		
-		<t>Examples of scenarios where temporal sharing of CC parameters, 
- 	can eliminate round-trip times at the start of a new connection
- 	include:</t> 
+		<t>Examples where temporal sharing of CC parameters 
+ 		can eliminate round-trip times at the start of a new connection
+ 		include the following:</t> 
 		
-	<list style="numbers">
-           <t>To optimize applications that use a series of connections over the
-           same path, each of which otherwsie would need to individually learn the available
- 	  capacity and rtt;</t>
-      	<t>To resume using capacity after a pause in transmission (e.g., when an application
-           pauses, and then connects over the same path);</t>      
-	<t>To reconnect after a disruption temporarilly reduces the
-           network capacity (e.g., due to a link propagation
-           impairment, or an example  where a user on a train journey travels through
-	 different areas of connectivity before the user returns to a path with the original
-           characteristics).</t>
-         </list>
-
-
-        	<t>In general, the method in this document applies to a
-        	CC that sends data to a remote endpoint and that remote
-        	endpoint resumes the connection. Both endpoints can assume the role of a
-        	sender or a receiver.</t>
+		<list style="numbers">
+           		<t>Where an application uses a series of connections over the
+           		same path
+			(each connection which otherwise would need to individually 
+		         discover the CC parameters);</t>
+      			<t>Where an application resumes using capacity after a pause 
+			in transmission (an application that
+           		pauses would otherwise need to discover new CC parameters 
+			each time it connects over the same path);</t>      
+			<t>Where an application reconnects after a disruption that
+			had temporarilly reduced the path
+           		capacity (e.g., after to a link propagation
+           		impairment, or  where a user on a train journey travels through
+	 		different areas of connectivity before the endpoint
+			returns to use a path with the original characteristics).</t>
+         	</list>
 
 	    <section title="A Satellite Access Network Example"> 
 
-        	<t>For example, a satellite access network, a 5.3 MB transfer takes up
-        	to 9 seconds using standard congestion control, whereas using the
-        	specified method this could reduce to 4 seconds <xref
+        	<t>In a specific example of high BDP path, a satellite access network,
+		takes up to 9 seconds to complete a 5.3 MB transfer
+		using standard CC, whereas using the
+        	specified method the transfer time could reduce to 4 seconds <xref
         	target="IJSCN"></xref>; and the time to complete a 1 MB transfer could
         	be reduced by 62 % <xref target="MAPRG111"></xref>. Benefit is also
         	expected for other sizes of transfer and for different path
-        	characteristics that also result in a high BDP.</t>
+        	characteristics that also result in a path with high BDP.</t>
 	    </section> <!-- End of intro:examples:satcom -->
 	    
-<!--- GF: BDP: THIS TEXT SEEMS RELATED TO THE BDP FRAME NOT THE CAREFUL RESUME
-  section title="Saving Path Information"	
-
-	<t> Three approaches are compared:  
-	<list>
-	<t>(1) The saved information is stored at the sender 
-        ("Local storage") and is never sent to a receiver;</t>
-	<t>(2) Some information is transmitted to the receiver,
-        which can be used when reconnecting, but the receiver cannot read the
-        information received from the sender ("NEW TOKEN");</t>
-	<t>(3) the
-        saved information is
-        transmitted to a receiver, which can use it when reconnecting.
-        The receiver can read it to accept or not the exploitation of
-        previous congestion information (a.k.a. "BDP extension").
-	</list>
-	</t>
-  /section
- --->
-
-<!--- GF: BDP: This is argument for the BDP Frame, not careful resume ---
-
-          <t>In some cases, the receiver could be aware of a change in the path
-          (e.g., a change in the local interface), and might be
-          able to determine that the current path is different.</t>
-	  
-          <t>In other cases, a receiver could discover
-          that a previously characterised path has again become
-          available providing an opportunity to reduce the time to get up 
-          to speed by utilizing saved CC information for this path.</t>
-	
-          <t>To safely utilize this information, the receiver
-          would need assurance that this path was to the same endpoint, and that
-          the characteristics have not significantly changed from those
-          previously measured.</t>
-	  
---->
-
-<!-- GF: Note we agreed to not specifically comment on DASH -->
-<!--- If retained, this section on the client behaviour belongs in the BDP-Frame
-    
-    section anchor="subsec:rationale_client" title="Optimizing Client Requests"
-	<t>Where the receiver is aware of a high BDP, it can adapt other parameters
-	to better utilize the available capacity, such as 
-	increasing the value of flow control pararemeters.</t>
-
-        <t>Some designs of application do not use long-lasting transport connections. 
-        Instead, they use a series of shorter connections, typically
-	each using the same path. This style of application can benefit 
-	from this method, and could be enhanced by allowing the application
-	to receive an estimate of the expected characteristics, which could help
-	to appropriately use the new connection (e.g.,
-	adapting the content of quality for a video application; or anticipating
-	the time taken to complete the transmission of an object). </t>
-	
-	<t> For example, a client using Dynamic Adaptive Streaming over HTTPS
-        (DASH). Such a client might be unable to receive sufficient data
-	to reach the video playback
-        quality that is supported by the path, because for each video chunk,
-        the transport protocol needs to independently determine the path
-        capacity. The lower transfer rate is safe, but can also lead to an
-        overly conservative requested rate to the sender, because clients
-        often adapt their application-layer requests based on the transport
-        performance (i.e., the client could fail to increase the requested
-        quality of video chunks, or to fill buffers to avoid stalling playback
-        or to send high quality advertisements). </t>
-	      
-        <t> When using Dynamic Adaptive Streaming over HTTPS (DASH), clients
-	might encounter issues in knowing the available path capacity or DASH
-	can encounter issues in reaching the best available video playback
-	quality.  The client requests could then be adapted and specific
-	traffic could utilize the previously observed path characteristics (such
-	as encouraging the client to increase the quality of video chunks, to
-	fill the buffers and avoid video blocking or to send high quality
-	adds).</t>
-      /section>
-      --->
-<!--- ************************************ --->
+	    <section title="Another Network Example"> 
+		    <t>	<t>{XXX-Editor note: A future revision can provide other Path Examples here.}</t>
+	    </section> <!-- End of intro:examples:other -->
 
     </section <!--- end of examples -->
 
     <section title = "Structure of this Document">
-      <t>The remainder of this document: <list style="numbers">
-          <t>discusses use-cases where a careful resume for a QUIC connection is
+      <t>The remainder of this document has the following structure: <list style="numbers">
+          <t>It discusses use-cases where a careful resume for a QUIC connection is
           expected to have benefit;</t>
 
-          <t>proposes guidelines for how to carefully utilize the previously
+          <t>It proposes guidelines for how to carefully utilize the previously
           stored CC information;</t>
 
-          <t>describes implementation considerations for the proposed method
+          <t>It describes implementation considerations for the proposed method
           using QUIC;</t>
 
-          <t>discusses the trade-offs associated with the different
+          <t>It discusses the trade-offs associated with the different
           implementation solutions.</t>
         </list></t>
     </section> <!-- End of stucture at end of intro-->
