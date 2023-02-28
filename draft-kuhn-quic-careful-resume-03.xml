@@ -355,14 +355,14 @@ keywords will be used for the search engine. -->
     </section> <!-- End of stucture at end of intro-->
     
 </section> <!-- end of introduction and motivation -->
-    
- <!--- The protocol spec follows below here -->
+
+<!--- ************************************ --->
+<!--- The protocol spec follows below here -->
 
 <section anchor="notation" title="Language, notations and terms">
 
       <t>This section provides a brief summary of key terms and the
-      requirements language that is used. The document uses language drawn
-      from a range of IETF RFCs. </t>
+      requirements language that is used.</t>
 
     <section anchor="sec:req_language" title="Requirements Language">
         <t>The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -372,47 +372,49 @@ keywords will be used for the search engine. -->
         and only when, they appear in all capitals, as shown here.</t>
     </section>
 
-    <section title= "Sender-generated information information">
-	<t>Sender-generated information information is used for two functions:
-		<list>
-			<t>Information about the capacity available on a saved path, to allow a sender to
-			determine an appropriate set of CC paramaters for the current path.</t>
-			<t>Information to charactise the saved path, to allow a sender to
-			establish if the saved information is consistent with the
-			current path.</t>
-		</list>
-	</t>
+    <section title= "Use of CC Information collected by the Sender">
+	<t>Sender-generated information is used in this document for two functions:</t>
+	<list>
+		<t>Information to charactise the saved path, to allow a sender to
+		establish if the saved information indicates the saved path 
+		is consistent with the current path.</t>
+	 	<t>Information about the capacity that was available on a saved path, 
+		to allow a later sender to
+	 	determine an appropriate set of CC paramaters for its current path.</t>
+	</list>
     </section> <!--- End of Notation: the information -->
 
     <section anchor="sec-terms_def" title="Notations and Terms">
-        <t>This document defines current, and saved values for a set of CC
+        <t> The document uses language drawn
+      from a range of IETF RFCs.  It defines current, and saved values for a set of CC
         parameters:
 	<list style="symbols">
 
-<!--- GF: Why is IW in this information block??? it could potentially be in BDP but is not needed here --->
+<!--- GF (Feb 2023): Removed the IW from this information block??? --->
+<!--- it could potentially be in BDP but is not needed here --->
 <!---	<t>IW: Initial Window <xref target="RFC9002"></xref>;</t> --->
 <!---            <t>current_iw: Current IW;</t> --->
 <!---            <t>recom_iw: Recommended IW;</t> --->
 
-            <t>current_bb : Current estimated bottleneck bandwidth;</t>
+            <t>current_bb : The current estimated bottleneck bandwidth;</t>
 
-            <t>saved_bb: Estimated bottleneck bandwidth preserved from a
+            <t>saved_bb: The estimated bottleneck bandwidth preserved from a
             previous connection;</t>
 
-            <t>current_rtt: Current RTT;</t>
+            <t>current_rtt: The current RTT;</t>
 
-            <t>saved_rtt: RTT measure RTT preserved from a previous
+            <t>saved_rtt: The measured RTT, preserved from a previous
             connection;</t>
 
-            <t>endpoint_token : Endpoint Token of the receiver;</t>
+            <t>endpoint_token: The Endpoint Token of the receiver;</t>
 
-            <t>current_endpoint_token : Current Endpoint Token of the receiver;</t>
+            <t>current_endpoint_token: The current Endpoint Token of the receiver;</t>
 
-            <t>saved_endpoint_token : Endpoint Token of a previous connection by the
+            <t>saved_endpoint_token: The Endpoint Token of a previous connection by the
             receiver;</t>
 
-            <t>remembered BDP parameters: a combination of saved_rtt and
-            saved_bb</t>
+            <t>remembered BDP parameters: A combination of the saved_rtt and
+            saved_bb.</t>
           </list>
 	</t>
 
@@ -422,46 +424,51 @@ keywords will be used for the search engine. -->
       </section> <!--- End of Notation: end of terms --->
 </section><!--- End of Notation -->
 
-<section anchor="sec-phase" title="The Phases of CC">
-      <t>This section defines a series of phases through which the
-      CC algorithm moves as a connection gets up to speed. 
+<section anchor="sec-phase" title="The Phases of CC using Careful Resume">
+      <t>This section defines a series of phases through that the
+      CC algorithm moves through as a connection gets up to speed
+      when uit uses the Careful Resume method. 
       
       <list style="numbers">
       
-          <t>Observe: During a previous connection, information about the path
+          <t>Observe Phase: During a previous connection, information about the specific path
 	  to an endpoint is saved. This is used to characterise the path and
-	  to indicate the capacity available. It includes the current RTT
+	  to indicate the capacity that was available. It includes the current RTT
           (current_rtt), bottleneck bandwidth (current_bb) and current receiver
           Endpoint Token (current_endpoint_token) are stored as saved_rtt, saved_bb and
           saved_endpoint_token.</t>
 
-          <t>Reconnaissance: When a sender resumes between the same pair of endpoints, 
-	  it enters the Reconnaissance Phase.
-	  This 
-	  phase is designed to check the current path is consistent with saved path information
-	  and also to avoid resuming under severely congested conditions.
-	  The sender only enters this phase when there is saved infromation for the same
-	  pair of endpoints and the information is valid (i.e., the infromation has
+          <t>Reconnaissance  Phase: When a sender resumes between the same pair of endpoints, 
+	  (aka the same path) it enters the Reconnaissance Phase.
+	  The sender only enters this phase when there are saved CC parameters for the same
+	  pair of endpoints and this information is currnetly valid (i.e., the parameters have
 	  not expired.)
-	  If a method is provided (such as the BDP_Frame), the receiver can request
+	  When a method is provided (such as the BDP_Frame), a receiver can request
 	  the sender to not enter this phase.
-          The sender measures the path characteristics of the present
-          path to confirm that the path is similar to that previously characterised
-          (including a similar RTT). The sender is allowed to send iniial data
-	  limited by the Initial Window.
+	  The sender is send iniial data, limited by the Initial Window.
+          This 
+	  phase checks whether the current path is consistent with the saved path information.
+	  The sender then measures the path characteristics of the present
+          path to confirm that the path is consistent with the previously characterised path
+          (including a similar RTT). 
 	  <list>
-	  	<t>If the sender determines either that the path RTT and other saved path information
-	 	 are not consistent with the current path or that any sent initial data 
-	  	was not correctly received, then the sender continues using the standard CC, and enters 
+	  	<t>If the sender determines that the path RTT or the other saved path information
+	 	 are not consistent with the current path, 
+		then the sender continues using the standard CC, and enters 
 		the Normal Phase.</t>
+		 <t>To ensure a sender avoids resuming under severely congested conditions,
+	         if any sent initial data 
+	  	 was not correctly received, the sender continues using the standard CC, and enters 
+		 the Normal Phase.</t> 
 	 	<t>If the sender confirms both that the saved and current path information are consistent 
 		and that the sent initial data 
 	  	was correctly received, the sender enters the Unvalidated Phase.</t>
 	  </list>
 	  </t>
 	  
-          <t>Unvalidated: In the Unvalidated Phase, a sender can
-	  utilize the saved path information to update its CC parameters. This phase enables a
+          <t>Unvalidated Phase: In the Unvalidated Phase, a sender can
+	  utilize the saved path information to update its CC parameters. 
+          This phase a
           rate higher than allowed by a traditional
           slow-start mechanism. The convergence towards the
           previous rate is expected to be faster, but should not be instantaneous, to avoid
@@ -469,83 +476,85 @@ keywords will be used for the search engine. -->
 	  continues to check the saved and current path information are consistent. 
 	  <list style="numbers">
               <t>If a sender determines either that previous parameters
-              are not valid (due to a detected change) or congestion was experienced,
-              then the sender must rapidly retreat to a safe rate.</t>
-	       <t>If the unvalidated rate is used without inducing significant
-              congestion to the path, then the sender is permitted to continue
-              at this rate in the 'Normal' phase.</t>
+              are not valid (due to a detected change in the path) or congestion was experienced,
+              then the sender needs to enter the Retreat Phase.</t>
+	       <t>If acknowledgments show that the unvalidated rate was succesfully used 
+	       without inducing significant congestion to the path, 
+	       then the sender is permitted to continue at the rate used in 
+	       in the unvalidated phase when it continues in the Normal Phase.</t>
             </list></t>
 
-          <t>Retreat: In the Retreat Phase, the sender stops using the saved path 
-	  characteristics. This phase is designed to mitigate the impact on other
-	  flows that might have been sharing a congested bottleneck. 
+          <t>Retreat Phase: In the Retreat Phase, the sender stops using the saved CC parameters. 
+	  This phase is designed to mitigate the impact on other
+	  flows that might have been sharing a congested bottleneck when in the Unvalidated Phase. 
 	  The sender needs to re-initialised CC parameters to drain any queue built
-	  at the bottleneck duing the Unvalidated Phase and allow other flows to regain
-	  their share of the available capacity. This reaction differs to the traditional
-	  congestion control reaction, because the sender CC was unvalidated.
-	  Saved path information should be removed, to prevent it being used with other
-	  flows.
+	  at the bottleneck duing the Unvalidated Phase and allow other flows to then regain
+	  their share of the available capacity. This reaction differs to a traditional
+	  CC reaction to congestion, because in this case the capacity estimate was unvalidated.
+	  Saved CC parameters for this path should be removed, to prevent the
+	  parameters being used again with other flows.
 	  <list style="numbers">
-              <t>The sender then enters the 'Normal' phase with the re-initialised CC parameters.</t>
+              <t>The sender then enters the Normal phase with re-initialised CC parameters.</t>
           </list></t>
 
-          <t>Normal: The sender resumes using the normal CC method.</t>
+          <t>Normal Phase: The sender resumes using the normal CC method.</t>
+	      
         </list></t>
 
     </section> <!-- End of Phases -->
 
-    <section anchor="measure" title="Determing the current path capacity">
+    <section anchor="measure" title="Determing the current Path Capacity in the Observe Phase">
 			
 	<t>Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by utilizing a combination of the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>]
-    </section> <!-- Measure -->
+	    
+    </section> <!-- Observe Phase  (measure) -->
 
-    <section anchor="sec-rationale" title="Safety Guidelines">
-	<t> This section introduces the rationale behind safety guidelines
-        for the usage of saved infromation: variable
-	network conditions and malicious receviver.</t>
+    <section anchor="sec-rationale" title="Safety Requirements">
+	<t> This section defines the safety requirements
+        for using saved CC parameters,</t>
 	
 	<section  title="Internet Paths">
-	<t>Paths and capacity can change with respect to time, resulting
-	in "variable network
-        conditions". This can result in previously measured values
-        becoming irelevant and requires careful use by a
-        CC algorithm.</t>
+		<t>Paths and capacity can change with respect to time, resulting
+		in "variable network
+        	conditions". This can result in previously measured values
+        	becoming irelevant and requires careful use by a
+       		CC algorithm.</t>
 	
-	<t>EDITOR NOTE: The sender ought not to re-utilize all the capacity it previously
-        used, to avoid starving other flows that started or increased their capacity after the last measurement.
-        How strong should this be stated: ... MUST or SHOULD ... What safety
-        factor is appropriate for the resuming sender? If using slow-start it
-        would anyway double the rate on the next RTT, so is capacity/2
-        appropriate to initially try?</t>
+		<t{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
+        	used, to avoid starving other flows that started or increased their capacity after the last measurement.
+       		How strong should this be stated: ... MUST or SHOULD ... What safety
+        	factor is appropriate for the resuming sender? If using slow-start it
+       		would anyway double the rate on the next RTT, so is capacity/2
+        	appropriate to initially try?} </t>
 
-        <t>A new connection MUST NOT use the previously measured saved_rtt and
-        saved_bb to simply initialize a new flow to resume sending at the same
-        rate.</t>
+		<t>A new connection MUST NOT directly use the previously measured saved_rtt and
+        	saved_bb to simply initialize a new flow to resume sending at the same
+       		rate.</t>
 
-        <t> Bottleneck bandwidth and network traffic can
-            change at any time. An Internet method needs to be robust to
-            network conditions that can differ from one connection to the next,
-            due to variations in the forwarding path, reconfiguration of
-            equipment or changes in the link conditions.</t>
-	 <t>The method
-            needs to be robust to changes in network traffic, including the
-            arrival of new traffic flows that compete for the bottleneck
-            capacity. Behaviors need to be designed that avoid sending
-            excessive data into a congestion bottleneck because this can have
-            a material impact on any flows using that bottleneck, and the
-            ability of those flows to control their own sending rate.</t>
+        	<t> Bottleneck bandwidth and network traffic can
+            	change at any time. An Internet method needs to be robust to
+            	network conditions that can differ from one connection to the next,
+            	due to variations in the forwarding path, reconfiguration of
+            	equipment or changes in the link conditions.</t>
+	 	<t>The MUST be robust to changes in network traffic, including the
+            	arrival of new traffic flows that compete for the bottleneck
+            	capacity. The method needs to be designed to avoid sending
+            	excessive data into a congested bottleneck, because this can have
+            	a material impact on any flows sharing that bottleneck, and the
+            	ability of those flows to control their own sending rate.</t>
+		
       </section> <!-- End of Safety: Internet Paths --->
 
       <section title="Variable Network Conditions">
-        <t>The sender MUST check the validity of any received saved_rtt and
-        saved_bb parameters, whether these are sent by a receiver or are stored
-        at the sender. The following events indicates cases where the use of
-        these parameters is inappropriate: 
-	<list style="symbols">
+        	<t>The sender MUST check the validity of any received saved_rtt and
+        	saved_bb parameters, whether these are sent by a receiver or are stored
+        	at the sender. The following events indicates cases where the use of
+        	these parameters is inappropriate: 
+		<list style="symbols">
             <t>Endpoint Token change: If the Endpoint Token changes 
             (i.e., the saved_endpoint_token is different from the
             current_endpoint_token), the different Endpoint Token can be assumed as an
@@ -584,7 +593,8 @@ keywords will be used for the search engine. -->
             the previously used cwnd.</t>
           </list></t>
 
-	<t>{XXX-Editor note: Decide on mittigation.}</t>
+	<t>{XXX-Editor note: Decide on the mitigation.}</t>
+	      
         <t>The impact of changes can be mitigated by 2 potential solutions: 
 	<list style="symbols">
             <t> When resuming, restore
@@ -600,194 +610,125 @@ keywords will be used for the search engine. -->
           </list></t>
       </section> <!-- End of Safety: Network Conditions --->
 
-<!--- BDP Frame -->
-      <section title="Protecting from Malicious Receivers">
-        <t>The sender MUST check the integrity of the saved_rtt and saved_bb
-        parameters received from a receiver.</t>
+      <t>Security consideration are discussed in <xref target="sec-security"></xref> .</t>
 
-        <t>There are several solutions to avoid attacks by malicious receivers:
-        <list style="symbols">
-            <t>Solution #1 : The sender stores a local estimate
-            of the bottleneck bandwidth and RTT parameters as the saved_bb and
-            saved_rtt.</t>
+     <section anchor="sec-safety_guide" title="CC Safety Guidelines">
+      	<t>The following safety guidelines refer to the labeling defined in
+      	<xref target="sec-phase"></xref>.</t>
 
-            <t>Solution #2 : The sender sends the estimate of
-            the bottleneck bandwidth and RTT parameters to the receiver as the
-            saved_bb and saved_rtt in a block of information that is
-            authenticated. This information also could be encrypted by the
-            sender. The receiver resends the same information for a new
-            connection. The sender can use its local key information to
-            authenticate the information, without needing to keep a local
-            copy.</t>
+      	<t>These safety guidelines are designed to mitigate the risk that sender
+      	adds excessive congestion to an already congested path. The following
+      	mechanisms help in fulfilling this objective: 
+	<list style="symbols">
+          	<t>(observation phase) The sender SHOULD NOT store and/or send
+          	information related to a previously estimated bottleneck bandwidth
+          	(saved_bb) (see <xref target="sec-terms_def"></xref> for more
+          	details on bottleneck bandwidth definition), if the cwnd is not at
+          	least four times larger than the IW.
 
-            <t>Solution #3 : This approach is the same as
-            above, except that the sender provides an estimate of the saved_rtt
-            and saved_bb parameters in a form that may be read by the receiver.
-            Using the security mechanisms provided in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>,
-            the sender can verify that the receiver did not change the parameters inside the frame.
-	    The receiver can 
-            read, but not modify, the saved_rtt and saved_bb parameters and
-            could enable a receiver to decide whether the new
-            parameters are thought appropriate, based on receiver-side information about
-            the network conditions, connectivity, or needs of the new
-            connection.</t>
-          </list></t>
+          	<t>(reconnaissance phase) The sender MUST NOT send more than the
+          	recommended maximum IW (recom_iw) in the first RTT of transmitting
+         	 data <xref target="RFC9000"></xref>. (When used in a controlled
+         	 network, additional information about local path characteristics
+          	could be known that might be used to configure a non-standard
+          	IW).</t>
 
-        <t><xref target="sec-implem"></xref> describes various implementation
-        approaches for each of these solutions using local storage (
-	<xref target="sec-local_storage"></xref> for Rationale #2 - Solution #1),
-        NEW_TOKEN Frame ( <xref target="sec-using_new_token"></xref> for
-        Rationale #2 - Solution #2), BDP extension Frame ( <xref
-        target="sec-bdp_frame_section"></xref> for Rationale #2 - Solution
-        #3).</t>
-      </section> <!-- End of Safety: Malicous Clients --->
+          	<t>(reconnaissance phase) The sender MUST compare the measured
+          	transport parameters (in particular current_rtt) of the new session
+          	with those of the previous session (in particular
+          	saved_rtt). The method MUST NOT be used when the path fails to be
+         	 validated;</t>
 
-        <t>Security consideration are discussed in <xref
-        target="sec-security"></xref> .</t>
-	    </section>
+         	 <t>(unvalidated phase) The sender MUST NOT use the parameters unless
+          	the first IW packets when packets are detected as lost or
+         	 acknowledgments indicate the packets were ECN CE-marked. These are
+          	indication of potential congestion and therefore the method MUST NOT
+         	 be used; </t>
 
- <!--- BDP Frame --->
-	      
-        <section title="Interoperability and Use Cases">
-          <t>A sender that stores a resumption ticket for each receiver to
-          protect against replay on a third party, it could also store the
-          Endpoint Token (i.e., saved_endpoint_token) and BDP parameters (i.e.,
-          saved_rtt and saved_bb) of a previous connection.</t>
-
-          <t>When the BDP Frame extension is used, locally stored BDP
-          parameters at the sender can provide a cross-check of the BDP
-          parameters sent by a receiver. The sender can anyway enable a safe
-          jump, but without the BDP Frame extension. However, using the
-          parameters enables a receiver to choose whether to request this or
-          not, enabling it to utilize local knowledge of the network
-          conditions, connectivity, or connection requirements.</t>
-
-          <t>{XXX-Editor-note: Text to be improved: Storing local values
-          related to the BDP would help improve the ingress for new
-          connections, however, not using a BDP Frame extension could reduce
-          the interest of the approach where (1) the receiver knows the BDP
-          estimation at the sender, (2) the receiver decides to accept or reject
-          ingress optimization, (3) the receiver tunes application level
-          requests.}</t>
-        </section> <!-- End of Safety: Tradeoff: Use Cases --->
-	</section> </section> <!-- End of Safety: Tradeoff --->
-
-<section anchor="sec-safety_guide" title="CC Safety Guidelines">
-      <t>The following safety guidelines refer to the labeling defined in
-      <xref target="sec-phase"></xref>.</t>
-
-      <t>These safety guidelines are designed to mitigate the risk that sender
-      adds excessive congestion to an already congested path. The following
-      mechanisms help in fulfilling this objective: <list style="symbols">
-          <t>(observation phase) The sender SHOULD NOT store and/or send
-          information related to a previously estimated bottleneck bandwidth
-          (saved_bb) (see <xref target="sec-terms_def"></xref> for more
-          details on bottleneck bandwidth definition), if the cwnd is not at
-          least four times larger than the IW. <!-- this estimation has not
-been computed after some rounds during the 1-RTT connection. 
-At least, the 1-RTT connection should have reached the congestion avoidance phase. --></t>
-
-          <t>(reconnaissance phase) The sender MUST NOT send more than the
-          recommended maximum IW (recom_iw) in the first RTT of transmitting
-          data <xref target="RFC9000"></xref>. (When used in a controlled
-          network, additional information about local path characteristics
-          could be known that might be used to configure a non-standard
-          IW).</t>
-
-          <t>(reconnaissance phase) The sender MUST compare the measured
-          transport parameters (in particular current_rtt) of the new session
-          with those of the previous session (in particular
-          saved_rtt). The method MUST NOT be used when the path fails to be
-          validated;</t>
-
-          <t>(unvalidated phase) The sender MUST NOT use the parameters unless
-          the first IW packets when packets are detected as lost or
-          acknowledgments indicate the packets were ECN CE-marked. These are
-          indication of potential congestion and therefore the method MUST NOT
-          be used; </t>
-
-          <t>(unvalidated phase) The sender MUST implement the retreat method
-          when packets are detected as lost or acknowledgments indicate the
-          packets were ECN CE-marked. These are indication of potential
-          congestion and therefore the method MUST NOT be used.</t>
+          	<t>(unvalidated phase) The sender MUST implement the retreat method
+          	when packets are detected as lost or acknowledgments indicate the
+          	packets were ECN CE-marked. These are indication of potential
+          	congestion and therefore the method MUST NOT be used.</t>
 
         </list></t>
 
-      <t>The sender is limited by any rate-limitation of the transport
-      protocol with which the method is used.
-      For QUIC this includes: flow control mechanisms or amplification
-      attack prevention. In particular, a QUIC receiver may need to issue proactive
-      MAX_DATA frames to increase the flow control limits of a connection
+      	<t>The sender is limited by any rate-limitation of the transport
+      	protocol with which the method is used.
+      	For QUIC this includes: flow control mechanisms or amplification
+      	attack prevention. In particular, a QUIC receiver may need to issue proactive
+      	MAX_DATA frames to increase the flow control limits of a connection
 	that is started with this method.
-	<!---The maximum number of packets that can be sent without
-      acknowledgments needs to be chosen to avoid the creation and the
-      increase of congestion for the path.-->
 	</t>
+		
+	<!---The maximum number of packets that can be sent without
+      	acknowledgments needs to be chosen to avoid the creation and the
+      	increase of congestion for the path.-->
+		
+      	<t>{XXX-Editor-note: This should be a range rather than an
+      	inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
 
-<!--- I think this relates to the BDP Frame --
-      <t>This extension MUST NOT provide an opportunity for the current
-      connection to be a vector for an amplification attack. The QUIC address
-      validation process, used to prevent amplification attacks, SHOULD be
-      performed <xref target="RFC9000"></xref>.</t> -->
+      	<t>The following mechanisms could be implemented:
+	<list style="symbols">
+          	<t>Exploit a standard IW:
+	  	<list style="numbers">
+              		<t>The sender sends the first data using the IW - this is
+             	 	assumed a safe starting point for any path where there is no path
+              		information or congestion control information. This avoids
+              		adding excessive congestion to a path;</t>
 
-      <t{>XXX-Editor-note: This should be a range rather than an
-      inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
+             		 <t>The sender monitors reception of the IW data. If the path
+              		characteristics resemble those of a recent previous connection from
+              		to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
+              		all data was acknowledged without reported congestion), the
+              		method permits the sender to utilize the saved_bb as an input to
+              		adapt current_bb to rapidly determine a new safe rate;</t>
 
-      <t>The following mechanisms could be implemented: <list style="symbols">
-          <t>Exploit a standard IW:<list style="numbers">
-              <t>The sender sends the first data using the IW - this is
-              assumed a safe starting point for any path where there is no path
-              information or congestion control information. This avoids
-              adding excessive congestion to a path;</t>
+              		<t>The sender needs to avoid sending a burst of packets as a result of a
+              		step-increase in the congestion window <xref
+              		target="RFC9000"></xref>. Pacing the packets as a function of
+              		the current_rtt can provide this additional safety during the
+              		unvalidated period.</t>
+            	</list></t>
 
-              <t>The sender monitors reception of the IW data. If the path
-              characteristics resemble those of a recent previous connection from
-              to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
-              all data was acknowledged without reported congestion), the
-              method permits the sender to utilize the saved_bb as an input to
-              adapt current_bb to rapidly determine a new safe rate;</t>
+          	<t>Identify a relevant pacing rhythm:
+			
+		<list style="symbols">
+              		<t>The sender estimates a pacing rhythm using saved_rtt and
+             		 saved_bb. The Inter-packet Transmission Time (ITT) is determined
+              		from the ratio between the current Maximum Message Size (MMS) and
+              		the ratio between the saved_bb and saved_rtt. A tunable safety
+              		margin can avoid sending more than a recommended maximum IW
+              		(recom_iw): 
+			<list style="symbols">
+                  		<t>current_iw = min(recom_iw,saved_bb)</t>
+		
+                  		<t>ITT = MSS/(current_iw/saved_rtt)</t>
+                	</list></t>
 
-              <t>The sender needs to avoid sending a burst of packets as a result of a
-              step-increase in the congestion window <xref
-              target="RFC9000"></xref>. Pacing the packets as a function of
-              the current_rtt can provide this additional safety during the
-              unvalidated period.</t>
-            </list></t>
+              		<t>A  successful receipt of the IW data confirms the path 
+			can be used with the method specified in this document.</t>
+            	</list></t>
 
-          <t>Identify a relevant pacing rhythm:<list style="symbols">
-              <t>The sender estimates a pacing rhythm using saved_rtt and
-              saved_bb. The Inter-packet Transmission Time (ITT) is determined
-              from the ratio between the current Maximum Message Size (MMS) and
-              the ratio between the saved_bb and saved_rtt. A tunable safety
-              margin can avoid sending more than a recommended maximum IW
-              (recom_iw): <list style="symbols">
-                  <t>current_iw = min(recom_iw,saved_bb)</t>
+          	<t>Tune slow-start mechanisms: After transport parameters are set to
+          	a previously estimated bottleneck bandwidth, if the slow-start
+          	mechanisms continue, the sender can then overshoot the bottleneck
+          	capacity. This can occur even when using the safety check described
+          	in this section. 
+		<list style="symbols">
+              		<t>For NewReno and CUBIC, it is recommended to exit slow-start
+              		and enter the congestion avoidance phase.</t>
 
-                  <t>ITT = MSS/(current_iw/saved_rtt)</t>
-                </list></t>
-
-              <t>A  successful receipt of the IW data confirms the path can be used with
-		 the method specified in this document.</t>
-            </list></t>
-
-          <t>Tune slow-start mechanisms: After transport parameters are set to
-          a previously estimated bottleneck bandwidth, if the slow-start
-          mechanisms continue, the sender can then overshoot the bottleneck
-          capacity. This can occur even when using the safety check described
-          in this section. <list style="symbols">
-              <t>For NewReno and CUBIC, it is recommended to exit slow-start
-              and enter the congestion avoidance phase.</t>
-
-              <t>For BBR CC, it is recommended to enter the "probe bandwidth"
-              state.</t>
-            </list></t>
+              		<t>For BBR CC, it is recommended to enter the "probe bandwidth"
+              		state.</t>
+            	</list></t>
         </list></t>
 
-      <t>This follows the idea presented in <xref target="RFC4782"></xref>,
-      <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
-      <xref target="CONEXT15"></xref>.</t>
+      	<t>This follows the idea presented in <xref target="RFC4782"></xref>,
+      	<xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
+      	<xref target="CONEXT15"></xref>.</t>
 
-</section> <!--- Safety Guidelines -->
+	</section> <!--- Safety Guidelines -->
+</section>	  
 
 <section anchor="sec-acknowledgments" title="Acknowledgments">
       <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
@@ -798,9 +739,7 @@ At least, the 1-RTT connection should have reached the congestion avoidance phas
 </section>
 
 <section anchor="sec-IANA" title="IANA Considerations">
-      <t>TBD: Text is required to register the BDP Frame and the enable_bdp
-      transport parameter. Parameters are registered using the procedure
-      defined in <xref target="RFC9000"></xref>.</t>
+      <t>{XXX-Editor note: Text is required to register any IANA Considerations.</t>
 </section>
 
 <section anchor="sec-security" title="Security Considerations">
@@ -960,61 +899,21 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
       </reference>
     </references>
 
-    <section anchor="endpoint_token" title="An Endpoint Token">
+<section anchor="endpoint_token" title="Annexe: An Endpoint Token">
 
     <t>
     This proposes an Endpoint Token to allow a sender to identify its own
-    view of the network path it is using This can be shared and used as an
+	    view of the network path that it is using. In <xref="I-D.kuhn-quic-bdpframe-extension"</xref>
+	    this Endpoint Tokencould be shared and used as an
     opaque path identifier to other parties and the sender can verify if
     this is one of its current paths.
     </t>
 
-    <section title="The Problem of identifying the Path">
-
-    <t>
-    In a simple network scenario, the sending endpoint could use the IP
-    source address to identify a path. This could work when one
-    globally-allocated IP address is set per interface. There are many cases
-    where the IP address would not an acceptable to identify a path. Section
-    8 of <xref target="RFC9040"></xref> describes cases where the IP address is not a suitable
-    value when performing TCP control block sharing. In general the IP
-    address of the sender is made public in the network-layer header of IP
-    packets. When sharing internal state, <xref target="RFC6973"></xref> identifies relevant
-    privacy considerations.
-    </t>
-
-    <t>
-    Examples of network uses where a source address is not a suitable endpoint
-    token include:
-    <list style="symbols">
-	    <t>
-            The sending endpoint might not be identifiable remotely from its
-            IP address because a device on the network path translates the
-            address using a form of NAT/NAPT. In this case, a private IP
-            address might be used, which does not identify a specific
-	    endpoint.
-	    </t>
-	    <t>
-            In some cases, a sender can choose to vary the source address
-            over time to avoid likability in the observable IP header, e.g.,
-            because the used source address embeds private information, such as
-            the endpoint's MAC address/EID.
-            </t>
-    </list> </t>
-    <t>
-    Note: There are use-cases where for the purpose of identifying a path,
-    the token does not need to be globally unique, but needs to be
-    sufficiently unique to prevent attempts to misrepresent the path being
-    used such as an attack on the congestion controller. Using a smaller
-    size of token can add to the ambiguity set, reducing this likability.
-    </t>
-    </section>
-
     <section title="Creating an Endpoint Token">
-    <t>
-    When computing the Endpoint Token, the sender includes information to identify
-    the path on which it sends, for example:
-    <list style="symbols">
+        <t>
+        When computing the Endpoint Token, the sender includes information to identify
+        the path on which it sends, for example:
+        <list style="symbols">
 	    <t>
             it must include a unique identifier for itself (e.g., a globally
             assigned address/prefix; or randomly chosen value).
@@ -1045,18 +944,11 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
             it could include a time-dependent value to define the validity
             period of the token.
 	    </t>
-    </list></t> 
+       </list></t> 
 
-    <t>
-    NOTE: The Endpoint Token is used independently by receivers and senders. A
-    receiver might decide not to provide an Endpoint Token to a sender, to
-    avoid exposing additional linkable information (but also preventing use
-    of any mechanism that relies on the token).
-    </t>
-
-    <t>
-    When creating an Endpoint Token, the sender has to ensure the following:
-    <list style="numbers">
+        <t>
+        When creating an Endpoint Token, the sender has to ensure the following:
+        <list style="numbers">
 	    <t>
             To reduce the likelihood of misuse of the Endpoint Token, the value
             should be encoded in a way that hides the component information
@@ -1069,183 +961,18 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
             information it provides.
 	    </t>
 	    <t>
-            The Endpoint Token is design to prevent another party from deriving
+            The Endpoint Token is designed so that if shared it prevents another party from deriving
             private data from the token, or to use the token to perform
             unwanted likability with other information. This implies that
             the Endpoint Token MUST necessarily be different when used to identify
             different interfaces.
             </t>
-    </list> </t>
-
+       </list> </t>
     </section>
 
-<!--- This is BDP frame -->
-    <section title="Example use of an Endpoint Token">
-    <t>
-    The sender computes an Endpoint Token that seeks to uniquely identify
-    the path that it uses to communicate with the receiver (1) this is
-    associated with the path information it sends. The Endpoint Token ought
-    to be encrypted to avoid sending linkable information observable
-    eavesdroppers on the path. The receiver stores the path information
-    together with the Endpoint Token, together with the sender's
-    address/name (2). When the receiver later wishes the sender to use the
-    stored path information it returns the information to the sender (3)
-    together with the Endpoint Token. The sender recomputes the Endpoint
-    Token and compares this with the received Endpoint Token before using
-    the path information. The Endpoint Token ought to be encrypted while in
-    transit on the path to avoid provideing an eavesdropper on the path 
-	  with linkable information.
-    </t>
-
-    <list style="numbers">
-	    <t>The Sender transmits the Endpoint Token to the Receiver
-	    </t>
-	    <t>The Receiver holds an Endpoint Token 
-	    </t> 
-	    <t>The Receiver transmits the Endpoint Token to the Sender 
-	    </t>
-    </list>
-    </section> <!-- 
-
-    <section title="A Change of the Source Address">
-    <t>
-    When the source address changes (e.g. it is derived from randomised
-    information, and changes from use to use <xref target="RFC4941"></xref>). In this case the
-    Endpoint Token might need to be consistent across this change, and the remote
-    receiver will need to also be able identify the original sender to
-    return the corresponding Endpoint Token.
-    </t>
-    </section>
-
-<!--- BDP Frame
-    <section title="Security Related to use of the Endpoint Token">
-    <t>
-    A number of security-related topics have been discussed, mostly
-    concerning the potential exposure of the identity on the path. This information can
-    also be visible in the IP source address or higher-layer data, but can
-    be hidden from a remote endpoint using methods such as MASQUE proxy.
-    When used to inform the transport system using a layered proxy, the
-    transport endpoint token refers to the endpoints of the outer QUIC
-    header, and hence the proxy itself, not the end-to-end communication
-    relayed by the proxy.
-    </t>
-    <t>
-    A sender might decide to not use this method if it has a stroing requirement to prevent
-    flows being linkable with previous flows to the same endpoint. A
-    decision not to provide an Endpoint Token necessarily prevents the
-    sender from requesting the receiver to return path information to allow
-    the same transport information to be re-used, potentially strengthening
-    privacy but consequently eliminating any performance benefits.
-    </t>
-    </section>
-
-<!--- BDP Frame --->
-      <section anchor="sec:discuss_bdp_default"
-               title="Trade-off between the different solutions">
-        <t>This section provides a description of several implementation
-        options and discusses their respective advantages and drawbacks. </t>
-
-        <t>While there are some discussions for the solutions regarding
-        Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
-        avoid Rationale #1 - Solution #1: the sender MUST implement a safety
-        check to measure whether the saved BDP parameters (i.e. saved_rtt and
-        saved_bb) are relevant or check that their usage would not cause
-        excessive congestion over the path. </t>
-
-        <t>
-        The method used to store the transport parameters
-        SHOULD be associated with a lifetime. If no lifetime expiration
-        is provided, safety guidelines should help guarantee that the
-        session resumption is careful. While the sender may not specify
-        how long the data is stored at its level (for the local storage
-        solution), BDP extension Frame proposes a extension_lifetime
-        parameter and "token SHOULD have an expiration time" 
-        <xref target="RFC9000"></xref>.
-        </t>
-
-<!--- BDP frame --->
-<section anchor="sec-implem" title="Implementation Considerations">
-      <section anchor="sec-bdp_frame"
-               title="Rationale behind the different implementation options">
-        <t>The NewSessionTickets message of TLS can offer a solution. The
-        proposal is to add a 'bdp_metada' field in the NewSessionTickets,
-        which the receiver is able to read. The only extension currently defined
-        in TLS1.3 that can be seen by the receiver is max_early_data_size (see
-        Section 4.6.1 of <xref target="RFC8446"></xref>). However, in the
-        general design of QUIC, TLS sessions are managed by a TLS stack.</t>
-
-        <t>Three distinct approaches are presented: sending an opaque blob to
-        the receiver that the receiver may return to the sender when establishing
-        a future new connection (see <xref
-        target="sec-using_new_token"></xref>), enabling local storage of the
-        BDP information (see <xref target="sec-local_storage"></xref>) and a
-        BDP Frame extension (see <xref
-        target="sec-bdp_frame_section"></xref>).</t>
-      </section>
-
-      <section anchor="sec-local_storage"
-               title="Independent Local Storage of Values">
-        <t>This approach independently lets both a receiver and a sender store
-        their BDP parameters: <list style="symbols">
-            <t>During a 1-RTT session, the endpoint stores the RTT (as the
-            saved_rtt) and bottleneck bandwidth (as the saved_bb) together in
-            the session resume ticket. 
-            </t>
-
-            <t>The sender maintains a table of previously issued tickets,
-            indexed by the random ticket identifier that is used to guarantee
-            uniqueness of the Authenticated Encryption with Associated Data
-            (AEAD) encryption. Old tokens are removed from the table using the
-            Least Recently Used (LRU) logic. For each ticket identifier, the
-            table holds the RTT and bottleneck bandwidth (i.e. saved_rtt and
-            saved_bb), and also the Endpoint Token of the receiver (i.e.
-            saved_endpoint_token).</t>
-          </list></t>
-
-        <t>During the new session establishment (0-RTT or 1-RTT), the local endpoint waits for the first
-        RTT measurement from the remote peer. This is used to
-        verify that the current_rtt has not significantly changed from the
-        saved_rtt (used as an indication that the BDP information is
-        appropriate for the current path).</t>
-
-        <t>If this RTT is confirmed, the endpoint also verifies that an IW of
-        data has been acknowledged without requiring retransmission or
-        resulting in an ECN CE-mark. This second check detects whether a path
-        is experiencing significant congestion (i.e., where it would not be
-        safe to update the cwnd based on the saved_bb). In practice, this
-        could be realized by a proportional increase in the cwnd, where the
-        increase is (saved_bb/IW)*proportion_of_IW_currently-ACKed.</t>
-
-        <t>This solution does not allow a receiver to request the sender not to
-        use the BDP parameters. If the sender does not want to store the
-        metrics from previous connections, an equivalent of the
-        tcp_no_metrics_save for QUIC may be necessary. This option could be
-        negotiated that allows a receiver to choose whether to use the saved
-        information.</t>
-      </section>
-
-      <section anchor="sec-using_new_token" title="Using NEW_TOKEN frames">
-        <t>A sender can send a NEW_TOKEN Frame to the receiver. The token is an
-        opaque (encrypted) blob and the receiver can not read its content (see
-        section 19.7 of <xref target="RFC9000"></xref>). The receiver sends the
-        received token in the header of an Initial packet of a later
-        connection.</t>
-      </section>
-
-      <section anchor="sec-bdp_frame_section" title="BDP Frame">
-        <t>Using BDP Frames, the sender could send information relating to the
-        path characteristics to the receiver. The use of the BDP Frame is
-        negotiated with the receiver. The receiver can read its content. If the
-        receiver agrees with the usage of previous parameters, it can
-        send the BDP Frame back to the sender in an Initial packet of a later
-        connection.</t>
-      </section>
-	
-	<section title="Summary">
-        <!--- BDP ---   <t> Local storage of values can be secure and the BDP Frame
-          extension provides more information to the receiver and more
-          interoperability. The <xref target="fig-summary"></xref> provides a
-          summary of the advantages and drawbacks of each approach.</t> --->
+ </section> <!--- End of An Endpoint Token --->
+	  
+<section title="Summary">
 
           <figure anchor="fig-summary" title="Comparing Careful Resume solutions">
             <artwork><![CDATA[
@@ -1265,86 +992,12 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
 
 ]]></artwork>
-          </figure>
+</figure>
+	
+<!--- text relating to BDP Frame moved out of this draft --->
 		
-<!--- BDP frame -->
-
-<figure anchor="fig-summary" title="Comparing BDP-Frame Solutions">
-            <artwork><![CDATA[
-+---------+-----------+----------------+---------------+-----------+
-|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
-+---------+-----------+----------------+---------------+-----------+
-|#2       |#1         |                |               |           |
-|Malicious|Local      |Enforced        |A receiver is  |           |
-|receiver |storage    | security       | unable        |           |
-|         |           |                | to reject     |           |
-|         |           |                |Malicious      |           |
-|         |           |                | sender could  |           |
-|         |           |                | fill a        |           |
-|         |           |                | receive buffer|           |
-|         |           |                |Limited        |           |
-|         |           |                | use-cases     |Section 4.2|
-|         +-----------+----------------+---------------+-----------+
-|         |#2         |                |               |           |
-|         |NEW_TOKEN  |Save resource   |A malicious    |           |
-|         |           | at sender      | receiver could|           |
-|         |           |Opaque token    | change token  |           |
-|         |           | protected      | even if       |           |
-|         |           |                | protected     |           |
-|         |           |                |A malicious    |           |
-|         |           |                | sender could  |           |
-|         |           |                | fill the      |           |
-|         |           |                | receive buffer|           |
-|         |           |                |sender may not |           |
-|         |           |                | trust receiver|Section 4.3|
-|         +-----------+----------------+---------------+-----------+
-|         |#3         |                |               |           |
-|         |BDP        |Extended        |A malicious    |           |
-|         |extension  | use-cases      | receiver could|           |
-|         |           |Save resource   | change BDP    |           |
-|         |           | at sender      | even if       |           |
-|         |           |A receiver can  | protected     |           |
-|         |           | read and decide|A sender may   |           |
-|         |           | to reject      | not trust a   |           |
-|         |           |BDP extension   | receiver      |           |
-|         |           | protected      |               |           |
-|         |           |                |               |Section 4.4|
-+---------+-----------+----------------+---------------+-----------+
-
-{XXX-Editor-Note: Need to clarify the text around changing 
-the authenticated token.}
-
-]]></artwork>
-          </figure>
-		
-		
-        </section> <!-- End of Safety: Summary --->
-    </section>
-  </back>
+</section> <!--- end of Summary --->
+</back>
 </rfc>
-<!-- </t> Four cases are identified:
-<list style="numbers">
-<t> The network path has changed and the new path is
-different. This might be evident from a change of local interface, a change
-in the client or sender IP address, or similar indication from the network.
-Using the saved congestion control information could increase congestion.</t>
-<t> The network path has changed, but the new path is not known to be
-different. This case might be accompanied by a change in the RTT, or
-evident by loss observed at the start of the new connection and
-the saved congestion control information is not appropriate. </t>
-<t> The network conditions have changed and it is discovered that
-the current capacity is
-less than the previously estimated bottleneck bandwidth. Using the saved
-congestion control information would then increase congestion, and the flow needs
-to adjust to a lower safe rate; </t>
-<t> The stored information is too old. In this case, it is no longer
-be reasonable to expect the path to have same characteristics, and the
-the saved congestion control information is no longer appropriate.</t>
-</list></t>
 
-<t>In all these case, the
-careful increase method is not be used, and a sender needs to return to
-a standard behavior.  The method can still be used to characterize the new path,
-enabling later flows to use this method.</t>
-
--->
+			
