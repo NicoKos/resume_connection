@@ -368,7 +368,7 @@ keywords will be used for the search engine. -->
           Endpoint Token (current_endpoint_token) are stored as saved_rtt, saved_bb and
           saved_endpoint_token.</t>
 
-          <t>Reconnaissance  Phase: When a sender resumes between the same pair of endpoints, 
+          <t>Reconnaissance Phase: When a sender resumes between the same pair of endpoints, 
 	  (aka the same path) it enters the Reconnaissance Phase.
 	  The sender only enters this phase when there are saved CC parameters for the same
 	  pair of endpoints and this information is currnetly valid (i.e., the parameters have
@@ -431,194 +431,182 @@ keywords will be used for the search engine. -->
 	      
         </list></t>
 
-    </section> <!-- End of Phases -->
+</section> <!-- End of Phases -->
 
+<section title="Congestion Control Guidelines and Requirements">	
+	
+    <t>The sender is limited by any rate-limitation of the transport
+    protocol with which the method is used.
+    For QUIC this includes: flow control mechanisms or amplification
+    attack prevention. In particular, a QUIC receiver may need to issue proactive
+    MAX_DATA frames to increase the flow control limits of a connection
+    that is started with this method.</t>
+		
+    <!---The maximum number of packets that can be sent without
+    acknowledgments needs to be chosen to avoid the creation and the
+    increase of congestion for the path.-->
+		
     <section anchor="measure" title="Determing the current Path Capacity in the Observe Phase">
 			
 	<t>Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by utilizing a combination of the
         cwnd/flight_size and the minimum RTT. A different method could be used
         to estimate the same values when using a rate-based congestion
-        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>]
+        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>
+	   
+	<list style="symbols">
+          	<t>(Observe Phase) The sender SHOULD NOT store and/or send CC parameter
+          	information related to an estimated bottleneck bandwidth
+          	(saved_bb) (see <xref target="sec-terms_def"></xref> for more
+          	details on bottleneck bandwidth definition), if the cwnd is not at
+		least four times larger than the IW.</t>
+	</list>
 	    
     </section> <!-- Observe Phase  (measure) -->
 
-    <section anchor="sec-rationale" title="Safety Requirements">
+    <section  title="Confirming the Path in the Reconnaissance Phase">
+	
+	<t>The sender sends the first data limited by the IW - this is
+        assumed a safe starting point for any path where there is no path
+        information or congestion control information. This limit avoids
+        adding excessive congestion to a potentially congested path.</t>
+
+        <t>The sender monitors reception of the IW data. If the path
+        characteristics resemble those of a recent previous connection from
+        to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
+        all data was acknowledged without reported congestion), the
+        method permits the sender to utilize the saved_bb as an input to
+        adapt current_bb to rapidly determine a new safe rate.</t>
+	    
+	<t>(Reconnaissance Phase) The sender MUST NOT send more than the
+        IW in the first RTT of transmitted
+	data <xref target="RFC9000"></xref>.</t>
+	    
+	<t>When used in a controlled
+        network, additional information about local path characteristics
+        could be known, which might be used to configure a non-standard
+        IW.</t>
+    </section>
+ 
+    <section title="Confirming the Path">
+	 <t>Paths change with respect to time for many reasons.
+	This could result in previously measured CC parameters
+        becoming irelevant.</t>
+	    
+	 <t>Endpoint Token change: If the Endpoint Token changes 
+            	(i.e., the saved_endpoint_token is different from the
+            	current_endpoint_token), the different Endpoint Token can be assumed as an
+            	indication of a different network path. This new path does not
+	    	necessarily exhibit the same characteristics as the old one.</t>
+
+         <t>RTT change: A significant change in RTT might be an indication
+         that the network conditions have changed. Since the CC information
+         is directly impacted by the RTT, a significant change in the RTT
+         is a strong indication that the previously estimated BDP
+	 parameters are likely to not be valid for the current path.</t>
+	    
+	<t>Lifetime of the information: The CC information is temporal.
+        Frequent connections to the same Endpoint Token are likely to track
+	changes, but long-term use of previous values is not appropriate.</t>
+           
+	<t>{NOTE: A future revision of this document needs to specify how long
+	CC Parameters can be cached, possibly based on TCP-new-CWV or TCB}.</t>
+
+        <t>(Reconnaissance Phase) The sender MUST compare the measured
+        transport parameters (in particular current_rtt) of the new session
+        with those of the previous session (in particular
+        saved_rtt). The method MUST NOT be used when the path fails to be
+        validated.</t>
+	    
+	<t>{XXX-Editor-note: RTT check should be a range rather than an
+      	inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
+	
+    </section>	    
+    <section anchor="sec-rationale" title="Safety Requirements for the Unvalidated Phase">
 	<t> This section defines the safety requirements
-        for using saved CC parameters,</t>
-	
-	<section  title="Internet Paths">
-		<t>Paths and capacity can change with respect to time, resulting
-		in "variable network
-        	conditions". This can result in previously measured values
-        	becoming irelevant and requires careful use by a
-       		CC algorithm.</t>
-	
-		<t{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
-        	used, to avoid starving other flows that started or increased their capacity after the last measurement.
-       		How strong should this be stated: ... MUST or SHOULD ... What safety
-        	factor is appropriate for the resuming sender? If using slow-start it
-       		would anyway double the rate on the next RTT, so is capacity/2
-        	appropriate to initially try?} </t>
-
-		<t>A new connection MUST NOT directly use the previously measured saved_rtt and
-        	saved_bb to simply initialize a new flow to resume sending at the same
-       		rate.</t>
-
-        	<t> Bottleneck bandwidth and network traffic can
+	for using saved CC parameters.</t>
+		
+	<t{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
+        used, to avoid starving other flows that started or increased their capacity after the last measurement.
+       	How strong should this be stated: ... MUST or SHOULD ... What safety
+        factor is appropriate for the resuming sender? If using slow-start it
+       	would anyway double the rate on the next RTT, so is capacity/2
+        appropriate to initially try?} </t>
+		
+	<t>The method needs to be designed to avoid sending
+        excessive data into a congested bottleneck, because this can have
+        a material impact on any flows sharing that bottleneck, and the
+	ability of those flows to control their own sending rate.</t>
+		
+	<t>(Unvalidated Phase) A new connection MUST NOT directly use the previously measured saved_rtt and
+        saved_bb to simply initialize a new flow to resume sending at the same
+       	rate.</t>
+				
+      	<section title="Variable Network Conditions - Choosing Careful Resume">
+ 		<t>The network conditions for the same path can also change over time.
+	        Bottleneck bandwidth and network traffic can
             	change at any time. An Internet method needs to be robust to
             	network conditions that can differ from one connection to the next,
             	due to variations in the forwarding path, reconfiguration of
             	equipment or changes in the link conditions.</t>
-	 	<t>The MUST be robust to changes in network traffic, including the
-            	arrival of new traffic flows that compete for the bottleneck
-            	capacity. The method needs to be designed to avoid sending
-            	excessive data into a congested bottleneck, because this can have
-            	a material impact on any flows sharing that bottleneck, and the
-            	ability of those flows to control their own sending rate.</t>
 		
-      </section> <!-- End of Safety: Internet Paths --->
+		<t>(Unvalidated Phase) Careful Resume MUST be robust to changes in network traffic, including the
+            	arrival of new traffic flows that compete for the bottleneck
+		capacity.</t>
 
-      <section title="Variable Network Conditions">
-        	<t>The sender MUST check the validity of any received saved_rtt and
+		<t>The sender MUST check the validity of any received saved_rtt and
         	saved_bb parameters, whether these are sent by a receiver or are stored
         	at the sender. The following events indicates cases where the use of
         	these parameters is inappropriate: 
-		<list style="symbols">
-            <t>Endpoint Token change: If the Endpoint Token changes 
-            (i.e., the saved_endpoint_token is different from the
-            current_endpoint_token), the different Endpoint Token can be assumed as an
-            indication of a different network path. This new path does not
-	    necessarily exhibit the same characteristics as the old one.</t>
-
-            <t>RTT change: A significant change in RTT might be an indication
-            that the network conditions have changed. Since the CC information
-            is directly impacted by the RTT, a significant change in the RTT
-            is a strong indication that the previously estimated BDP
-            parameters are likely to not be valid for the current path. NOTE:
-            This document needs to define a significant change.</t>
-
-            <t>Lifetime of the information: The CC information is temporal.
-            Frequent connections to the same Endpoint Token are likely to track
-            changes, but long-term use of previous values is not appropriate.
-            NOTE: This document needs to define how long.</t>
+            
+		<t>{NOTE:
+            	A later revision needs to define how to decide a significant change.}</t>
 		
-            <t>BB over-estimation: There are cases where using a measured cwnd
-            would inflate the bottleneck bandwidth. At the end of the CC slow
-            start phase, the value of cwnd can be significantly larger than
-            the minimum value needed to utilize the path (i.e., cwnd
-            overshoot). In most case, the cwnd finally converges to a stable
-            value after several more RTTs. It would be inappropriate to use an
-            overshoot in the cwnd as a basis for estimating the bottleneck
-            bandwidth. NOTE: One mitigation could be to further restrict to
-            only a fraction (e.g., 1/2) of the previously used cwnd; another
-            mitigation might be to calculate the bottleneck bandwidth based on
-            the flight_size or an averaged cwnd.</t>
+            	<t>BB over-estimation: There are cases where using a measured cwnd
+            	would inflate the bottleneck bandwidth. At the end of the CC slow
+           	start phase, the value of cwnd can be significantly larger than
+            	the minimum value needed to utilize the path (i.e., cwnd
+           	overshoot). In most case, the cwnd finally converges to a stable
+            	value after several more RTTs. It would be inappropriate to use an
+            	overshoot in the cwnd as a basis for estimating the bottleneck
+            	bandwidth. NOTE: One mitigation could be to further restrict to
+            	only a fraction (e.g., 1/2) of the previously used cwnd; another
+            	mitigation might be to calculate the bottleneck bandwidth based on
+            	the flight_size or an averaged cwnd.</t>
 
-            <t>Preventing Starvation of New Flows: It would not be appropriate
-            to fully use a bottleneck bandwidth estimate based on a previous
-            measurement of capacity, because new flows might have started
-            using the available capacity since that measurement was made. The
-            mitigation could be to restrict to only a fraction (e.g., 1/2) of
-            the previously used cwnd.</t>
-          </list></t>
+            	<t>Preventing Starvation of New Flows: It would not be appropriate
+            	to fully use a bottleneck bandwidth estimate based on a previous
+            	measurement of capacity, because new flows might have started
+           	using the available capacity since that measurement was made. The
+            	mitigation could be to restrict to only a fraction (e.g., 1/2) of
+            	the previously used cwnd.</t>
+			
+		<t>These safety guidelines are designed to mitigate the risk that sender
+      		adds excessive congestion to an already congested path. The following
+		mechanisms help in fulfilling this objective:</t>
+       		<list>
+         		<t>(unvalidated phase) The sender MUST NOT use the parameters unless
+          		the first IW packets when packets are detected as lost or
+         		acknowledgments indicate the packets were ECN CE-marked. These are
+          		indication of potential congestion and therefore the method MUST NOT
+         	 	be used; </t>
 
-	<t>{XXX-Editor note: Decide on the mitigation.}</t>
-	      
-        <t>The impact of changes can be mitigated by 2 potential solutions: 
-	<list style="symbols">
-            <t> When resuming, restore
-            the current_bb and current_rtt from the saved_bb and saved_rtt
-            parameters estimated from a previous connection.</t>
+          		<t>(unvalidated phase) The sender MUST implement the retreat method
+          		when packets are detected as lost or acknowledgments indicate the
+          		packets were ECN CE-marked. These are indication of potential
+          		congestion and therefore the method MUST NOT be used.</t>
+        	</list>
 
-            <t>When resuming, implement
-            a safety check to measure and avoid using the saved_bb and saved_rtt
-            parameters to cause congestion over the path. In this case, the
-            current_bb and current_rtt might not be set directly from the
-            saved_bb and saved_rtt: the sender might wait for the completion
-            of the safety check before this is done.</t>
-          </list></t>
-      </section> <!-- End of Safety: Network Conditions --->
-
-      <t>Security consideration are discussed in <xref target="sec-security"></xref> .</t>
-
-     <section anchor="sec-safety_guide" title="CC Safety Guidelines">
-      	<t>The following safety guidelines refer to the labeling defined in
-      	<xref target="sec-phase"></xref>.</t>
-
-      	<t>These safety guidelines are designed to mitigate the risk that sender
-      	adds excessive congestion to an already congested path. The following
-      	mechanisms help in fulfilling this objective: 
-	<list style="symbols">
-          	<t>(observation phase) The sender SHOULD NOT store and/or send
-          	information related to a previously estimated bottleneck bandwidth
-          	(saved_bb) (see <xref target="sec-terms_def"></xref> for more
-          	details on bottleneck bandwidth definition), if the cwnd is not at
-          	least four times larger than the IW.
-
-          	<t>(reconnaissance phase) The sender MUST NOT send more than the
-          	recommended maximum IW (recom_iw) in the first RTT of transmitting
-         	 data <xref target="RFC9000"></xref>. (When used in a controlled
-         	 network, additional information about local path characteristics
-          	could be known that might be used to configure a non-standard
-          	IW).</t>
-
-          	<t>(reconnaissance phase) The sender MUST compare the measured
-          	transport parameters (in particular current_rtt) of the new session
-          	with those of the previous session (in particular
-          	saved_rtt). The method MUST NOT be used when the path fails to be
-         	 validated;</t>
-
-         	 <t>(unvalidated phase) The sender MUST NOT use the parameters unless
-          	the first IW packets when packets are detected as lost or
-         	 acknowledgments indicate the packets were ECN CE-marked. These are
-          	indication of potential congestion and therefore the method MUST NOT
-         	 be used; </t>
-
-          	<t>(unvalidated phase) The sender MUST implement the retreat method
-          	when packets are detected as lost or acknowledgments indicate the
-          	packets were ECN CE-marked. These are indication of potential
-          	congestion and therefore the method MUST NOT be used.</t>
-
-        </list></t>
-
-      	<t>The sender is limited by any rate-limitation of the transport
-      	protocol with which the method is used.
-      	For QUIC this includes: flow control mechanisms or amplification
-      	attack prevention. In particular, a QUIC receiver may need to issue proactive
-      	MAX_DATA frames to increase the flow control limits of a connection
-	that is started with this method.
-	</t>
-		
-	<!---The maximum number of packets that can be sent without
-      	acknowledgments needs to be chosen to avoid the creation and the
-      	increase of congestion for the path.-->
-		
-      	<t>{XXX-Editor-note: This should be a range rather than an
-      	inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
-
-      	<t>The following mechanisms could be implemented:
-	<list style="symbols">
-          	<t>Exploit a standard IW:
-	  	<list style="numbers">
-              		<t>The sender sends the first data using the IW - this is
-             	 	assumed a safe starting point for any path where there is no path
-              		information or congestion control information. This avoids
-              		adding excessive congestion to a path;</t>
-
-             		 <t>The sender monitors reception of the IW data. If the path
-              		characteristics resemble those of a recent previous connection from
-              		to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
-              		all data was acknowledged without reported congestion), the
-              		method permits the sender to utilize the saved_bb as an input to
-              		adapt current_bb to rapidly determine a new safe rate;</t>
-
-              		<t>The sender needs to avoid sending a burst of packets as a result of a
+	 	<t>{XXX-Editor note: Decide on the mitigation for Starvation of New Flows.}</t>
+    	</section> <!-- End of Safety: Network Conditions --->
+			
+	<section title="Pacing in Careful Resume">
+		<t>The following mechanisms could be implemented:
+		<t>The sender needs to avoid sending a burst of packets as a result of a
               		step-increase in the congestion window <xref
               		target="RFC9000"></xref>. Pacing the packets as a function of
               		the current_rtt can provide this additional safety during the
               		unvalidated period.</t>
-            	</list></t>
 
           	<t>Identify a relevant pacing rhythm:
 			
@@ -639,26 +627,57 @@ keywords will be used for the search engine. -->
 			can be used with the method specified in this document.</t>
             	</list></t>
 
-          	<t>Tune slow-start mechanisms: After transport parameters are set to
-          	a previously estimated bottleneck bandwidth, if the slow-start
-          	mechanisms continue, the sender can then overshoot the bottleneck
-          	capacity. This can occur even when using the safety check described
-          	in this section. 
-		<list style="symbols">
-              		<t>For NewReno and CUBIC, it is recommended to exit slow-start
-              		and enter the congestion avoidance phase.</t>
+      	    <t>This follows the idea presented in <xref target="RFC4782"></xref>,
+      	    <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
+      	    <xref target="CONEXT15"></xref>.</t>	
+	</section> <!---Pacing in Careful Resume --->
+    </section> <!--Unvalidated Phase --->
 
-              		<t>For BBR CC, it is recommended to enter the "probe bandwidth"
-              		state.</t>
-            	</list></t>
-        </list></t>
+   <section anchor="sec-rationale" title="Safety Requirements for the Retreat Phase">
+	<t> This section defines the safety requirements
+        after a path change or congestion is detected in the Unvalidated Phase.</t>
 
-      	<t>This follows the idea presented in <xref target="RFC4782"></xref>,
-      	<xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
-      	<xref target="CONEXT15"></xref>.</t>
+	<t>After transport parameters are set to
+      	a previously estimated bottleneck bandwidth, if the slow-start
+      	mechanisms continue with parameters set by Carfeul Resume,
+	the sender might then overshoot the bottleneck
+      	capacity. This can occur even when using the safety check described
+     	in this section.</t> 
+	   
+        <section title="Variable Network Conditions - Mitigating Mistakes">
+       	    <t>The impact of a mistaken decision to use Careful Resume
+	    can be mitigated by 2 potential solutions:</t>
+	    <list style="symbols">
+            	<t> When resuming, restore
+            	the current_bb and current_rtt from the saved_bb and saved_rtt
+            	CC parameters estimated from a previous connection.</t>
 
-	</section> <!--- Safety Guidelines -->
-</section>	  
+            	<t>When resuming, implement
+            	a safety check to measure and avoid using the saved_bb and saved_rtt
+            	CC parameters to cause congestion over the path. In this case, the
+            	current_bb and current_rtt might not be set directly from the
+            	saved_bb and saved_rtt: the sender might wait for the completion
+            	of the safety check before this is done.</t>
+            </list>
+	    
+	     <t>{XXX-Editor note: Decide on the mitigation after detected congestion.}</t>
+
+         </section> <!-- End of Safety: Network Conditions- Mitigating Mistakes --->
+  </section><!--- Safety Requirements for the Retreat Phase --->
+		
+  <section title="Returning to Normal Congestion Control">
+	<t>At the end of Carfeul Resume, the CC controller returns to the Normal Phase.</t>	
+	  
+	<list style="symbols">
+	    <t>For NewReno and CUBIC, it is recommended to exit slow-start
+            and enter the congestion avoidance phase.</t>
+
+            <t>For BBR CC, it is recommended to enter the "probe bandwidth"
+            state.</t>
+        </list>
+   </section><!--- End of normal-->	
+
+</section> <!---  Guidelines -->	  
 
 <section anchor="sec-acknowledgments" title="Acknowledgments">
       <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
