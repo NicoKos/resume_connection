@@ -80,7 +80,7 @@
 	 If this element is not present, the default is "Network Working Group",
          which is used by the RFC Editor as a nod to the history of the IETF. -->
 
-		<keyword>QUIC, BDPFRAME</keyword>
+		<keyword>QUIC, BDPFRAME, careful resume</keyword>
 
 		<!-- Keywords will be incorporated into HTML output
          files in a meta tag but they have no effect on text or nroff
@@ -89,7 +89,7 @@
 
 	<abstract>
 		<t>
-                This dcoument describes the BDP_FRAME extension for QUIC.
+                This document describes the BDP_FRAME extension for QUIC.
                 The frame enables the exchange of CC parameters related to the
                 path characteristics between the receiver
                 and the sender during a connection.
@@ -116,7 +116,7 @@ the CC parameters -->
 <section anchor="sec:introduction" title="Introduction">
     <t>
     This document extends the Careful Resume
-    method <xref target="I-D.kuhn-quic-careful-resume"> 
+		    method <xref target="I-D.kuhn-tsvwg-careful-resume"></xref> 
     by allowing 
     sender-generated CC parameters to be stored at the receiver.
     By transfering the CC parameters to a receiver, it also releases the
@@ -163,7 +163,7 @@ the CC parameters -->
     connection or a 1-RTT QUIC connection.
     </t>
 			
-   <section anchor="subsec:rationale_client" title="Optimizing Client Requests"
+    <section anchor="subsec:rationale_client" title="Optimizing Client Requests">
 	<t>Where the receiver is aware of a high BDP, it can adapt other CC parameters
 	to better utilize the available capacity, such as 
 	increasing the value of flow control pararemeters.</t>
@@ -197,7 +197,7 @@ the CC parameters -->
 	as encouraging the client to increase the quality of video chunks, to
 	fill the buffers and avoid video blocking or to send high quality
 	adds).</t>
-      </section><!--- End of intro: Optimizing Client Requests --->
+      </section><!-- End of intro: Optimizing Client Requests -->
 	
       <section title ="Three approaches">
 	    <t>This section reviews three approaches to implement Careful Resume.</t>
@@ -234,14 +234,14 @@ the CC parameters -->
         		safe to update the cwnd based on the saved_bb). In practice, this
         		could be realized by a proportional increase in the cwnd, where the
         		increase is (saved_bb/IW)*proportion_of_IW_currently-ACKed.</t>
-		</list>
+		</list></t>
         	<t>This solution does not allow a receiver to request the sender not to
 		 use the CC parameters in the BDP Frame. If the sender does not want to store the
         	metrics from previous connections, an equivalent of the
         	tcp_no_metrics_save for QUIC may be necessary. This option could be
         	negotiated that allows a receiver to choose whether to use the saved
         	CC parameters.</t>
-      	</section> <!-- End of intro: Three appoaches: sec-local_storage --->
+      	</section> <!-- End of intro: Three appoaches: sec-local_storage -->
 
       <section anchor="sec-using_new_token" title="Using NEW_TOKEN frames">
         	<t>A sender can send a NEW_TOKEN Frame to the receiver. The token is an
@@ -249,7 +249,7 @@ the CC parameters -->
         	section 19.7 of <xref target="RFC9000"></xref>). The receiver sends the
         	received token in the header of an Initial packet of a later
        	 	connection.</t>
-      </section> <!-- End of intro: Three appoaches: sec-local_storage --->
+      </section> <!-- End of intro: Three appoaches: sec-local_storage -->
 
       <section anchor="sec-bdp_frame_section" title="BDP Frame">
         	<t>Using BDP Frames, the sender could send a set of CC parameters 
@@ -258,10 +258,10 @@ the CC parameters -->
         	receiver permits using the previous CC parameters, it can
         	send the BDP Frame back to the sender in an Initial packet of a later
         	connection.</t>
-      </section> <!-- End of intro: Three appoaches: sec-local_storage --->
-    </section> <!-- End of intro: Three appoaches--->
+      </section> <!-- End of intro: Three appoaches: sec-local_storage -->
+    </section> <!-- End of intro: Three appoaches-->
 
-</section><!--- End of intro --->
+</section><!-- End of intro -->
 	
 <section anchor="sec:terms_def" title="Notations and Terms">
 			<t>
@@ -357,10 +357,10 @@ the CC parameters -->
                         shown here.
 			</t>
 			<t>
-			Variable-length integer encoding is defined in section 16 of <xref target="RFC9000"></xref>.  
-	</section> <!--- Notations and Terms: End of Requirements Language --->
+					Variable-length integer encoding is defined in section 16 of <xref target="RFC9000"></xref>. </t> 
+	</section> <!-- Notations and Terms: End of Requirements Language -->
 	
-</section> <--- End of Notations and Terms --->
+</section> <!-- End of Notations and Terms -->
 
 <section anchor="sec:bdp_frame_section" title="BDP Frame">
 
@@ -437,13 +437,13 @@ BDP_FRAME {
 			</t>
 			<t>
                         Saved Endpoint Token (saved_endpoint_token) : The
-			saved_endpoint_token (More details in <xref target="I-D.kuhn-quic-careful-resume"></xref>). 
+			saved_endpoint_token (More details in <xref target="I-D.kuhn-tsvwg-careful-resume"></xref>). 
 			</t>
 			</list>
 			</t>
 			
 		    <t>
-   		Note: The Endpoint Token is defined in <xref target="I-D.kuhn-quic-careful-resume"></xref>, 
+   		Note: The Endpoint Token is defined in <xref target="I-D.kuhn-tsvwg-careful-resume"></xref>, 
 		and is discussed in the context of this protocol exchange in a later section.
 	        </t>
 	<!--- eEd of main part of BDP Frame, subsections follow -->
@@ -497,9 +497,9 @@ BDP_FRAME {
                 	described in Section 18 of 
                 	<xref target="RFC9000"></xref>.
 			</t>
-	</section> <!--- End of Extension activation --->
+	</section> <!-- End of Extension activation -->
 
-	<Section title="Using the CC parameters with Care">
+	<section title="Using the CC parameters with Care">
       		<t>Care is needed in the use of any temporal information
  		to assure safe use of the Internet and to be robust to changes
  		in traffic patterns, network routing and link/node failures.
@@ -508,7 +508,8 @@ BDP_FRAME {
        		for malicious use of the method.
 		The specification for the QUIC transport protocol <xref
       		target="RFC9000"></xref> therefore notes "Generally, implementations are advised
-      		to be cautious when using previous values on a new path." </t>
+		to be cautious when using previous values on a new path." </t>
+		<t>Careful exploitation of the CC parameters is discussed in <xref target="draft-kuhn-tsvwg-careful-resume"></xref>.</t>
       	</section>  <!--- end of use with care --> 
 
 	<section title="Saving Path CC Parameters">	
@@ -524,8 +525,8 @@ BDP_FRAME {
         		The receiver can read the CC parameters to accept or not the use of
 			CC parameters (a.k.a. "BDP extension").</t>
 		</list>
-	</section> <!--- End of BDP Frame: Saving path CC Parameters -->
-</section>	 <!--- End of BDP Frame -->
+	</section> <!-- End of BDP Frame: Saving path CC Parameters -->
+</section>	 <!-- End of BDP Frame -->
 
 <section anchor="sec:discuss" title="Discussion">
 		<t>
@@ -628,7 +629,7 @@ BDP_FRAME {
 		
          <section anchor="sec:discuss_bdp_default"
                title="Trade-off between the different solutions">
-	       <!--- Subsection: Use Cases: Tradeoff -->
+	       <!-- Subsection: Use Cases: Tradeoff -->
         	<t>This section provides a description of several implementation
        		options and discusses their respective advantages and drawbacks. </t>
 
@@ -649,8 +650,8 @@ BDP_FRAME {
         	parameter and "token SHOULD have an expiration time" 
         	<xref target="RFC9000"></xref>.
         	</t>
-       </section><!--- Use Cases: Tradeoff -->
-    </section> <!--  Use Cases --->
+       </section><!-- Use Cases: Tradeoff -->
+    </section> <!--  Use Cases -->
 
     <section title="Identifying the Path">
 
@@ -719,7 +720,7 @@ BDP_FRAME {
 	            <t>The Receiver transmits the Endpoint Token to the Sender 
 	            </t>
     		</list>
-	</section> <!--- Example use of an Identify path: Endpoint Token -->    
+	</section> <!-- Example use of an Identify path: Endpoint Token -->    
 		
         <section title="Security Related to use of the Endpoint Token">
     	<t>
@@ -756,7 +757,7 @@ BDP_FRAME {
     The authors would like to particularly thank Tom Jones
     for co-authoring previous versions of this document.
      </t>
-</section> <!--- ACK --->
+</section> <!-- ACK -->
 
 <section anchor="sec:IANA" title="IANA Considerations">
     <t>{XXX-Editor note: Text is required to register the BDP Frame and the enable_bdp
@@ -768,7 +769,7 @@ BDP_FRAME {
     registered using the procedure defined in 
     <xref target="RFC9000"></xref>.
     </t>
-</section><!--- IANA --->
+</section><!-- IANA -->
 
 <section anchor="sec:security" title="Security Considerations">
     <t>
@@ -798,7 +799,7 @@ BDP_FRAME {
             <t>Solution #3 : This approach is the same as
             above, except that the sender provides an estimate of the saved_rtt
             and saved_bb parameters in a form that may be read by the receiver.
-            Using the security mechanisms provided in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>,
+            Using the security mechanisms provided in this document,
             the sender can verify that the receiver did not change the CC parameters inside the frame.
 	    The receiver can 
             read, but not modify, the saved_rtt and saved_bb parameters and
@@ -815,7 +816,7 @@ BDP_FRAME {
           Rationale #2 - Solution #2), BDP extension Frame ( <xref
           target="sec-bdp_frame_section"></xref> for Rationale #2 - Solution
           #3).</t>
-      </section> <!-- End of Safety: Malicous Clients --->
+      </section> <!-- End of Safety: Malicous Clients -->
 	
       <section anchor="sec-bdp_frame"
                title="Rationale behind the different implementation options">
@@ -833,8 +834,8 @@ BDP_FRAME {
         CC parameters (see <xref target="sec-local_storage"></xref>) and a
         BDP Frame extension (see <xref
         target="sec-bdp_frame_section"></xref>).</t>
-      </section> <!--- sec
-</section> <!-- End of sec considerations --->
+      </section> <!-- sec -->
+</section> <!-- End of sec considerations -->
 	</middle>
 
 	<!--  *****BACK MATTER ***** -->
@@ -862,7 +863,7 @@ BDP_FRAME {
 			
 		<references title="Informative References">
 			<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
-			<?rfc include="reference.I-D.kuhn-quic-careful-resume.xml"?>
+			<?rfc include="reference.I-D.kuhn-tsvwg-careful-resume.xml"?>
 			<!--
 			<reference anchor="TMA18">
 				<front>
@@ -878,8 +879,8 @@ BDP_FRAME {
 			--> 
 		</references>
 		
-		<section anchor="appendix-1" title="ExComparing BDP-Frame Solutionsample">
-			x<figure anchor="fig-summary" title="Comparing BDP-Frame Solutions">
+		<section anchor="appendix-1" title="Comparing BDP-Frame Solutions">
+			<figure anchor="fig-summary" title="Comparing BDP-Frame Solutions">
             <artwork><![CDATA[
 +---------+-----------+----------------+---------------+-----------+
 |Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |

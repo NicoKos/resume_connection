@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="info" docName="draft-kuhn-quic-careful-resume-03"
+<rfc category="info" docName="draft-kuhn-tsvwg-careful-resume-00"
      ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
 ipr values: full3667, noModification3667, noDerivatives3667
@@ -23,7 +23,7 @@ they will automatically be output with "(if approved)" -->
     <!-- The abbreviated title is used in the page header - it is only necessary if the
 full title is longer than 39 characters -->
 
-    <title abbrev="Careful convergence of congestion control">Careful convergence of congestion 
+    <title abbrev="Careful congestion control convergence">Careful convergence of congestion 
     control from retained state with QUIC</title>
 
     <author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
@@ -90,7 +90,7 @@ IETF is fine for individual submissions.
 If this element is not present, the default is "Network Working Group",
 which is used by the RFC Editor as a nod to the history of the IETF. -->
 
-    <keyword>QUIC, convergence</keyword>
+    <keyword>congestion control, convergence, QUIC</keyword>
 
     <!-- Keywords will be incorporated into HTML output
 files in a meta tag but they have no effect on text or nroff
@@ -102,7 +102,7 @@ keywords will be used for the search engine. -->
       Congestion Control (CC) in QUIC, providing
       a cautious method that enables fast startup in a wide
       range of connections : 0-RTT, new connections sharing the same
-      peers (but not using 0-RTT (but not using 0-RTT)), application-limited traffic.</t>
+      peers (but not using 0-RTT), application-limited traffic.</t>
 
       <!-- start new from v2 to v3 -->
       <t>The method provides QUIC with transport services that resemble 
@@ -145,7 +145,7 @@ keywords will be used for the search engine. -->
       	detrimental effect on other flows sharing a common bottleneck. In the
       	extreme case, persistent congestion could result in unwanted starvation of
       	other flows <xref target="RFC8867"></xref> (i.e., Preventing other flows
-      	from successfully sharing a common bottleneck).</t
+		from successfully sharing a common bottleneck).</t>
 
       <t>This document specifies a method that can improve performance by 
       reducing the time to get up to speed, and hence can reduce the
@@ -160,7 +160,7 @@ keywords will be used for the search engine. -->
        parameters are stored and used to modify the CC
        behaviour of a subsequent connection between the same local and remote endpoints.</t>
 
-        <Section title="Using the Information with Care">
+        <section title="Using the Information with Care">
       	<t>Care is needed in the use of any temporal information
  	to assure safe use of the Internet and to be robust to changes
  	in traffic patterns, network routing and link/node failures.
@@ -170,7 +170,7 @@ keywords will be used for the search engine. -->
 	The specification for the QUIC transport protocol <xref
       	target="RFC9000"></xref> therefore notes "Generally, implementations are advised
       	to be cautious when using previous values on a new path." </t>
-      	</section>  <!--- end of use with care --> 
+      	</section>  <!-- end of use with care --> 
           
 	<section title="Receiver Preference">
 		
@@ -180,27 +180,25 @@ keywords will be used for the search engine. -->
              is not available at the sender. In these cases, a client could
              could explicitely ask for tuning the 
              slow start when the application continues transmission, or to to inhibit tuning. 
-             Examples where this could have benfit include:</t>
-			
-	     <list style="numbers">
+             Examples where this could have benfit include:<list style="numbers">
  		<t>when a receiver understands that the pattern of traffic that a connection will use
- 		(e.g., the volume of data to be sent, the length of the session, or the maximum transfer rate required);
+			(e.g., the volume of data to be sent, the length of the session, or the maximum transfer rate required);</t>
  		<t>when a receiver has a local indication that the path/local interface has changed since CC parameters were stored;</t>
  		<t>when there is information related to the current hardware limitations at the receiver;</t>
       		<t>where the receiver understands the capacity that will be needed for other concurrent flows 
-		that might be expected to share the capacity of the path;</t>
- 	      </list>
+		that might be expected to share the capacity of the path.</t>
+	</list></t>
 			
  		<t>A related document complements this CC method by allowing 
 		the sender-generated transport information to be stored at the receiver
-		<xref="I-D.kuhn-quic-bdpframe-extension"></xref>. 
+		<xref target="I-D.kuhn-quic-bdpframe-extension"></xref>. 
 		This 
       	    	enables a receiver to implement a policy that informs a sender
       	    	whether the receiver desires the sender to reuse the CC parameters.
 		By transfering the information to a receiver, it also releases the
 		sender from needing to retain CC parameter state for each
 		receiver. </t>
-	</section> <!--- end of Receiver Preference -->
+	</section> <!-- end of Receiver Preference -->
 
 	<section anchor="sec-use_case" title="Examples of Scenarios of Interest">
     
@@ -234,15 +232,15 @@ keywords will be used for the search engine. -->
  		include the following:</t> 
 		
 		<list style="numbers">
-           		<t>Where an application uses a series of connections over the
+           		<t>where an application uses a series of connections over the
            		same path
 			(each connection which otherwise would need to individually 
 		         discover the CC parameters);</t>
-      			<t>Where an application resumes using capacity after a pause 
+      			<t>where an application resumes using capacity after a pause 
 			in transmission (an application that
            		pauses would otherwise need to discover new CC parameters 
 			each time it connects over the same path);</t>      
-			<t>Where an application reconnects after a disruption that
+			<t>where an application reconnects after a disruption that
 			had temporarilly reduced the path
            		capacity (e.g., after to a link propagation
            		impairment, or  where a user on a train journey travels through
@@ -263,31 +261,15 @@ keywords will be used for the search engine. -->
 	    </section> <!-- End of intro:examples:satcom -->
 	    
 	    <section title="Another Network Example"> 
-		    <t>	<t>{XXX-Editor note: A future revision can provide other Path Examples here.}</t>
+		    <t>{XXX-Editor note: A future revision can provide other Path Examples here.}</t>
 	    </section> <!-- End of intro:examples:other -->
 
-    </section <!--- end of examples -->
-
-    <section title = "Structure of this Document">
-      <t>The remainder of this document has the following structure: <list style="numbers">
-          <t>It discusses use-cases where a careful resume for a QUIC connection is
-          expected to have benefit;</t>
-
-          <t>It proposes guidelines for how to carefully utilize the previously
-          stored CC information;</t>
-
-          <t>It describes implementation considerations for the proposed method
-          using QUIC;</t>
-
-          <t>It discusses the trade-offs associated with the different
-          implementation solutions.</t>
-        </list></t>
-    </section> <!-- End of stucture at end of intro-->
-    
+    </section> <!--- end of examples -->
+   
 </section> <!-- end of introduction and motivation -->
 
-<!--- ************************************ --->
-<!--- The protocol spec follows below here -->
+<!-- ************************************ -->
+<!-- The protocol spec follows below here -->
 
 <section anchor="notation" title="Language, notations and terms">
 
@@ -320,11 +302,11 @@ keywords will be used for the search engine. -->
         parameters:
 	<list style="symbols">
 
-<!--- GF (Feb 2023): Removed the IW from this information block??? --->
-<!--- it could potentially be in BDP but is not needed here --->
-<!---	<t>IW: Initial Window <xref target="RFC9002"></xref>;</t> --->
-<!---            <t>current_iw: Current IW;</t> --->
-<!---            <t>recom_iw: Recommended IW;</t> --->
+<!-- GF (Feb 2023): Removed the IW from this information block??? -->
+<!-- it could potentially be in BDP but is not needed here -->
+<!--	<t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
+<!--            <t>current_iw: Current IW;</t> -->
+<!--            <t>recom_iw: Recommended IW;</t> -->
 
             <t>current_bb : The current estimated bottleneck bandwidth;</t>
 
@@ -351,8 +333,8 @@ keywords will be used for the search engine. -->
         <t>The Endpoint Token is described in <xref target="endpoint_token"></xref>.
 	</t>
 
-      </section> <!--- End of Notation: end of terms --->
-</section><!--- End of Notation -->
+      </section> <!-- End of Notation: end of terms -->
+</section><!-- End of Notation -->
 
 <section anchor="sec-phase" title="The Phases of CC using Careful Resume">
       <t>This section defines a series of phases through that the
@@ -442,9 +424,9 @@ keywords will be used for the search engine. -->
     MAX_DATA frames to increase the flow control limits of a connection
     that is started with this method.</t>
 		
-    <!---The maximum number of packets that can be sent without
+    <!-- The maximum number of packets that can be sent without
     acknowledgments needs to be chosen to avoid the creation and the
-    increase of congestion for the path.-->
+    increase of congestion for the path. -->
 		
     <section anchor="measure" title="Determing the current Path Capacity in the Observe Phase">
 			
@@ -474,13 +456,15 @@ keywords will be used for the search engine. -->
         <t>The sender monitors reception of the IW data. If the path
         characteristics resemble those of a recent previous connection from
         to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
-        all data was acknowledged without reported congestion), the
+        all data was acknowledged without reported congestion, the
         method permits the sender to utilize the saved_bb as an input to
         adapt current_bb to rapidly determine a new safe rate.</t>
 	    
+	<list style="symbols">
 	<t>(Reconnaissance Phase) The sender MUST NOT send more than the
         IW in the first RTT of transmitted
 	data <xref target="RFC9000"></xref>.</t>
+	</list>
 	    
 	<t>When used in a controlled
         network, additional information about local path characteristics
@@ -493,6 +477,7 @@ keywords will be used for the search engine. -->
 	This could result in previously measured CC parameters
         becoming irelevant.</t>
 	    
+	<list style="symbols">
 	 <t>Endpoint Token change: If the Endpoint Token changes 
             	(i.e., the saved_endpoint_token is different from the
             	current_endpoint_token), the different Endpoint Token can be assumed as an
@@ -504,29 +489,33 @@ keywords will be used for the search engine. -->
          is directly impacted by the RTT, a significant change in the RTT
          is a strong indication that the previously estimated BDP
 	 parameters are likely to not be valid for the current path.</t>
-	    
+
 	<t>Lifetime of the information: The CC information is temporal.
         Frequent connections to the same Endpoint Token are likely to track
 	changes, but long-term use of previous values is not appropriate.</t>
            
+	</list>
+
 	<t>{NOTE: A future revision of this document needs to specify how long
 	CC Parameters can be cached, possibly based on TCP-new-CWV or TCB}.</t>
 
+	<list style="symbols">
         <t>(Reconnaissance Phase) The sender MUST compare the measured
         transport parameters (in particular current_rtt) of the new session
         with those of the previous session (in particular
         saved_rtt). The method MUST NOT be used when the path fails to be
         validated.</t>
+	</list>
 	    
 	<t>{XXX-Editor-note: RTT check should be a range rather than an
       	inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
 	
     </section>	    
-    <section anchor="sec-rationale" title="Safety Requirements for the Unvalidated Phase">
+    <section title="Safety Requirements for the Unvalidated Phase">
 	<t> This section defines the safety requirements
 	for using saved CC parameters.</t>
 		
-	<t{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
+	<t>{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
         used, to avoid starving other flows that started or increased their capacity after the last measurement.
        	How strong should this be stated: ... MUST or SHOULD ... What safety
         factor is appropriate for the resuming sender? If using slow-start it
@@ -538,9 +527,11 @@ keywords will be used for the search engine. -->
         a material impact on any flows sharing that bottleneck, and the
 	ability of those flows to control their own sending rate.</t>
 		
+	<list style="symbols">
 	<t>(Unvalidated Phase) A new connection MUST NOT directly use the previously measured saved_rtt and
         saved_bb to simply initialize a new flow to resume sending at the same
        	rate.</t>
+	</list>
 				
       	<section title="Variable Network Conditions - Choosing Careful Resume">
  		<t>The network conditions for the same path can also change over time.
@@ -549,6 +540,8 @@ keywords will be used for the search engine. -->
             	network conditions that can differ from one connection to the next,
             	due to variations in the forwarding path, reconfiguration of
             	equipment or changes in the link conditions.</t>
+	
+	<list style="symbols">
 		
 		<t>(Unvalidated Phase) Careful Resume MUST be robust to changes in network traffic, including the
             	arrival of new traffic flows that compete for the bottleneck
@@ -557,10 +550,12 @@ keywords will be used for the search engine. -->
 		<t>The sender MUST check the validity of any received saved_rtt and
         	saved_bb parameters, whether these are sent by a receiver or are stored
         	at the sender. The following events indicates cases where the use of
-        	these parameters is inappropriate: 
-            
+			these parameters is inappropriate:</t> 
+	</list>    
 		<t>{NOTE:
             	A later revision needs to define how to decide a significant change.}</t>
+	
+	<list style="symbols">
 		
             	<t>BB over-estimation: There are cases where using a measured cwnd
             	would inflate the bottleneck bandwidth. At the end of the CC slow
@@ -580,28 +575,29 @@ keywords will be used for the search engine. -->
            	using the available capacity since that measurement was made. The
             	mitigation could be to restrict to only a fraction (e.g., 1/2) of
             	the previously used cwnd.</t>
+	</list>
 			
 		<t>These safety guidelines are designed to mitigate the risk that sender
       		adds excessive congestion to an already congested path. The following
 		mechanisms help in fulfilling this objective:</t>
-       		<list>
-         		<t>(unvalidated phase) The sender MUST NOT use the parameters unless
+	<list style="symbols">
+         		<t>(Unvalidated phase) The sender MUST NOT use the parameters unless
           		the first IW packets when packets are detected as lost or
          		acknowledgments indicate the packets were ECN CE-marked. These are
           		indication of potential congestion and therefore the method MUST NOT
          	 	be used; </t>
 
-          		<t>(unvalidated phase) The sender MUST implement the retreat method
+          		<t>(Unvalidated phase) The sender MUST implement the retreat method
           		when packets are detected as lost or acknowledgments indicate the
           		packets were ECN CE-marked. These are indication of potential
           		congestion and therefore the method MUST NOT be used.</t>
         	</list>
 
 	 	<t>{XXX-Editor note: Decide on the mitigation for Starvation of New Flows.}</t>
-    	</section> <!-- End of Safety: Network Conditions --->
+    	</section> <!-- End of Safety: Network Conditions -->
 			
 	<section title="Pacing in Careful Resume">
-		<t>The following mechanisms could be implemented:
+		<t>The following mechanisms could be implemented.</t>
 		<t>The sender needs to avoid sending a burst of packets as a result of a
               		step-increase in the congestion window <xref
               		target="RFC9000"></xref>. Pacing the packets as a function of
@@ -630,10 +626,10 @@ keywords will be used for the search engine. -->
       	    <t>This follows the idea presented in <xref target="RFC4782"></xref>,
       	    <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
       	    <xref target="CONEXT15"></xref>.</t>	
-	</section> <!---Pacing in Careful Resume --->
-    </section> <!--Unvalidated Phase --->
+	</section> <!-- Pacing in Careful Resume -->
+    </section> <!-- Unvalidated Phase -->
 
-   <section anchor="sec-rationale" title="Safety Requirements for the Retreat Phase">
+   <section title="Safety Requirements for the Retreat Phase">
 	<t> This section defines the safety requirements
         after a path change or congestion is detected in the Unvalidated Phase.</t>
 
@@ -662,8 +658,8 @@ keywords will be used for the search engine. -->
 	    
 	     <t>{XXX-Editor note: Decide on the mitigation after detected congestion.}</t>
 
-         </section> <!-- End of Safety: Network Conditions- Mitigating Mistakes --->
-  </section><!--- Safety Requirements for the Retreat Phase --->
+         </section> <!-- End of Safety: Network Conditions- Mitigating Mistakes -->
+  </section><!-- Safety Requirements for the Retreat Phase -->
 		
   <section title="Returning to Normal Congestion Control">
 	<t>At the end of Carfeul Resume, the CC controller returns to the Normal Phase.</t>	
@@ -675,9 +671,9 @@ keywords will be used for the search engine. -->
             <t>For BBR CC, it is recommended to enter the "probe bandwidth"
             state.</t>
         </list>
-   </section><!--- End of normal-->	
+   </section><!-- End of normal-->	
 
-</section> <!---  Guidelines -->	  
+</section> <!--  Guidelines -->	  
 
 <section anchor="sec-acknowledgments" title="Acknowledgments">
       <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
@@ -693,56 +689,14 @@ keywords will be used for the search engine. -->
 
 <section anchor="sec-security" title="Security Considerations">
 
-	<t>Security considerations for QUIC are discussed in <xref
-      target="sec-safety_guide"></xref></t>
+	<t>This document does not exhibit specific security considerations since only sender level considerations are proposed. Security considerations for the interactions with the receiver are discussed in <xref
+      target="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
 
-	<t> This section provides security considerations for Careful Resume.</t>
-
-    </section> <!--- Sec Considerations>
+    </section> <!-- Sec Considerations -->
 	    
-<!--- BDP FRAME-->
-     <section  title="Security Considerations for the BDP Frame">
-
-	<t>Security considerations for QUIC are discussed in <xref
-     	 target="sec-safety_guide"></xref>.
-	The security considerations for Careful Resume provide considerations for that method.</t>
-
-      <t>The receiver can send information related to the saved_rtt and saved_bb
-      to the sender with the BDP Frame extension using either Rationale #2 -
-      Solution #2 or Rationale #2 - Solution #3. However, the sender SHOULD
-      NOT trust the receiver. Indeed, even if the QUIC packets containing the BDP
-      Frame are encrypted, a receiver could modify the values within the
-      extension and encrypt the QUIC packet. Authentication mechanisms might
-      not guarantee that the values are safe. It is not an easy operation for
-      a receiver to modify authenticated or encrypted data without this being
-      detected by a sender. Modification could be realized by a malicious
-      receiver. One way to avoid this is for a sender to also store the
-      saved_rtt and saved_bb parameters.</t>
-      
-       <t>A "malicious receiver" could try to send malicious
-       information to a sender. Information sent by a malicious receiver is not
-       relevant. A receiver could request a sender to use a cwnd higher
-       than appropriate, to gain an unfair share of capacity for itself
-       or to induce congestion for other flows. A sender might anyway
-       decide whether to fully use the new allowed rate.</t>
-
-      <t>A malicious receiver might modify the saved_bb parameter to convince
-      the sender to use a larger CWND than appropriate. Using the algorithms
-      proposed in <xref target="sec-safety_guide"></xref>, the sender may
-      reduce any intended harm and can check that part of the information
-      provided by the receiver are valid. Using the security mechanisms provided
-      in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>, the sender can 
-      verify that the receiver did not change the parameters inside the frame.</t>
-
-      <t>Storing the BDP parameters locally at the sender reduces the
-      associated risks by allowing the receiver to transmit information related
-      to the BDP of the path in the case of a malicious receiver trying to break
-      the encryption mechanism that it had received.</t>
-
- 	 </section> <!--- Sec Considerations>
   </middle>
 
-  <!--  *****BACK MATTER ***** -->
+  <!--  BACK MATTER -->
 
   <back>
     <!-- References split into informative and normative -->
@@ -761,22 +715,18 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
       <?rfc include="reference.RFC.2119.xml"?>
 
       <?rfc include="reference.RFC.4782.xml"?>
-      <?rfc include="reference.RFC.4941.xml"?>
 
       <!-- <?rfc include="reference.RFC.6349.xml"?> -->
 
-      <?rfc include="reference.RFC.6973.xml"?>
+      <?rfc include="reference.RFC.8085.xml"?>
       <?rfc include="reference.RFC.8174.xml"?>
 
-      <?rfc include="reference.RFC.8446.xml"?>
       <?rfc include="reference.RFC.8801.xml"?>
 
       <?rfc include="reference.RFC.9000.xml"?>
 
       <!-- <?rfc include="reference.RFC.9001.xml"?> -->
 
-      <?rfc include="reference.RFC.9002.xml"?>
-      <?rfc include="reference.RFC.9040.xml"?>
     </references>
 
     <references title="Informative References">
@@ -786,10 +736,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
       <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
 	    
       <?rfc include="reference.RFC.5783.xml"?>
-      <?rfc include="reference.RFC.7661.xml"?>
       <?rfc include="reference.RFC.8867.xml"?>
-      <?rfc include="reference.RFC.9040.xml"?>
-
       
       <reference anchor="MAPRG111">
         <front>
@@ -852,7 +799,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     <t>
     This proposes an Endpoint Token to allow a sender to identify its own
-	    view of the network path that it is using. In <xref="I-D.kuhn-quic-bdpframe-extension"</xref>
+		    view of the network path that it is using. In <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>
 	    this Endpoint Tokencould be shared and used as an
     opaque path identifier to other parties and the sender can verify if
     this is one of its current paths.
@@ -919,7 +866,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
        </list> </t>
     </section>
 
- </section> <!--- End of An Endpoint Token --->
+ </section> <!-- End of An Endpoint Token -->
 	  
 <section title="Summary">
 
@@ -943,9 +890,9 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 ]]></artwork>
 </figure>
 	
-<!--- text relating to BDP Frame moved out of this draft --->
+<!-- text relating to BDP Frame moved out of this draft -->
 		
-</section> <!--- end of Summary --->
+</section> <!-- end of Summary -->
 </back>
 </rfc>
 
