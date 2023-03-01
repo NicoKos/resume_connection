@@ -89,75 +89,181 @@
 
 	<abstract>
 		<t>
-		<!-- start new in v1 vs v0 -->
                 This dcoument describes the BDP_FRAME extension for QUIC.
-                The frame enables the exchange of information related to the
+                The frame enables the exchange of CC parameters related to the
                 path characteristics between the receiver
                 and the sender during a connection.
-                This information can be utilised
+                These CC parameters can be utilised by the Careful Resume method
                 when a new connection is established or for application-limited
                 traffic. 
-                This information can also be used by the receiver to request that
-		previously computed parameters related to the 
+		The CC parameters allows a receiver to prepare to use the additional
+		capacity that could be amde available when the method is used.
+                This CC parameters can also be used by the receiver to request that
+		previously computed CC parameters related to the 
 		path characteristics, are not used, when the receiver has additional information
 		about the path or traffic to be sent.
-		<!-- end new in v1 vs v0 -->
 		</t>
 	</abstract>
 	</front>
 
 	<middle>
 
-	<section anchor="sec:introduction" title="Introduction">
-		<t>
-                This document proposes a method to exchange values between
-                a receiver and the sender in a interoperable manner:
-		<list style="numbers">
-			<t>
-                        For an established connection, the
-                        current RTT (current_rtt), bottleneck bandwidth
-                        (current_bb) and current receiver Endpoint Token 
-                        (current_endpoint_token) are
-                        stored as saved_rtt, saved_bb and
-                        saved_endpoint_token within a BDP_FRAME;
-			</t>
-			<t>
-                        The BDP_FRAME can be sent to the receiver and
-                        the receiver can also be notified of the values of the
-			BDP_FRAME parameters; 
-			</t>
-			<t>
-			The receiver can read most of the BDP_FRAME parameters but not 
-			modify any of them. The sender computes a secured hash with 
-			its own selection of the parameters of the BDP_FRAME,
-			encrypts the hash and sends it within the BDP_FRAME.  
-			The receiver can not read the hash.
- 			</t>
-			<t>
-			<!-- start new in v1 vs v0 -->
-                        When accepting the use of previously
-                        computed parameters (for application-limited
-                        traffic, for new connections (either 1-RTT or
-                        0-RTT), for connection resumption (wihtin 1-RTT
-                        connection)) the receiver sends the BDP-FRAME to
-                        the sender;
-			<!-- end new in v1 vs v0 -->
-			</t>
-			<t>	
-			The sender can then utilise the parameters from the 
-			BDP_FRAME in a later new connection to the same endpoint.
-			</t>
-		</list>
-                This method can apply to any resumed QUIC session: both
-                a saved_session and a recon_session can be a 0-RTT QUIC
-		connection or a 1-RTT QUIC connection.
-	        </t>
+<!-- Feb 2023, this document now includes all BDP-Frame related text from Careful Resume,
+but at this stage probably contains a lot of repetition, and potentially some confusion
+about whether QUIC Transport Params, Session Tickets or other Frames are used to send
+the CC parameters -->
+		
+<section anchor="sec:introduction" title="Introduction">
+    <t>
+    This document extends the Careful Resume
+    method <xref target="I-D.kuhn-quic-careful-resume"> 
+    by allowing 
+    sender-generated CC parameters to be stored at the receiver.
+    By transfering the CC parameters to a receiver, it also releases the
+    sender from needing to retain CC parameter state for each
+    receiver. This specifically allows
+    a receiver to implement a policy that informs a sender
+    whether the receiver desires the sender to reuse the CC parameters.
+    </t>
+    <t>
+    This document defines the method to exchange the CC parameters between
+    a QUIC receiver and the sender in an interoperable manner. The process
+    is outlined here:
+    <list style="numbers">
+	<t>
+	For an established connection, the
+	current RTT (current_rtt), bottleneck bandwidth
+	(current_bb) and current receiver Endpoint Token 
+	(current_endpoint_token) are
+	stored as saved_rtt, saved_bb and
+	saved_endpoint_token within a BDP_FRAME.
+	The sender computes a secured hash with 
+	its own selection of the CC parameters of the BDP_FRAME,
+	encrypts the hash and sends this within the BDP_FRAME;  
+	</t>
+	<t>
+	The receiver can read the non-encrypted portuon of the BDP_FRAME parameters,
+	but is not premitted to modify any CC parameters. 
+	The receiver is unable to read the hash.
+ 	</t>
+	<t>
+	A receiver later sends a BDP-FRAME back to
+        the sender to re-use previously computed CC parameters;
+	</t>
+	<t>	
+	The sender is then able to utilise the CC parameters in the 
+	BDP_FRAME in new connection to the same endpoint.
+	</t>
+    </list>
+    </t>
 
-                <t>
-		Details of the Endpoint Token are available in <xref target="I-D.kuhn-quic-careful-resume"></xref>.
-	        </t>
+    <!-- PLEASE CHECK NEXT PARA - restructing of sections may have modified this -->
+    <t>This method can apply to any resumed QUIC session: both
+    a saved_session and a recon_session can be a 0-RTT QUIC
+    connection or a 1-RTT QUIC connection.
+    </t>
 			
-		<section anchor="sec:terms_def" title="Notations and terms">
+   <section anchor="subsec:rationale_client" title="Optimizing Client Requests"
+	<t>Where the receiver is aware of a high BDP, it can adapt other CC parameters
+	to better utilize the available capacity, such as 
+	increasing the value of flow control pararemeters.</t>
+
+        <t>Some designs of application do not use long-lasting transport connections. 
+        Instead, they use a series of shorter connections, typically
+	each using the same path. This style of application can benefit 
+	from this method, and could be enhanced by allowing the application
+	to receive an estimate of the expected characteristics, which could help
+	to appropriately use the new connection (e.g.,
+	adapting the content of quality for a video application; or anticipating
+	the time taken to complete the transmission of an object). </t>
+	
+	<t> For example, a client using Dynamic Adaptive Streaming over HTTPS
+        (DASH). Such a client might be unable to receive sufficient data
+	to reach the video playback
+        quality that is supported by the path, because for each video chunk,
+        the transport protocol needs to independently determine the path
+        capacity. The lower transfer rate is safe, but can also lead to an
+        overly conservative requested rate to the sender, because clients
+        often adapt their application-layer requests based on the transport
+        performance (i.e., the client could fail to increase the requested
+        quality of video chunks, or to fill buffers to avoid stalling playback
+        or to send high quality advertisements). </t>
+	      
+        <t> When using Dynamic Adaptive Streaming over HTTPS (DASH), clients
+	might encounter issues in knowing the available path capacity or DASH
+	can encounter issues in reaching the best available video playback
+	quality.  The client requests could then be adapted and specific
+	traffic could utilize the previously observed path characteristics (such
+	as encouraging the client to increase the quality of video chunks, to
+	fill the buffers and avoid video blocking or to send high quality
+	adds).</t>
+      </section><!--- End of intro: Optimizing Client Requests --->
+	
+      <section title ="Three approaches">
+	    <t>This section reviews three approaches to implement Careful Resume.</t>
+     	   
+	    <section anchor="sec-local_storage"
+               title="Independent Local Storage of Values">
+        	<t>This approach independently lets both a receiver and a sender store
+        	their CC parameters: 
+		<list style="symbols">
+        		<t>During a 1-RTT session, the endpoint stores the RTT (as the
+        		saved_rtt) and bottleneck bandwidth (as the saved_bb) together in
+        		the session resume ticket. 
+        		</t>
+
+               		<t>The sender maintains a table of previously issued tickets,
+               		indexed by the random ticket identifier that is used to guarantee
+               		uniqueness of the Authenticated Encryption with Associated Data
+               		(AEAD) encryption. Old tokens are removed from the table using the
+                	Least Recently Used (LRU) logic. For each ticket identifier, the
+               		table holds the RTT and bottleneck bandwidth (i.e. saved_rtt and
+               		saved_bb), and also the Endpoint Token of the receiver (i.e.
+               		saved_endpoint_token).</t>
+
+               		<t>During the new session establishment (0-RTT or 1-RTT), the local endpoint waits for the first
+       			RTT measurement from the remote peer. This is used to
+        		verify that the current_rtt has not significantly changed from the
+        		saved_rtt (used as an indication that the CC parameters are
+        		appropriate for the current path).</t>
+
+        		<t>If this RTT is confirmed, the endpoint also verifies that an IW of
+        		data has been acknowledged without requiring retransmission or
+        		resulting in an ECN CE-mark. This second check detects whether a path
+        		is experiencing significant congestion (i.e., where it would not be
+        		safe to update the cwnd based on the saved_bb). In practice, this
+        		could be realized by a proportional increase in the cwnd, where the
+        		increase is (saved_bb/IW)*proportion_of_IW_currently-ACKed.</t>
+		</list>
+        	<t>This solution does not allow a receiver to request the sender not to
+		 use the CC parameters in the BDP Frame. If the sender does not want to store the
+        	metrics from previous connections, an equivalent of the
+        	tcp_no_metrics_save for QUIC may be necessary. This option could be
+        	negotiated that allows a receiver to choose whether to use the saved
+        	CC parameters.</t>
+      	</section> <!-- End of intro: Three appoaches: sec-local_storage --->
+
+      <section anchor="sec-using_new_token" title="Using NEW_TOKEN frames">
+        	<t>A sender can send a NEW_TOKEN Frame to the receiver. The token is an
+        	opaque (encrypted) blob and the receiver can not read its content (see
+        	section 19.7 of <xref target="RFC9000"></xref>). The receiver sends the
+        	received token in the header of an Initial packet of a later
+       	 	connection.</t>
+      </section> <!-- End of intro: Three appoaches: sec-local_storage --->
+
+      <section anchor="sec-bdp_frame_section" title="BDP Frame">
+        	<t>Using BDP Frames, the sender could send a set of CC parameters 
+		to the receiver. The use of the BDP Frame is
+        	negotiated with the receiver. The receiver can read its content. If the
+        	receiver permits using the previous CC parameters, it can
+        	send the BDP Frame back to the sender in an Initial packet of a later
+        	connection.</t>
+      </section> <!-- End of intro: Three appoaches: sec-local_storage --->
+    </section> <!-- End of intro: Three appoaches--->
+
+</section><!--- End of intro --->
+	
+<section anchor="sec:terms_def" title="Notations and Terms">
 			<t>
 			<list style="symbols">
 				<t>
@@ -194,12 +300,12 @@
                                 receiver preserved from a previous connection
 				</t>
 				<t>
-                                remembered BDP parameters: a combination
+                                remembered CC parameters: a combination
                                 of saved_rtt and saved_bb
 				</t>
 				<t>
 				secured hash : hash generated by the sender using 
-				a list of parameters that it selected. The sender
+				a list of CC parameters that it selected. The sender
 				uses a private key to protect the hash. 
 				</t>
 			</list>
@@ -238,9 +344,7 @@
         bottleneck bandwidth, and the preserved values therefore ought to be used
 				with caution.</t>
  		
-		</section>
-
-		<section anchor="sec:req_language" title="Requirements Language">
+	<section anchor="sec:req_language" title="Requirements Language">
 			<t>
                         The keywords "MUST", "MUST NOT", "REQUIRED",
                         "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
@@ -254,11 +358,11 @@
 			</t>
 			<t>
 			Variable-length integer encoding is defined in section 16 of <xref target="RFC9000"></xref>.  
-		</section>
+	</section> <!--- Notations and Terms: End of Requirements Language --->
 	
-	</section>
+</section> <--- End of Notations and Terms --->
 
-	<section anchor="sec:bdp_frame_section" title="BDP Frame">
+<section anchor="sec:bdp_frame_section" title="BDP Frame">
 
 		<t>
                 This section describes the use of a new Frame, the BDP_FRAME.
@@ -291,7 +395,7 @@ BDP_FRAME {
 			<t>
 			Hash (secured_hash): 
 			The secured_hash is generated by the sender using other 
-			parameters of the BDP_FRAME. The sender encrypts the hash so 
+			CC parameters from the BDP_FRAME. The sender encrypts the hash so 
 			that the receiver can not read it. 
 			</t>
 			<t>
@@ -337,9 +441,14 @@ BDP_FRAME {
 			</t>
 			</list>
 			</t>
-		</section>
+			
+		    <t>
+   		Note: The Endpoint Token is defined in <xref target="I-D.kuhn-quic-careful-resume"></xref>, 
+		and is discussed in the context of this protocol exchange in a later section.
+	        </t>
+	<!--- eEd of main part of BDP Frame, subsections follow -->
 
-		<section anchor="sec:bdp_activation" title="Extension activation">
+	<section anchor="sec:bdp_activation" title="Extension activation">
 			<t>
                 	The receiver can accept the transmission
                 	of BDP_FRAMEs from the sender by using
@@ -388,17 +497,49 @@ BDP_FRAME {
                 	described in Section 18 of 
                 	<xref target="RFC9000"></xref>.
 			</t>
-		</section>
-	</section>
+	</section> <!--- End of Extension activation --->
 
-	<section anchor="sec:discuss" title="Discussion">
+	<Section title="Using the CC parameters with Care">
+      		<t>Care is needed in the use of any temporal information
+ 		to assure safe use of the Internet and to be robust to changes
+ 		in traffic patterns, network routing and link/node failures.
+ 		There are also cases where using the CC parameters of a previous
+        	connection are not appropriate, and a need to evaluate the potential
+       		for malicious use of the method.
+		The specification for the QUIC transport protocol <xref
+      		target="RFC9000"></xref> therefore notes "Generally, implementations are advised
+      		to be cautious when using previous values on a new path." </t>
+      	</section>  <!--- end of use with care --> 
+
+	<section title="Saving Path CC Parameters">	
+		<t>Three approaches are compared:</t>
+		<list>
+			<t>(1) The saved CC parameters are stored at the sender 
+        		("Local storage") and is never sent to a receiver;</t>
+			<t>(2) Some CC parameters are transmitted to the receiver,
+        		which can be used when reconnecting, but the receiver cannot read the
+        		CC parameters received from the sender ("NEW TOKEN");</t>
+			<t>(3) the saved CC parameters are
+        		transmitted to a receiver, which can use it when reconnecting.
+        		The receiver can read the CC parameters to accept or not the use of
+			CC parameters (a.k.a. "BDP extension").</t>
+		</list>
+	</section> <!--- End of BDP Frame: Saving path CC Parameters -->
+</section>	 <!--- End of BDP Frame -->
+
+<section anchor="sec:discuss" title="Discussion">
 		<t>
                 A receiver using the BDP_FRAME extension has the choice
-                of accepting the reuse of the previous parameters,
-		or requesting the sender to not reuse the previous parameters.
+                of accepting the reuse of the previous CC parameters,
+		or requesting the sender to not reuse the previous CC parameters.
 		</t>
+		<t>This extension MUST NOT provide an opportunity for the current
+      		connection to be a vector for an amplification attack. The QUIC address
+      		validation process, used to prevent amplification attacks, SHOULD be
+      		performed <xref target="RFC9000"></xref>.</t>
+
 		<t>
-                The BDP metadata parameters are measured by
+                The CC parameters are measured by
                 the sender during a previous
                 connection to the same receiver. The BDP extension is
                 protected by the mechanism that
@@ -411,7 +552,7 @@ BDP_FRAME {
                 4.5 to 4.7 of 
                 <xref target="RFC9001"></xref>.
                 This provides a way for the sender to
-                verify that the parameters proposed by the
+                verify that the CC parameters proposed by the
                 receiver are the same as those that the sender
                 sent to the receiver during a previous
                 connection.
@@ -428,40 +569,272 @@ BDP_FRAME {
                 One way to avoid this is for a sender to also 
                 store the saved_rtt and saved_bb parameters.
 		Another way to avoid this is to use the secured hash generated by the sender. If the receiver 
-		modify a transport parameter, the result of the hash would be different. The sender should then 
-		avoid exploiting previously estimated transport parameters. 
+		modifies a CC parameter, the result of the hash would be different. The sender should then 
+		avoid exploiting previously estimated CC parameters. 
 		</t>
+		
+	<section title="Interoperability and Use Cases">
+          	<t>A sender that stores a resumption ticket for each receiver to
+          	protect against replay on a third party, it could also store the
+          	Endpoint Token (i.e., saved_endpoint_token) and CC parameters (i.e.,
+          	saved_rtt and saved_bb) of a previous connection.</t>
 
-	</section>
+          	<t>When the BDP Frame extension is used, locally stored CC
+         	parameters at the sender can provide a cross-check of the CC
+          	parameters sent by a receiver. The sender can anyway enable a safe
+          	jump, but without the BDP Frame extension. However, using the CC
+          	parameters enables a receiver to choose whether to request this or
+          	not, enabling it to utilize local knowledge of the network
+          	conditions, connectivity, or connection requirements.</t>
+
+		<t>Four cases are identified:
+		<list style="numbers">
+			<t> The network path has changed and the new path is
+			different. This might be evident from a change of local interface, a change
+			in the client or sender IP address, or similar indication from the network.
+			Using the saved CC parameters could increase congestion.</t>
+			<t> The network path has changed, but the new path is not known to be
+			different. This case might be accompanied by a change in the RTT, or
+			evident by loss observed at the start of the new connection and
+			the saved CC parameters is not appropriate. </t>
+			
+			<t> The network conditions have changed and it is discovered that
+			the current capacity is
+			less than the previously estimated bottleneck bandwidth. Using the saved
+			CC parameters would then increase congestion, and the flow needs
+			to adjust to a lower safe rate; </t>
+
+			<t> The stored CC parameters is too old. In this case, it is no longer
+			be reasonable to expect the path to have same characteristics, and the
+			the saved CC parameters is no longer appropriate.</t>
+		</list></t>
+
+		<t>In all these case, the
+		Careful Resume method is not be used, and a sender needs to return to
+		a normal CC behavior.  The method can still be used to characterize the new path,
+		enabling later flows to use this method.</t>
 	
-	<section anchor="sec:acknowledgments" title="Acknowledgments">
-		<t>
-                The authors would like to thank Gabriel Montenegro,
-                Patrick McManus, Ian Swett, Igor Lubashev, Robin Marx,
-                Roland Bless and Franklin Simo for their fruitful
-                comments on earlier versions of this document.
-		</t>
-		<t>
-                The authors would like to particularly thank Tom Jones
-                for co-authoring previous versions of this document.
-		</t>
-	</section>
+         	<t>{XXX-Editor-note: Text to be improved: Storing local values
+         	related to the BDP would help improve the ingress for new
+          	connections, however, not using a BDP Frame extension could reduce
+          	the interest of the approach where (1) the receiver knows the BDP
+          	estimation at the sender, (2) the receiver decides to accept or reject
+          	ingress optimization, (3) the receiver tunes application level
+          	requests.}</t>
 
-	<section anchor="sec:IANA" title="IANA Considerations">
-		<t>
-                TBD: Text is required to register the BDP_FRAME and the
-                enable_bdp transport parameter. Parameters are
-                registered using the procedure defined in 
-                <xref target="RFC9000"></xref>.
-		</t>
-	</section>
+</section>
+	
+		
+		
+         <section anchor="sec:discuss_bdp_default"
+               title="Trade-off between the different solutions">
+	       <!--- Subsection: Use Cases: Tradeoff -->
+        	<t>This section provides a description of several implementation
+       		options and discusses their respective advantages and drawbacks. </t>
 
-	<section anchor="sec:security" title="Security Considerations">
+        	<t>While there are some discussions for the solutions regarding
+        	Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
+        	avoid Rationale #1 - Solution #1: the sender MUST implement a safety
+        	check to measure whether the saved CC parameters (i.e. saved_rtt and
+        	saved_bb) are relevant or check that their usage would not cause
+		 excessive congestion over the path. </t>
+
+        	<t>
+        	The method used to store the CC parameters
+        	SHOULD be associated with a lifetime. If no lifetime expiration
+        	is provided, safety guidelines should help guarantee that the
+        	session resumption is careful. While the sender may not specify
+        	how long the data is stored at its level (for the local storage
+        	solution), BDP extension Frame proposes a extension_lifetime
+        	parameter and "token SHOULD have an expiration time" 
+        	<xref target="RFC9000"></xref>.
+        	</t>
+       </section><!--- Use Cases: Tradeoff -->
+    </section> <!--  Use Cases --->
+
+    <section title="Identifying the Path">
+
+    		<t>
+    		In a simple network scenario, the sending endpoint could use the IP
+    		source address to identify a path. This could work when one
+    		globally-allocated IP address is set per interface. There are many cases
+    		where the IP address would not an acceptable to identify a path. Section
+    		8 of <xref target="RFC9040"></xref> describes cases where the IP address is not a suitable
+   		value when performing TCP control block sharing. In general the IP
+    		address of the sender is made public in the network-layer header of IP
+    		packets. When sharing internal state, <xref target="RFC6973"></xref> identifies relevant
+    		privacy considerations.</t>
+
+    		<t>
+    		Examples of network uses where a source address is not a suitable endpoint
+    		token include:
+    		<list style="symbols">
+	    		<t>The sending endpoint might not be identifiable remotely from its
+            		IP address because a device on the network path translates the
+            		address using a form of NAT/NAPT. In this case, a private IP
+            		address might be used, which does not identify a specific
+	    		endpoint.</t>
+	    		<t>In some cases, a sender can choose to vary the source address
+            		over time to avoid likability in the observable IP header, e.g.,
+            		because the used source address embeds private information, such as
+           		 the endpoint's MAC address/EID.
+           		</t>
+    		</list> </t>
+   		<t>
+   		Note: There are use-cases where for the purpose of identifying a path,
+   		the token does not need to be globally unique, but needs to be
+    		sufficiently unique to prevent attempts to misrepresent the path being
+    		used such as an attack on the congestion controller. Using a smaller
+    		size of token can add to the ambiguity set, reducing this likability.
+		</t>
+     	<section title="Example use of an Endpoint Token"> <!-- subsection of Identify path-->
 		<t>
-                Security considerations are discussed in 
-                <xref target="sec:discuss"></xref>.
-                </t>
-	</section>
+			NOTE: A different Endpoint Token is used for each direction of transmission. A
+			receiver might decide not to provide an Endpoint Token to a sender, to
+       			avoid exposing additional linkable information (but also preventing use
+       			of any mechanism that relies on the token).
+       		</t>
+
+    		<t>
+    		The sender computes an Endpoint Token that seeks to uniquely identify
+    		the path that it uses to communicate with the receiver (1) this is
+    		associated with the path information it sends. The Endpoint Token ought
+    		to be encrypted to avoid sending linkable information observable
+   	 	eavesdroppers on the path. The receiver stores the path information
+    		together with the Endpoint Token, together with the sender's
+    		address/name (2). When the receiver later wishes the sender to use the
+    		stored path information it returns the information to the sender (3)
+    		together with the Endpoint Token. The sender recomputes the Endpoint
+    		Token and compares this with the received Endpoint Token before using
+    		the CC parameters. The Endpoint Token ought to be encrypted while in
+    		transit on the path to avoid provideing an eavesdropper on the path 
+		with linkable information.
+    		</t>
+
+    		<list style="numbers">
+	    	    <t>The Sender transmits the Endpoint Token to the Receiver
+	            </t>
+	            <t>The Receiver holds an Endpoint Token 
+	            </t> 
+	            <t>The Receiver transmits the Endpoint Token to the Sender 
+	            </t>
+    		</list>
+	</section> <!--- Example use of an Identify path: Endpoint Token -->    
+		
+        <section title="Security Related to use of the Endpoint Token">
+    	<t>
+   	A number of security-related topics have been discussed, mostly
+    	concerning the potential exposure of the identity on the path. This information can
+   	also be visible in the IP source address or higher-layer data, but can
+   	be hidden from a remote endpoint using methods such as MASQUE proxy.
+    	When used to inform the transport system using a layered proxy, the
+    	transport endpoint token refers to the endpoints of the outer QUIC
+    	header, and hence the proxy itself, not the end-to-end communication
+    	relayed by the proxy.
+    	</t>
+    	<t>
+    	A sender might decide to not use this method if it has a stroing requirement to prevent
+    	flows being linkable with previous flows to the same endpoint. A
+    	decision not to provide an Endpoint Token necessarily prevents the
+    	sender from requesting the receiver to return path information to allow
+    	the same CC parameters to be re-used, potentially strengthening
+    	privacy but consequently eliminating any performance benefits.
+    	</t>
+    </section> <!-- End of: Endpoint Token Sec -->
+
+    </section> <!-- End of Identify path -->
+
+</section> <!-- End of Discussion -->
+	
+<section anchor="sec:acknowledgments" title="Acknowledgments">
+    <t>
+    The authors would like to thank Gabriel Montenegro,
+    Patrick McManus, Ian Swett, Igor Lubashev, Robin Marx,
+    Roland Bless and Franklin Simo for their fruitful
+    comments on earlier versions of this document.</t>
+    <t>
+    The authors would like to particularly thank Tom Jones
+    for co-authoring previous versions of this document.
+     </t>
+</section> <!--- ACK --->
+
+<section anchor="sec:IANA" title="IANA Considerations">
+    <t>{XXX-Editor note: Text is required to register the BDP Frame and the enable_bdp
+    transport parameter. Parameters are registered using the procedure
+    defined in <xref target="RFC9000"></xref>.}</t>
+
+    <t> TBD: Text is required to register the BDP_FRAME and the
+    enable_bdp transport parameter. Parameters are
+    registered using the procedure defined in 
+    <xref target="RFC9000"></xref>.
+    </t>
+</section><!--- IANA --->
+
+<section anchor="sec:security" title="Security Considerations">
+    <t>
+    Security considerations for the CC method are discussed 
+    in the Security Considerations section of Careful Resume.
+    </t>
+	
+    <section title="Protecton from Malicious Receivers">
+        <t>The sender MUST check the integrity of the saved_rtt and saved_bb
+        parameters received from a receiver.</t>
+
+        <t>There are several solutions to avoid attacks by malicious receivers:
+        <list style="symbols">
+            <t>Solution #1 : The sender stores a local estimate
+            of the bottleneck bandwidth and RTT parameters as the saved_bb and
+            saved_rtt.</t>
+
+            <t>Solution #2 : The sender sends the estimate of
+            the bottleneck bandwidth and RTT parameters to the receiver as the
+            saved_bb and saved_rtt in a block of CC parameters that is
+            authenticated. These CC parameters also could be encrypted by the
+            sender. The receiver resends the same CC parameters for a new
+            connection. The sender can use its local key information to
+            authenticate the CC parameters, without needing to keep a local
+            copy.</t>
+
+            <t>Solution #3 : This approach is the same as
+            above, except that the sender provides an estimate of the saved_rtt
+            and saved_bb parameters in a form that may be read by the receiver.
+            Using the security mechanisms provided in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>,
+            the sender can verify that the receiver did not change the CC parameters inside the frame.
+	    The receiver can 
+            read, but not modify, the saved_rtt and saved_bb parameters and
+            could enable a receiver to decide whether the new
+            CC parameters are thought appropriate, based on receiver-side information about
+            the network conditions, connectivity, or needs of the new
+            connection.</t>
+          </list></t>
+
+          <t><xref target="sec-implem"></xref> describes various implementation
+          approaches for each of these solutions using local storage (
+	  <xref target="sec-local_storage"></xref> for Rationale #2 - Solution #1),
+          NEW_TOKEN Frame ( <xref target="sec-using_new_token"></xref> for
+          Rationale #2 - Solution #2), BDP extension Frame ( <xref
+          target="sec-bdp_frame_section"></xref> for Rationale #2 - Solution
+          #3).</t>
+      </section> <!-- End of Safety: Malicous Clients --->
+	
+      <section anchor="sec-bdp_frame"
+               title="Rationale behind the different implementation options">
+        <t>The NewSessionTickets message of TLS can offer a solution. The
+        proposal is to add a 'bdp_metada' field in the NewSessionTickets,
+        which the receiver is able to read. The only extension currently defined
+        in TLS1.3 that can be seen by the receiver is max_early_data_size (see
+        Section 4.6.1 of <xref target="RFC8446"></xref>). However, in the
+        general design of QUIC, TLS sessions are managed by a TLS stack.</t>
+
+        <t>Three distinct approaches are presented: sending an opaque blob to
+        the receiver that the receiver may return to the sender when establishing
+        a future new connection (see <xref
+        target="sec-using_new_token"></xref>), enabling local storage of the
+        CC parameters (see <xref target="sec-local_storage"></xref>) and a
+        BDP Frame extension (see <xref
+        target="sec-bdp_frame_section"></xref>).</t>
+      </section> <!--- sec
+</section> <!-- End of sec considerations --->
 	</middle>
 
 	<!--  *****BACK MATTER ***** -->
@@ -504,8 +877,55 @@ BDP_FRAME {
 			</reference>
 			--> 
 		</references>
-		<!-- <section anchor="appendix-numerical" title="Example">
-			<t> TBD </t>
-		</section> -->
+		
+		<section anchor="appendix-1" title="ExComparing BDP-Frame Solutionsample">
+			x<figure anchor="fig-summary" title="Comparing BDP-Frame Solutions">
+            <artwork><![CDATA[
++---------+-----------+----------------+---------------+-----------+
+|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
++---------+-----------+----------------+---------------+-----------+
+|#2       |#1         |                |               |           |
+|Malicious|Local      |Enforced        |A receiver is  |           |
+|receiver |storage    | security       | unable        |           |
+|         |           |                | to reject     |           |
+|         |           |                |Malicious      |           |
+|         |           |                | sender could  |           |
+|         |           |                | fill a        |           |
+|         |           |                | receive buffer|           |
+|         |           |                |Limited        |           |
+|         |           |                | use-cases     |Section 4.2|
+|         +-----------+----------------+---------------+-----------+
+|         |#2         |                |               |           |
+|         |NEW_TOKEN  |Save resource   |A malicious    |           |
+|         |           | at sender      | receiver could|           |
+|         |           |Opaque token    | change token  |           |
+|         |           | protected      | even if       |           |
+|         |           |                | protected     |           |
+|         |           |                |A malicious    |           |
+|         |           |                | sender could  |           |
+|         |           |                | fill the      |           |
+|         |           |                | receive buffer|           |
+|         |           |                |sender may not |           |
+|         |           |                | trust receiver|Section 4.3|
+|         +-----------+----------------+---------------+-----------+
+|         |#3         |                |               |           |
+|         |BDP        |Extended        |A malicious    |           |
+|         |extension  | use-cases      | receiver could|           |
+|         |           |Save resource   | change BDP    |           |
+|         |           | at sender      | even if       |           |
+|         |           |A receiver can  | protected     |           |
+|         |           | read and decide|A sender may   |           |
+|         |           | to reject      | not trust a   |           |
+|         |           |BDP extension   | receiver      |           |
+|         |           | protected      |               |           |
+|         |           |                |               |Section 4.4|
++---------+-----------+----------------+---------------+-----------+
+
+{XXX-Editor-Note: Need to clarify the text around changing 
+the authenticated token.}
+
+]]></artwork>
+</figure>
+		</section> 
 	</back>
 </rfc>
