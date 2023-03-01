@@ -101,13 +101,13 @@ keywords will be used for the search engine. -->
       <t>This document discusses careful convergence of 
       Congestion Control (CC) in QUIC, providing
       a cautious method that enables fast startup in a wide
-      range of connections : 0-RTT, new connections sharing the same
-      peers (but not using 0-RTT), application-limited traffic.</t>
+      range of connections : reconnections using previous transport security credentials (0-RTT context), reconnections between 2 peers (prior knowledge of transport context),
+      application-limited traffic.</t>
 
       <!-- start new from v2 to v3 -->
       <t>The method provides QUIC with transport services that resemble 
 	those     
-      currently available in TCP, such as TCP Control Block (TCB) caching or
+	      currently available in TCP, such as TCP Control Block (TCB) <xref target="RFC9040"></xref> caching or
       updates to support application-limited traffic.</t>
       <!-- end new from v2 to v3 -->
 
@@ -724,6 +724,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
       <?rfc include="reference.RFC.8801.xml"?>
 
       <?rfc include="reference.RFC.9000.xml"?>
+      <?rfc include="reference.RFC.9040.xml"?>
 
       <!-- <?rfc include="reference.RFC.9001.xml"?> -->
 
