@@ -1,0 +1,900 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc category="info" docName="draft-kuhn-tsvwg-careful-resume-01"
+     ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+ipr values: full3667, noModification3667, noDerivatives3667
+you can add the attributes updates="NNNN" and obsoletes="NNNN"
+they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the
+full title is longer than 39 characters -->
+
+    <title abbrev="Careful congestion control convergence">Careful convergence of congestion 
+    control from retained state with QUIC</title>
+
+    <author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
+      <organization>Thales Alenia Space</organization>
+
+      <address>
+        <email>nicolas.kuhn.ietf@gmail.com</email>
+      </address>
+    </author>
+
+    <author fullname="Emile Stephan" initials="E" surname="Stephan">
+      <organization>Orange</organization>
+
+      <address>
+        <email>emile.stephan@orange.com</email>
+      </address>
+    </author>
+
+    <author fullname="Godred Fairhurst" initials="G" surname="Fairhurst">
+      <organization>University of Aberdeen</organization>
+
+      <address>
+        <postal>
+          <street>Department of Engineering</street>
+
+          <street>Fraser Noble Building</street>
+
+          <city>Aberdeen</city>
+
+          <code>AB24 3UE</code>
+
+          <country>Scotland, UK</country>
+        </postal>
+
+        <email>gorry@erg.abdn.ac.uk</email>
+      </address>
+    </author>
+
+    <author fullname="Christian Huitema" initials="C" surname="Huitema">
+      <organization>Private Octopus Inc.</organization>
+
+      <address>
+        <email>huitema@huitema.net</email>
+      </address>
+    </author>
+
+    <date year="2023" />
+
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill
+in the current day for you. If only the current year is specified, xml2rfc will fill
+in the current day and month for you. If the year is not the current one, it is
+necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the
+purpose of calculating the expiry date).  With drafts it is normally sufficient to
+specify just the year. -->
+
+    <!-- Meta-data Declarations -->
+
+    <area>Transport</area>
+
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <!-- WG name at the upperleft corner of the doc,
+IETF is fine for individual submissions.
+If this element is not present, the default is "Network Working Group",
+which is used by the RFC Editor as a nod to the history of the IETF. -->
+
+    <keyword>congestion control, convergence, QUIC</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+files in a meta tag but they have no effect on text or nroff
+output. If you submit your draft to the RFC Editor, the
+keywords will be used for the search engine. -->
+
+    <abstract>
+      <t>This document discusses careful convergence of 
+      Congestion Control (CC) in QUIC, providing
+      a cautious method that enables fast startup in a wide
+      range of connections : reconnections using previous transport security credentials (0-RTT context), reconnections between 2 peers (prior knowledge of transport context),
+      application-limited traffic.</t>
+
+      <!-- start new from v2 to v3 -->
+      <t>The method provides QUIC with transport services that resemble 
+	those     
+	      currently available in TCP, such as TCP Control Block (TCB) <xref target="RFC9040"></xref> caching or
+      updates to support application-limited traffic.</t>
+      <!-- end new from v2 to v3 -->
+
+      <t>The method reuses a set of computed CC parameters that
+      are based on the previously observed path characteristics between the
+      the same pair of transport endpoints, such as the
+      bottleneck bandwidth, available capacity, or the RTT. These parameters
+      are stored, allowing then to be later used to modify the CC behavior
+      of a subsequent connection. The document also discusses assumptions
+      and defines requirements around how a
+      sender utilizes these parameters to provide opportunities for a
+      new connection to more quickly get up to speed (i.e. utilize the available
+      capacity). It discusses how these changes impact the capacity at a
+      shared network bottleneck and the safe response that is needed after any
+      indication that the new rate is inappropriate.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section anchor="sec:introduction" title="Introduction">
+      
+	<t>All Internet transports are required to either use a CC method, or
+	to constrain there rate of transmission <xref target="RFC8085"></xref>. In 2010, 
+	a survey of alternative CC methods <xref target="RFC5783"></xref>, noted that there
+	are challenges when a CC operates across an Internet path with a high and/or
+	variable bandwidth-delay product (BDP).</t>
+      
+      	<t>A CC method typically takes time to ramp-up the packet rate,
+      	called the "slow-start phase", informally known as the time to "Get up
+      	to speed". This slow start phase is a period in which a sender
+      	intentionally uses less capacity than might be available, with the
+      	intention to avoid or limit overshooting the actual capacity at a bottleneck.
+      	This can result in increased queuing (latency/jitter) and/or
+      	congestion packet loss to the flow. Any overshoot in the capacity can also have a
+      	detrimental effect on other flows sharing a common bottleneck. In the
+      	extreme case, persistent congestion could result in unwanted starvation of
+      	other flows <xref target="RFC8867"></xref> (i.e., Preventing other flows
+		from successfully sharing a common bottleneck).</t>
+
+      <t>This document specifies a method that can improve performance by 
+      reducing the time to get up to speed, and hence can reduce the
+      total duration of a transfer.  
+      It introduces an alternative method to select initial CC parameters,
+       including a way to more rapidly and safely grow the congestion
+       window (cwnd).
+       This method is based on temporal sharing (sometimes known as
+       caching) of a set of computed CC parameters that relate to a previously 
+       observed path, such as the bottleneck
+       bandwidth, available capacity, and RTT. These
+       parameters are stored and used to modify the CC
+       behaviour of a subsequent connection between the same local and remote endpoints.</t>
+
+        <section title="Using the Information with Care">
+      	<t>Care is needed in the use of any temporal information
+ 	to assure safe use of the Internet and to be robust to changes
+ 	in traffic patterns, network routing and link/node failures.
+ 	There are also cases where using the parameters of a previous
+        connection are not appropriate, and a need to evaluate the potential
+        for malicious use of the method.
+	The specification for the QUIC transport protocol <xref
+      	target="RFC9000"></xref> therefore notes "Generally, implementations are advised
+      	to be cautious when using previous values on a new path." </t>
+      	</section>  <!-- end of use with care --> 
+          
+	<section title="Receiver Preference">
+		
+	     <t>Whilst a sender could take optimization decisions without considering 
+      	     the receiver's preference, there are cases where a client at the receiver
+             could have information that 
+             is not available at the sender. In these cases, a client could
+             could explicitely ask for tuning the 
+             slow start when the application continues transmission, or to to inhibit tuning. 
+             Examples where this could have benfit include:<list style="numbers">
+ 		<t>when a receiver understands that the pattern of traffic that a connection will use
+			(e.g., the volume of data to be sent, the length of the session, or the maximum transfer rate required);</t>
+ 		<t>when a receiver has a local indication that the path/local interface has changed since CC parameters were stored;</t>
+ 		<t>when there is information related to the current hardware limitations at the receiver;</t>
+      		<t>where the receiver understands the capacity that will be needed for other concurrent flows 
+		that might be expected to share the capacity of the path.</t>
+	</list></t>
+			
+ 		<t>A related document complements this CC method by allowing 
+		the sender-generated transport information to be stored at the receiver
+		<xref target="I-D.kuhn-quic-bdpframe-extension"></xref>. 
+		This 
+      	    	enables a receiver to implement a policy that informs a sender
+      	    	whether the receiver desires the sender to reuse the CC parameters.
+		By transfering the information to a receiver, it also releases the
+		sender from needing to retain CC parameter state for each
+		receiver. </t>
+	</section> <!-- end of Receiver Preference -->
+
+	<section anchor="sec-use_case" title="Examples of Scenarios of Interest">
+    
+    	        <t> This secion provides a set of examples where the method is expected to improve performance.</t>
+	        <t>QUIC introduces the concept of transport parameters (Section 4 of
+        	<xref target="RFC9000"></xref>). The present document
+		adds to this by noting that a new
+        	connection can utilize a set of key transport parameters from a
+        	previous connection to reduce the completion time for a transfer. 
+		This is expected to have benefit when the transfer
+       		is significantly larger than the IW, and the BDP is also significantly 
+		more than the IW. This benefit is particularly
+        	evident for a path where the RTT is much larger than for typical
+        	Internet paths.</t>
+		
+		<t>The method can be used by a sender performing a unidirectional data transfer
+        	towards the receiver, (e.g., a receiver downloading a file or a web page). This applies to a
+        	CC that sends data to a remote endpoint and that remote
+        	endpoint resumes the connection, which 
+        	is the focus of the current version of the document.</t>
+
+		<t>Both endpoints can assume the role of a
+        	sender or a receiver. Receivers can therefore 
+		also perform a bidirectional data transfer,
+		where both endpoints simulatenously send data to
+       		each other (e.g.,  remote execution of an application, or a
+        	bidirectional video conference call).</t>
+		
+		<t>Examples where temporal sharing of CC parameters 
+ 		can eliminate round-trip times at the start of a new connection
+ 		include the following:</t> 
+		
+		<list style="numbers">
+           		<t>where an application uses a series of connections over the
+           		same path
+			(each connection which otherwise would need to individually 
+		         discover the CC parameters);</t>
+      			<t>where an application resumes using capacity after a pause 
+			in transmission (an application that
+           		pauses would otherwise need to discover new CC parameters 
+			each time it connects over the same path);</t>      
+			<t>where an application reconnects after a disruption that
+			had temporarilly reduced the path
+           		capacity (e.g., after to a link propagation
+           		impairment, or  where a user on a train journey travels through
+	 		different areas of connectivity before the endpoint
+			returns to use a path with the original characteristics).</t>
+         	</list>
+
+	    <section title="A Satellite Access Network Example"> 
+
+        	<t>In a specific example of high BDP path, a satellite access network,
+		takes up to 9 seconds to complete a 5.3 MB transfer
+		using standard CC, whereas using the
+        	specified method the transfer time could reduce to 4 seconds <xref
+        	target="IJSCN"></xref>; and the time to complete a 1 MB transfer could
+        	be reduced by 62 % <xref target="MAPRG111"></xref>. Benefit is also
+        	expected for other sizes of transfer and for different path
+        	characteristics that also result in a path with high BDP.</t>
+	    </section> <!-- End of intro:examples:satcom -->
+	    
+	    <section title="Another Network Example"> 
+		    <t>{XXX-Editor note: A future revision can provide other Path Examples here.}</t>
+	    </section> <!-- End of intro:examples:other -->
+
+    </section> <!--- end of examples -->
+   
+</section> <!-- end of introduction and motivation -->
+
+<!-- ************************************ -->
+<!-- The protocol spec follows below here -->
+
+<section anchor="notation" title="Language, notations and terms">
+
+      <t>This section provides a brief summary of key terms and the
+      requirements language that is used.</t>
+
+    <section anchor="sec:req_language" title="Requirements Language">
+        <t>The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+        "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+        "OPTIONAL" in this document are to be interpreted as described in BCP
+        14 <xref target="RFC2119"></xref> <xref target="RFC8174"></xref> when,
+        and only when, they appear in all capitals, as shown here.</t>
+    </section>
+
+    <section title="Use of CC Information collected by the Sender">
+	<t>Sender-generated information is used in this document for two functions:</t>
+	<list>
+		<t>Information to charactise the saved path, to allow a sender to
+		establish if the saved information indicates the saved path 
+		is consistent with the current path.</t>
+	 	<t>Information about the capacity that was available on a saved path, 
+		to allow a later sender to
+	 	determine an appropriate set of CC paramaters for its current path.</t>
+	</list>
+    </section> <!--- End of Notation: the information -->
+
+    <section anchor="sec-terms_def" title="Notations and Terms">
+        <t> The document uses language drawn
+      from a range of IETF RFCs.  It defines current, and saved values for a set of CC
+        parameters:
+	<list style="symbols">
+
+<!-- GF (Feb 2023): Removed the IW from this information block??? -->
+<!-- it could potentially be in BDP but is not needed here -->
+<!--	<t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
+<!--            <t>current_iw: Current IW;</t> -->
+<!--            <t>recom_iw: Recommended IW;</t> -->
+
+            <t>current_bb : The current estimated bottleneck bandwidth;</t>
+
+            <t>saved_bb: The estimated bottleneck bandwidth preserved from a
+            previous connection;</t>
+
+            <t>current_rtt: The current RTT;</t>
+
+            <t>saved_rtt: The measured RTT, preserved from a previous
+            connection;</t>
+
+            <t>endpoint_token: The Endpoint Token of the receiver;</t>
+
+            <t>current_endpoint_token: The current Endpoint Token of the receiver;</t>
+
+            <t>saved_endpoint_token: The Endpoint Token of a previous connection by the
+            receiver;</t>
+
+            <t>remembered BDP parameters: A combination of the saved_rtt and
+            saved_bb.</t>
+          </list>
+	</t>
+
+        <t>The Endpoint Token is described in <xref target="endpoint_token"></xref>.
+	</t>
+
+      </section> <!-- End of Notation: end of terms -->
+</section><!-- End of Notation -->
+
+<section anchor="sec-phase" title="The Phases of CC using Careful Resume">
+      <t>This section defines a series of phases through that the
+      CC algorithm moves through as a connection gets up to speed
+      when uit uses the Careful Resume method. 
+      
+      <list style="numbers">
+      
+          <t>Observe Phase: During a previous connection, information about the specific path
+	  to an endpoint is saved. This is used to characterise the path and
+	  to indicate the capacity that was available. It includes the current RTT
+          (current_rtt), bottleneck bandwidth (current_bb) and current receiver
+          Endpoint Token (current_endpoint_token) are stored as saved_rtt, saved_bb and
+          saved_endpoint_token.</t>
+
+          <t>Reconnaissance Phase: When a sender resumes between the same pair of endpoints, 
+	  (aka the same path) it enters the Reconnaissance Phase.
+	  The sender only enters this phase when there are saved CC parameters for the same
+	  pair of endpoints and this information is currnetly valid (i.e., the parameters have
+	  not expired.)
+	  When a method is provided (such as the BDP_Frame), a receiver can request
+	  the sender to not enter this phase.
+	  The sender is send iniial data, limited by the Initial Window.
+          This 
+	  phase checks whether the current path is consistent with the saved path information.
+	  The sender then measures the path characteristics of the present
+          path to confirm that the path is consistent with the previously characterised path
+          (including a similar RTT). 
+	  <list>
+	  	<t>If the sender determines that the path RTT or the other saved path information
+	 	 are not consistent with the current path, 
+		then the sender continues using the standard CC, and enters 
+		the Normal Phase.</t>
+		 <t>To ensure a sender avoids resuming under severely congested conditions,
+	         if any sent initial data 
+	  	 was not correctly received, the sender continues using the standard CC, and enters 
+		 the Normal Phase.</t> 
+	 	<t>If the sender confirms both that the saved and current path information are consistent 
+		and that the sent initial data 
+	  	was correctly received, the sender enters the Unvalidated Phase.</t>
+	  </list>
+	  </t>
+	  
+          <t>Unvalidated Phase: In the Unvalidated Phase, a sender can
+	  utilize the saved path information to update its CC parameters. 
+          This phase a
+          rate higher than allowed by a traditional
+          slow-start mechanism. The convergence towards the
+          previous rate is expected to be faster, but should not be instantaneous, to avoid
+          adding congestion to an already congested bottleneck. In this phase, the sender
+	  continues to check the saved and current path information are consistent. 
+	  <list style="numbers">
+              <t>If a sender determines either that previous parameters
+              are not valid (due to a detected change in the path) or congestion was experienced,
+              then the sender needs to enter the Retreat Phase.</t>
+	       <t>If acknowledgments show that the unvalidated rate was succesfully used 
+	       without inducing significant congestion to the path, 
+	       then the sender is permitted to continue at the rate used in 
+	       in the unvalidated phase when it continues in the Normal Phase.</t>
+            </list></t>
+
+          <t>Retreat Phase: In the Retreat Phase, the sender stops using the saved CC parameters. 
+	  This phase is designed to mitigate the impact on other
+	  flows that might have been sharing a congested bottleneck when in the Unvalidated Phase. 
+	  The sender needs to re-initialised CC parameters to drain any queue built
+	  at the bottleneck duing the Unvalidated Phase and allow other flows to then regain
+	  their share of the available capacity. This reaction differs to a traditional
+	  CC reaction to congestion, because in this case the capacity estimate was unvalidated.
+	  Saved CC parameters for this path should be removed, to prevent the
+	  parameters being used again with other flows.
+	  <list style="numbers">
+              <t>The sender then enters the Normal phase with re-initialised CC parameters.</t>
+          </list></t>
+
+          <t>Normal Phase: The sender resumes using the normal CC method.</t>
+	      
+        </list></t>
+
+</section> <!-- End of Phases -->
+
+<section title="Congestion Control Guidelines and Requirements">	
+	
+    <t>The sender is limited by any rate-limitation of the transport
+    protocol with which the method is used.
+    For QUIC this includes: flow control mechanisms or amplification
+    attack prevention. In particular, a QUIC receiver may need to issue proactive
+    MAX_DATA frames to increase the flow control limits of a connection
+    that is started with this method.</t>
+		
+    <!-- The maximum number of packets that can be sent without
+    acknowledgments needs to be chosen to avoid the creation and the
+    increase of congestion for the path. -->
+		
+    <section anchor="measure" title="Determing the current Path Capacity in the Observe Phase">
+			
+	<t>Congestion controllers, such as CUBIC or RENO, could estimate the
+        saved_bb and current_bb values by utilizing a combination of the
+        cwnd/flight_size and the minimum RTT. A different method could be used
+        to estimate the same values when using a rate-based congestion
+        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>
+	   
+	<list style="symbols">
+          	<t>(Observe Phase) The sender SHOULD NOT store and/or send CC parameter
+          	information related to an estimated bottleneck bandwidth
+          	(saved_bb) (see <xref target="sec-terms_def"></xref> for more
+          	details on bottleneck bandwidth definition), if the cwnd is not at
+		least four times larger than the IW.</t>
+	</list>
+	    
+    </section> <!-- Observe Phase  (measure) -->
+
+    <section  title="Confirming the Path in the Reconnaissance Phase">
+	
+	<t>The sender sends the first data limited by the IW - this is
+        assumed a safe starting point for any path where there is no path
+        information or congestion control information. This limit avoids
+        adding excessive congestion to a potentially congested path.</t>
+
+        <t>The sender monitors reception of the IW data. If the path
+        characteristics resemble those of a recent previous connection from
+        to the same sender (i.e., current_rtt &lt; 1.2*saved_rtt) and
+        all data was acknowledged without reported congestion, the
+        method permits the sender to utilize the saved_bb as an input to
+        adapt current_bb to rapidly determine a new safe rate.</t>
+	    
+	<list style="symbols">
+	<t>(Reconnaissance Phase) The sender MUST NOT send more than the
+        IW in the first RTT of transmitted
+	data <xref target="RFC9000"></xref>.</t>
+	</list>
+	    
+	<t>When used in a controlled
+        network, additional information about local path characteristics
+        could be known, which might be used to configure a non-standard
+        IW.</t>
+    </section>
+ 
+    <section title="Confirming the Path">
+	 <t>Paths change with respect to time for many reasons.
+	This could result in previously measured CC parameters
+        becoming irelevant.</t>
+	    
+	<list style="symbols">
+	 <t>Endpoint Token change: If the Endpoint Token changes 
+            	(i.e., the saved_endpoint_token is different from the
+            	current_endpoint_token), the different Endpoint Token can be assumed as an
+            	indication of a different network path. This new path does not
+	    	necessarily exhibit the same characteristics as the old one.</t>
+
+         <t>RTT change: A significant change in RTT might be an indication
+         that the network conditions have changed. Since the CC information
+         is directly impacted by the RTT, a significant change in the RTT
+         is a strong indication that the previously estimated BDP
+	 parameters are likely to not be valid for the current path.</t>
+
+	<t>Lifetime of the information: The CC information is temporal.
+        Frequent connections to the same Endpoint Token are likely to track
+	changes, but long-term use of previous values is not appropriate.</t>
+           
+	</list>
+
+	<t>{NOTE: A future revision of this document needs to specify how long
+	CC Parameters can be cached, possibly based on TCP-new-CWV or TCB}.</t>
+
+	<list style="symbols">
+        <t>(Reconnaissance Phase) The sender MUST compare the measured
+        transport parameters (in particular current_rtt) of the new session
+        with those of the previous session (in particular
+        saved_rtt). The method MUST NOT be used when the path fails to be
+        validated.</t>
+	</list>
+	    
+	<t>{XXX-Editor-note: RTT check should be a range rather than an
+      	inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
+	
+    </section>	    
+    <section title="Safety Requirements for the Unvalidated Phase">
+	<t> This section defines the safety requirements
+	for using saved CC parameters.</t>
+		
+	<t>{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
+        used, to avoid starving other flows that started or increased their capacity after the last measurement.
+       	How strong should this be stated: ... MUST or SHOULD ... What safety
+        factor is appropriate for the resuming sender? If using slow-start it
+       	would anyway double the rate on the next RTT, so is capacity/2
+        appropriate to initially try?} </t>
+		
+	<t>The method needs to be designed to avoid sending
+        excessive data into a congested bottleneck, because this can have
+        a material impact on any flows sharing that bottleneck, and the
+	ability of those flows to control their own sending rate.</t>
+		
+	<list style="symbols">
+	<t>(Unvalidated Phase) A new connection MUST NOT directly use the previously measured saved_rtt and
+        saved_bb to simply initialize a new flow to resume sending at the same
+       	rate.</t>
+	</list>
+				
+      	<section title="Variable Network Conditions - Choosing Careful Resume">
+ 		<t>The network conditions for the same path can also change over time.
+	        Bottleneck bandwidth and network traffic can
+            	change at any time. An Internet method needs to be robust to
+            	network conditions that can differ from one connection to the next,
+            	due to variations in the forwarding path, reconfiguration of
+            	equipment or changes in the link conditions.</t>
+	
+	<list style="symbols">
+		
+		<t>(Unvalidated Phase) Careful Resume MUST be robust to changes in network traffic, including the
+            	arrival of new traffic flows that compete for the bottleneck
+		capacity.</t>
+
+		<t>The sender MUST check the validity of any received saved_rtt and
+        	saved_bb parameters, whether these are sent by a receiver or are stored
+        	at the sender. The following events indicates cases where the use of
+			these parameters is inappropriate:</t> 
+	</list>    
+		<t>{NOTE:
+            	A later revision needs to define how to decide a significant change.}</t>
+	
+	<list style="symbols">
+		
+            	<t>BB over-estimation: There are cases where using a measured cwnd
+            	would inflate the bottleneck bandwidth. At the end of the CC slow
+           	start phase, the value of cwnd can be significantly larger than
+            	the minimum value needed to utilize the path (i.e., cwnd
+           	overshoot). In most case, the cwnd finally converges to a stable
+            	value after several more RTTs. It would be inappropriate to use an
+            	overshoot in the cwnd as a basis for estimating the bottleneck
+            	bandwidth. NOTE: One mitigation could be to further restrict to
+            	only a fraction (e.g., 1/2) of the previously used cwnd; another
+            	mitigation might be to calculate the bottleneck bandwidth based on
+            	the flight_size or an averaged cwnd.</t>
+
+            	<t>Preventing Starvation of New Flows: It would not be appropriate
+            	to fully use a bottleneck bandwidth estimate based on a previous
+            	measurement of capacity, because new flows might have started
+           	using the available capacity since that measurement was made. The
+            	mitigation could be to restrict to only a fraction (e.g., 1/2) of
+            	the previously used cwnd.</t>
+	</list>
+			
+		<t>These safety guidelines are designed to mitigate the risk that sender
+      		adds excessive congestion to an already congested path. The following
+		mechanisms help in fulfilling this objective:</t>
+	<list style="symbols">
+         		<t>(Unvalidated phase) The sender MUST NOT use the parameters unless
+          		the first IW packets when packets are detected as lost or
+         		acknowledgments indicate the packets were ECN CE-marked. These are
+          		indication of potential congestion and therefore the method MUST NOT
+         	 	be used; </t>
+
+          		<t>(Unvalidated phase) The sender MUST implement the retreat method
+          		when packets are detected as lost or acknowledgments indicate the
+          		packets were ECN CE-marked. These are indication of potential
+          		congestion and therefore the method MUST NOT be used.</t>
+        	</list>
+
+	 	<t>{XXX-Editor note: Decide on the mitigation for Starvation of New Flows.}</t>
+    	</section> <!-- End of Safety: Network Conditions -->
+			
+	<section title="Pacing in Careful Resume">
+		<t>The following mechanisms could be implemented.</t>
+		<t>The sender needs to avoid sending a burst of packets as a result of a
+              		step-increase in the congestion window <xref
+              		target="RFC9000"></xref>. Pacing the packets as a function of
+              		the current_rtt can provide this additional safety during the
+              		unvalidated period.</t>
+
+          	<t>Identify a relevant pacing rhythm:
+			
+		<list style="symbols">
+              		<t>The sender estimates a pacing rhythm using saved_rtt and
+             		 saved_bb. The Inter-packet Transmission Time (ITT) is determined
+              		from the ratio between the current Maximum Message Size (MMS) and
+              		the ratio between the saved_bb and saved_rtt. A tunable safety
+              		margin can avoid sending more than a recommended maximum IW
+              		(recom_iw): 
+			<list style="symbols">
+                  		<t>current_iw = min(recom_iw,saved_bb)</t>
+		
+                  		<t>ITT = MSS/(current_iw/saved_rtt)</t>
+                	</list></t>
+
+              		<t>A  successful receipt of the IW data confirms the path 
+			can be used with the method specified in this document.</t>
+            	</list></t>
+
+      	    <t>This follows the idea presented in <xref target="RFC4782"></xref>,
+      	    <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
+      	    <xref target="CONEXT15"></xref>.</t>	
+	</section> <!-- Pacing in Careful Resume -->
+    </section> <!-- Unvalidated Phase -->
+
+   <section title="Safety Requirements for the Retreat Phase">
+	<t> This section defines the safety requirements
+        after a path change or congestion is detected in the Unvalidated Phase.</t>
+
+	<t>After transport parameters are set to
+      	a previously estimated bottleneck bandwidth, if the slow-start
+      	mechanisms continue with parameters set by Carfeul Resume,
+	the sender might then overshoot the bottleneck
+      	capacity. This can occur even when using the safety check described
+     	in this section.</t> 
+	   
+        <section title="Variable Network Conditions - Mitigating Mistakes">
+       	    <t>The impact of a mistaken decision to use Careful Resume
+	    can be mitigated by 2 potential solutions:</t>
+	    <list style="symbols">
+            	<t> When resuming, restore
+            	the current_bb and current_rtt from the saved_bb and saved_rtt
+            	CC parameters estimated from a previous connection.</t>
+
+            	<t>When resuming, implement
+            	a safety check to measure and avoid using the saved_bb and saved_rtt
+            	CC parameters to cause congestion over the path. In this case, the
+            	current_bb and current_rtt might not be set directly from the
+            	saved_bb and saved_rtt: the sender might wait for the completion
+            	of the safety check before this is done.</t>
+            </list>
+	    
+	     <t>{XXX-Editor note: Decide on the mitigation after detected congestion.}</t>
+
+         </section> <!-- End of Safety: Network Conditions- Mitigating Mistakes -->
+  </section><!-- Safety Requirements for the Retreat Phase -->
+		
+  <section title="Returning to Normal Congestion Control">
+	<t>At the end of Carfeul Resume, the CC controller returns to the Normal Phase.</t>	
+	  
+	<list style="symbols">
+	    <t>For NewReno and CUBIC, it is recommended to exit slow-start
+            and enter the congestion avoidance phase.</t>
+
+            <t>For BBR CC, it is recommended to enter the "probe bandwidth"
+            state.</t>
+        </list>
+   </section><!-- End of normal-->	
+
+</section> <!--  Guidelines -->	  
+
+<section anchor="sec-acknowledgments" title="Acknowledgments">
+      <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
+      Ian Swett, Igor Lubashev, Robin Marx, Roland Bless and Franklin Simo for
+      their fruitful comments on earlier versions of this document.</t>
+      <t>The authors would like to particularly thank Tom Jones for co-authoring 
+      previous versions of this document.</t>
+</section>
+
+<section anchor="sec-IANA" title="IANA Considerations">
+      <t>{XXX-Editor note: Text is required to register any IANA Considerations.</t>
+</section>
+
+<section anchor="sec-security" title="Security Considerations">
+
+	<t>This document does not exhibit specific security considerations since only sender level considerations are proposed. Security considerations for the interactions with the receiver are discussed in <xref
+      target="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
+
+    </section> <!-- Sec Considerations -->
+	    
+  </middle>
+
+  <!--  BACK MATTER -->
+
+  <back>
+    <!-- References split into informative and normative -->
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+(for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+Both are cited textually in the same manner: by using xref elements.
+If you use the PI option, xml2rfc will, by default, try to find included files in the same
+directory as the including file. You can also define the XML_LIBRARY environment variable
+with a value containing a set of directories to search.  These can be either in the local
+filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+    <references title="Normative References">
+      <?rfc include="reference.RFC.2119.xml"?>
+
+      <?rfc include="reference.RFC.4782.xml"?>
+
+      <!-- <?rfc include="reference.RFC.6349.xml"?> -->
+
+      <?rfc include="reference.RFC.8085.xml"?>
+      <?rfc include="reference.RFC.8174.xml"?>
+
+      <?rfc include="reference.RFC.8801.xml"?>
+
+      <?rfc include="reference.RFC.9000.xml"?>
+      <?rfc include="reference.RFC.9040.xml"?>
+
+      <!-- <?rfc include="reference.RFC.9001.xml"?> -->
+
+    </references>
+
+    <references title="Informative References">
+      <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
+	    
+      <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+      <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
+	    
+      <?rfc include="reference.RFC.5783.xml"?>
+      <?rfc include="reference.RFC.8867.xml"?>
+      
+      <reference anchor="MAPRG111">
+        <front>
+          <title>Feedback from using QUIC's 0-RTT-BDP extension over SATCOM
+          public access</title>
+
+          <author initials="N" surname="Kuhn"></author>
+
+          <author initials="E" surname="Stephan"></author>
+
+          <author initials="G" surname="Fairhurst"></author>
+
+          <author initials="T" surname="Jones"></author>
+
+          <author initials="C" surname="Huitema"></author>
+
+          <date year="2022" />
+        </front>
+
+        <seriesInfo name="IETF 111 - MAPRG meeting" value="" />
+      </reference>
+
+      <reference anchor="IJSCN">
+        <front>
+          <title>Google QUIC performance over a public SATCOM access</title>
+
+          <author initials="L" surname="Thomas"></author>
+
+          <author initials="E" surname="Dubois"></author>
+
+          <author initials="N" surname="Kuhn"></author>
+
+          <author initials="E" surname="Lochin"></author>
+
+          <date year="2019" />
+        </front>
+
+        <seriesInfo name="International Journal of Satellite Communications and Networking"
+                    value="10.1002/sat.1301" />
+      </reference>
+
+      <reference anchor="CONEXT15">
+        <front>
+          <title>Halfback: Running Short Flows Quickly and Safely</title>
+
+          <author initials="Q" surname="Li"></author>
+
+          <author initials="M" surname="Dong"></author>
+
+          <author initials="P B" surname="Godfrey"></author>
+
+          <date year="2015" />
+        </front>
+
+        <seriesInfo name="ACM CoNEXT" value="" />
+      </reference>
+    </references>
+
+<section anchor="endpoint_token" title="Annexe: An Endpoint Token">
+
+    <t>
+    This proposes an Endpoint Token to allow a sender to identify its own
+		    view of the network path that it is using. In <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>
+	    this Endpoint Tokencould be shared and used as an
+    opaque path identifier to other parties and the sender can verify if
+    this is one of its current paths.
+    </t>
+
+    <section title="Creating an Endpoint Token">
+        <t>
+        When computing the Endpoint Token, the sender includes information to identify
+        the path on which it sends, for example:
+        <list style="symbols">
+	    <t>
+            it must include a unique identifier for itself (e.g., a globally
+            assigned address/prefix; or randomly chosen value).
+	    </t>
+	    <t>
+            it must include an identifier for the destination (e.g., a
+            destination IP address or name).
+	    </t>
+	    <t>
+            it should an interface identifier (e.g., an index value or a MAC address to associate the
+            endpoint with the interface on which the path starts);
+	    </t>
+	    <t>
+            it could include other information such as the DSCP, ports, flow
+            label, etc (recognising that this additional infromation might improve the path
+            differentiation, but that this can can reduce the re-usability of the
+            token);
+	    </t>
+	    <t>
+            it could include any other information the sender chooses to
+	    include, and potentially including PvD information <xref target="RFC8801"></xref> or
+            information relating to its public-facing IP address;
+	    </t>
+	    <t>
+            it could include a nonce;
+	    </t>
+	    <t>
+            it could include a time-dependent value to define the validity
+            period of the token.
+	    </t>
+       </list></t> 
+
+        <t>
+        When creating an Endpoint Token, the sender has to ensure the following:
+        <list style="numbers">
+	    <t>
+            To reduce the likelihood of misuse of the Endpoint Token, the value
+            should be encoded in a way that hides the component information
+	    from the recipient and any eavesdropper on the path.
+            </t>
+	    <t>
+            The sender can recalculate the Endpoint Token if it needs to validate a
+            previously issued token; and that the Endpoint Token itself can be
+            included in the computed integrity check for any path
+            information it provides.
+	    </t>
+	    <t>
+            The Endpoint Token is designed so that if shared it prevents another party from deriving
+            private data from the token, or to use the token to perform
+            unwanted likability with other information. This implies that
+            the Endpoint Token MUST necessarily be different when used to identify
+            different interfaces.
+            </t>
+       </list> </t>
+    </section>
+
+ </section> <!-- End of An Endpoint Token -->
+	  
+<section title="Summary">
+
+          <figure anchor="fig-summary" title="Comparing Careful Resume solutions">
+            <artwork><![CDATA[
++---------+-----------+----------------+---------------+-----------+
+|Rationale| Solution  |    Advantage   |    Drawback   |  Comment  |
++---------+-----------+----------------+---------------+-----------+
+|#1       |#1         |                |               |           |
+|Variable |set        |Ingress optim.  |Risk of adding |MUST NOT   |
+|Network  |current_*  |                | congestion    |implement  |
+|         |to saved_* |                |               |           |
+|         +-----------+----------------+---------------+-----------+
+|         |#2         |                |               |           |
+|         |Implement  |Reduce risk of  |Negative impact|MUST       |
+|         |safety     | adding         | on ingress    |implement  |
+|         |check      | congestion     | optim.        |Section 3  |
++---------+-----------+----------------+---------------+-----------+
+
+
+]]></artwork>
+</figure>
+	
+<!-- text relating to BDP Frame moved out of this draft -->
+		
+</section> <!-- end of Summary -->
+</back>
+</rfc>
+
+			
