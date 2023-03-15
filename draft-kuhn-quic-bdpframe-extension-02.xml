@@ -97,7 +97,7 @@
                 when a new connection is established or for application-limited
                 traffic. 
 		The CC parameters allows a receiver to prepare to use the additional
-		capacity that could be amde available when the method is used.
+		capacity that could be made available when the method is used.
                 This CC parameters can also be used by the receiver to request that
 		previously computed CC parameters related to the 
 		path characteristics, are not used, when the receiver has additional information
