@@ -115,7 +115,7 @@ keywords will be used for the search engine. -->
       are based on the previously observed path characteristics between the
       the same pair of transport endpoints, such as the
       bottleneck bandwidth, available capacity, or the RTT. These parameters
-      are stored, allowing then to be later used to modify the CC behavior
+      are stored, allowing them to be later used to modify the CC behavior
       of a subsequent connection. The document also discusses assumptions
       and defines requirements around how a
       sender utilizes these parameters to provide opportunities for a
@@ -130,7 +130,7 @@ keywords will be used for the search engine. -->
     <section anchor="sec:introduction" title="Introduction">
       
 	<t>All Internet transports are required to either use a CC method, or
-	to constrain there rate of transmission <xref target="RFC8085"></xref>. In 2010, 
+	to constrain their rate of transmission <xref target="RFC8085"></xref>. In 2010, 
 	a survey of alternative CC methods <xref target="RFC5783"></xref>, noted that there
 	are challenges when a CC operates across an Internet path with a high and/or
 	variable bandwidth-delay product (BDP).</t>
@@ -177,11 +177,11 @@ keywords will be used for the search engine. -->
 	     <t>Whilst a sender could take optimization decisions without considering 
       	     the receiver's preference, there are cases where a client at the receiver
              could have information that 
-             is not available at the sender. In these cases, a client could
+             is not available at the sender. In these cases, a client 
              could explicitely ask for tuning the 
              slow start when the application continues transmission, or to to inhibit tuning. 
-             Examples where this could have benfit include:<list style="numbers">
- 		<t>when a receiver understands that the pattern of traffic that a connection will use
+             Examples where this could have benefit include:<list style="numbers">
+ 		<t>when a receiver understands that the pattern of traffic that a connection will use is different
 			(e.g., the volume of data to be sent, the length of the session, or the maximum transfer rate required);</t>
  		<t>when a receiver has a local indication that the path/local interface has changed since CC parameters were stored;</t>
  		<t>when there is information related to the current hardware limitations at the receiver;</t>
@@ -202,7 +202,7 @@ keywords will be used for the search engine. -->
 
 	<section anchor="sec-use_case" title="Examples of Scenarios of Interest">
     
-    	        <t> This secion provides a set of examples where the method is expected to improve performance.</t>
+    	        <t> This section provides a set of examples where the method is expected to improve performance.</t>
 	        <t>QUIC introduces the concept of transport parameters (Section 4 of
         	<xref target="RFC9000"></xref>). The present document
 		adds to this by noting that a new
@@ -212,7 +212,7 @@ keywords will be used for the search engine. -->
        		is significantly larger than the IW, and the BDP is also significantly 
 		more than the IW. This benefit is particularly
         	evident for a path where the RTT is much larger than for typical
-        	Internet paths.</t>
+        	Internet paths (e.g. SATCOM GEO scenarios).</t>
 		
 		<t>The method can be used by a sender performing a unidirectional data transfer
         	towards the receiver, (e.g., a receiver downloading a file or a web page). This applies to a
@@ -337,9 +337,9 @@ keywords will be used for the search engine. -->
 </section><!-- End of Notation -->
 
 <section anchor="sec-phase" title="The Phases of CC using Careful Resume">
-      <t>This section defines a series of phases through that the
+      <t>This section defines a series of phases that the
       CC algorithm moves through as a connection gets up to speed
-      when uit uses the Careful Resume method. 
+      when it uses the Careful Resume method. 
       
       <list style="numbers">
       
@@ -347,17 +347,17 @@ keywords will be used for the search engine. -->
 	  to an endpoint is saved. This is used to characterise the path and
 	  to indicate the capacity that was available. It includes the current RTT
           (current_rtt), bottleneck bandwidth (current_bb) and current receiver
-          Endpoint Token (current_endpoint_token) are stored as saved_rtt, saved_bb and
+          Endpoint Token (current_endpoint_token) stored as saved_rtt, saved_bb and
           saved_endpoint_token.</t>
 
           <t>Reconnaissance Phase: When a sender resumes between the same pair of endpoints, 
 	  (aka the same path) it enters the Reconnaissance Phase.
 	  The sender only enters this phase when there are saved CC parameters for the same
-	  pair of endpoints and this information is currnetly valid (i.e., the parameters have
+	  pair of endpoints and this information is currently valid (i.e., the parameters have
 	  not expired.)
 	  When a method is provided (such as the BDP_Frame), a receiver can request
 	  the sender to not enter this phase.
-	  The sender is send iniial data, limited by the Initial Window.
+	  The sender sends initial data, limited by the Initial Window.
           This 
 	  phase checks whether the current path is consistent with the saved path information.
 	  The sender then measures the path characteristics of the present
@@ -380,7 +380,7 @@ keywords will be used for the search engine. -->
 	  
           <t>Unvalidated Phase: In the Unvalidated Phase, a sender can
 	  utilize the saved path information to update its CC parameters. 
-          This phase a
+          This phase allows a
           rate higher than allowed by a traditional
           slow-start mechanism. The convergence towards the
           previous rate is expected to be faster, but should not be instantaneous, to avoid
@@ -399,7 +399,7 @@ keywords will be used for the search engine. -->
           <t>Retreat Phase: In the Retreat Phase, the sender stops using the saved CC parameters. 
 	  This phase is designed to mitigate the impact on other
 	  flows that might have been sharing a congested bottleneck when in the Unvalidated Phase. 
-	  The sender needs to re-initialised CC parameters to drain any queue built
+	  The sender needs to re-initialise CC parameters to drain any queue built
 	  at the bottleneck duing the Unvalidated Phase and allow other flows to then regain
 	  their share of the available capacity. This reaction differs to a traditional
 	  CC reaction to congestion, because in this case the capacity estimate was unvalidated.
@@ -428,7 +428,7 @@ keywords will be used for the search engine. -->
     acknowledgments needs to be chosen to avoid the creation and the
     increase of congestion for the path. -->
 		
-    <section anchor="measure" title="Determing the current Path Capacity in the Observe Phase">
+    <section anchor="measure" title="Determining the current Path Capacity in the Observe Phase">
 			
 	<t>Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by utilizing a combination of the
@@ -475,7 +475,7 @@ keywords will be used for the search engine. -->
     <section title="Confirming the Path">
 	 <t>Paths change with respect to time for many reasons.
 	This could result in previously measured CC parameters
-        becoming irelevant.</t>
+        becoming irrelevant.</t>
 	    
 	<list style="symbols">
 	 <t>Endpoint Token change: If the Endpoint Token changes 
@@ -820,7 +820,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
             destination IP address or name).
 	    </t>
 	    <t>
-            it should an interface identifier (e.g., an index value or a MAC address to associate the
+            it must include an interface identifier (e.g., an index value or a MAC address to associate the
             endpoint with the interface on which the path starts);
 	    </t>
 	    <t>
