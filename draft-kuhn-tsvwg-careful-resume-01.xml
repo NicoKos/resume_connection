@@ -223,7 +223,7 @@ keywords will be used for the search engine. -->
 		<t>Both endpoints can assume the role of a
         	sender or a receiver. Receivers can therefore 
 		also perform a bidirectional data transfer,
-		where both endpoints simulatenously send data to
+		where both endpoints simultaneously send data to
        		each other (e.g.,  remote execution of an application, or a
         	bidirectional video conference call).</t>
 		
@@ -241,7 +241,7 @@ keywords will be used for the search engine. -->
            		pauses would otherwise need to discover new CC parameters 
 			each time it connects over the same path);</t>      
 			<t>where an application reconnects after a disruption that
-			had temporarilly reduced the path
+			had temporarily reduced the path
            		capacity (e.g., after to a link propagation
            		impairment, or  where a user on a train journey travels through
 	 		different areas of connectivity before the endpoint
@@ -287,12 +287,12 @@ keywords will be used for the search engine. -->
     <section title="Use of CC Information collected by the Sender">
 	<t>Sender-generated information is used in this document for two functions:</t>
 	<list>
-		<t>Information to charactise the saved path, to allow a sender to
+		<t>Information to characterize the saved path, to allow a sender to
 		establish if the saved information indicates the saved path 
 		is consistent with the current path.</t>
 	 	<t>Information about the capacity that was available on a saved path, 
 		to allow a later sender to
-	 	determine an appropriate set of CC paramaters for its current path.</t>
+	 	determine an appropriate set of CC parameters for its current path.</t>
 	</list>
     </section> <!--- End of Notation: the information -->
 
@@ -389,7 +389,7 @@ keywords will be used for the search engine. -->
 	  <list style="numbers">
               <t>If a sender determines either that previous parameters
               are not valid (due to a detected change in the path) or congestion was experienced,
-              then the sender needs to enter the Retreat Phase.</t>
+              then the sender needs to enter the Retreat Phase (see below).</t>
 	       <t>If acknowledgments show that the unvalidated rate was succesfully used 
 	       without inducing significant congestion to the path, 
 	       then the sender is permitted to continue at the rate used in 
@@ -400,11 +400,21 @@ keywords will be used for the search engine. -->
 	  This phase is designed to mitigate the impact on other
 	  flows that might have been sharing a congested bottleneck when in the Unvalidated Phase. 
 	  The sender needs to re-initialise CC parameters to drain any queue built
-	  at the bottleneck duing the Unvalidated Phase and allow other flows to then regain
+	  at the bottleneck during the Unvalidated Phase and allow other flows to then regain
 	  their share of the available capacity. This reaction differs to a traditional
 	  CC reaction to congestion, because in this case the capacity estimate was unvalidated.
 	  Saved CC parameters for this path should be removed, to prevent the
-	  parameters being used again with other flows.
+	  parameters being used again with other flows.</t>
+	  <t>When the sender transitions to the Safe Retreat Phase, there may still be packets 
+	  that were sent in the Unvalidated Phase that have not yet been acknowledged. 
+	  If these packets from the Unvalidated Phase are declared lost,
+	  they do not trigger an additional CC reaction.</t>
+	 <t> If the data in the packets that are lost in the Unvalidated Phase needs to be recovered,
+	 this recovery commences using the reduced window set on entry to the Safe Retreat Phase. 
+	 In the case of multiple loss, this could require multiple RTTs to complete 
+	 successful resending of data that lost in the Unvalidated Phase. 
+	 The loss of the packets used to resend data is considered a separate congestion event, 
+	 and this does also trigger another CC reaction.
 	  <list style="numbers">
               <t>The sender then enters the Normal phase with re-initialised CC parameters.</t>
           </list></t>
@@ -662,7 +672,7 @@ keywords will be used for the search engine. -->
   </section><!-- Safety Requirements for the Retreat Phase -->
 		
   <section title="Returning to Normal Congestion Control">
-	<t>At the end of Carfeul Resume, the CC controller returns to the Normal Phase.</t>	
+	<t>At the end of Careful Resume, the CC controller returns to the Normal Phase.</t>	
 	  
 	<list style="symbols">
 	    <t>For NewReno and CUBIC, it is recommended to exit slow-start
