@@ -348,7 +348,7 @@ keywords will be used for the search engine. -->
 	  to indicate the capacity that was available. It includes the current RTT
           (current_rtt), bottleneck bandwidth (current_bb) and current receiver
           Endpoint Token (current_endpoint_token) stored as saved_rtt, saved_bb and
-          saved_endpoint_token.</t>
+          saved_endpoint_token. <xref target="sec-measure"></xref>.</t>
 
           <t>Reconnaissance Phase: When a sender resumes between the same pair of endpoints, 
 	  (aka the same path) it enters the Reconnaissance Phase.
@@ -356,13 +356,14 @@ keywords will be used for the search engine. -->
 	  pair of endpoints and this information is currently valid (i.e., the parameters have
 	  not expired.)
 	  When a method is provided (such as the BDP_Frame), a receiver can request
-	  the sender to not enter this phase.
-	  The sender sends initial data, limited by the Initial Window.
+	  the sender to not enter this phase.</t>
+	  
+	  <t>In the Reconnaissance Phase sender sends initial data, limited by the Initial Window.
           This 
 	  phase checks whether the current path is consistent with the saved path information.
-	  The sender then measures the path characteristics of the present
+	  The sender measures the path characteristics of the present
           path to confirm that the path is consistent with the previously characterised path
-          (including a similar RTT). 
+          (including a similar RTT) <xref target="sec-recon"></xref>.. 
 	  <list>
 	  	<t>If the sender determines that the path RTT or the other saved path information
 	 	 are not consistent with the current path, 
@@ -385,7 +386,7 @@ keywords will be used for the search engine. -->
           slow-start mechanism. The convergence towards the
           previous rate is expected to be faster, but should not be instantaneous, to avoid
           adding congestion to an already congested bottleneck. In this phase, the sender
-	  continues to check the saved and current path information are consistent. 
+	  continues to check the saved and current path information are consistent <xref target="sec-unvalid"></xref>. 
 	  <list style="numbers">
               <t>If a sender determines either that previous parameters
               are not valid (due to a detected change in the path) or congestion was experienced,
@@ -402,13 +403,15 @@ keywords will be used for the search engine. -->
 	  The sender needs to re-initialise CC parameters to drain any queue built
 	  at the bottleneck during the Unvalidated Phase and allow other flows to then regain
 	  their share of the available capacity. This reaction differs to a traditional
-	  CC reaction to congestion, because in this case the capacity estimate was unvalidated.
-	  Saved CC parameters for this path should be removed, to prevent the
+	  CC reaction to congestion, because in this case the capacity estimate was unvalidated <xref target="sec-retreat"></xref>..
+	  Saved CC parameters for this path should be removed from any cache, to prevent the
 	  parameters being used again with other flows.</t>
+	  
 	  <t>When the sender transitions to the Safe Retreat Phase, there may still be packets 
 	  that were sent in the Unvalidated Phase that have not yet been acknowledged. 
 	  If these packets from the Unvalidated Phase are declared lost,
 	  they do not trigger an additional CC reaction.</t>
+	  
 	 <t> If the data in the packets that are lost in the Unvalidated Phase needs to be recovered,
 	 this recovery commences using the reduced window set on entry to the Safe Retreat Phase. 
 	 In the case of multiple loss, this could require multiple RTTs to complete 
@@ -438,7 +441,7 @@ keywords will be used for the search engine. -->
     acknowledgments needs to be chosen to avoid the creation and the
     increase of congestion for the path. -->
 		
-    <section anchor="measure" title="Determining the current Path Capacity in the Observe Phase">
+    <section anchor="sec-measure" anchor="measure" title="Determining the current Path Capacity in the Observe Phase">
 			
 	<t>Congestion controllers, such as CUBIC or RENO, could estimate the
         saved_bb and current_bb values by utilizing a combination of the
@@ -456,7 +459,7 @@ keywords will be used for the search engine. -->
 	    
     </section> <!-- Observe Phase  (measure) -->
 
-    <section  title="Confirming the Path in the Reconnaissance Phase">
+    <section anchor="sec-recon"  title="Confirming the Path in the Reconnaissance Phase">
 	
 	<t>The sender sends the first data limited by the IW - this is
         assumed a safe starting point for any path where there is no path
@@ -482,7 +485,7 @@ keywords will be used for the search engine. -->
         IW.</t>
     </section>
  
-    <section title="Confirming the Path">
+    <section anchor="sec-confirm" title="Confirming the Path">
 	 <t>Paths change with respect to time for many reasons.
 	This could result in previously measured CC parameters
         becoming irrelevant.</t>
@@ -521,7 +524,7 @@ keywords will be used for the search engine. -->
       	inequality (current_rtt &lt; 1.2*saved_rtt).}</t>
 	
     </section>	    
-    <section title="Safety Requirements for the Unvalidated Phase">
+    <section anchor="sec-unvalid" title="Safety Requirements for the Unvalidated Phase">
 	<t> This section defines the safety requirements
 	for using saved CC parameters.</t>
 		
@@ -606,7 +609,7 @@ keywords will be used for the search engine. -->
 	 	<t>{XXX-Editor note: Decide on the mitigation for Starvation of New Flows.}</t>
     	</section> <!-- End of Safety: Network Conditions -->
 			
-	<section title="Pacing in Careful Resume">
+	<section anchor="sec-pace" title="Pacing in Careful Resume">
 		<t>The following mechanisms could be implemented.</t>
 		<t>The sender needs to avoid sending a burst of packets as a result of a
               		step-increase in the congestion window <xref
@@ -639,7 +642,7 @@ keywords will be used for the search engine. -->
 	</section> <!-- Pacing in Careful Resume -->
     </section> <!-- Unvalidated Phase -->
 
-   <section title="Safety Requirements for the Retreat Phase">
+   <section anchor="sec-retreat" title="Safety Requirements for the Retreat Phase">
 	<t> This section defines the safety requirements
         after a path change or congestion is detected in the Unvalidated Phase.</t>
 
@@ -671,7 +674,7 @@ keywords will be used for the search engine. -->
          </section> <!-- End of Safety: Network Conditions- Mitigating Mistakes -->
   </section><!-- Safety Requirements for the Retreat Phase -->
 		
-  <section title="Returning to Normal Congestion Control">
+  <section anchor="sec-normal" title="Returning to Normal Congestion Control">
 	<t>At the end of Careful Resume, the CC controller returns to the Normal Phase.</t>	
 	  
 	<list style="symbols">
