@@ -597,10 +597,13 @@ keywords will be used for the search engine. -->
     	</section> <!-- End of Safety: Network Conditions -->
 			
 	<section title="Pacing in Careful Resume">
-		<t>The following mechanisms could be implemented.</t>
-		<t>The sender needs to avoid sending a burst of packets as a result of a
-              		step-increase in the congestion window <xref
-              		target="RFC9000"></xref>. Pacing the packets as a function of
+			
+			<t> A sender needs to avoid sending a burst of packets as a result of a
+              		step-increase in the congestion window <xref target="RFC8085"></xref>,
+              		<target="RFC9000"></xref>. 
+			Various modifications to the sender to avoid line-rate bursts have been 
+			suggested (e.g., <xref target="I-D.hughes-restart"></xref>). 
+			Pacing the packets as a function of
               		the current_rtt can provide this additional safety during the
               		unvalidated period.</t>
 
@@ -731,10 +734,10 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </references>
 
     <references title="Informative References">
-      <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
-	    
-      <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
-      <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
+      	<?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
+      	<?rfc include="reference.I-D.draft-hughes-restart.xml"?>
+	<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+      	<?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
 	    
       <?rfc include="reference.RFC.5783.xml"?>
       <?rfc include="reference.RFC.8867.xml"?>
