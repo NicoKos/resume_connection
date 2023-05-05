@@ -622,31 +622,7 @@ BDP_FRAME {
 </section>
 	
 		
-		
-         <section anchor="sec:discuss_bdp_default"
-               title="Trade-off between the different solutions">
-	       <!-- Subsection: Use Cases: Tradeoff -->
-        	<t>This section provides a description of several implementation
-       		options and discusses their respective advantages and drawbacks. </t>
 
-        	<t>While there are some discussions for the solutions regarding
-        	Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
-        	avoid Rationale #1 - Solution #1: the sender MUST implement a safety
-        	check to measure whether the saved CC parameters (i.e. saved_rtt and
-        	saved_bb) are relevant or check that their usage would not cause
-		 excessive congestion over the path. </t>
-
-        	<t>
-        	The method used to store the CC parameters
-        	SHOULD be associated with a lifetime. If no lifetime expiration
-        	is provided, safety guidelines should help guarantee that the
-        	session resumption is careful. While the sender may not specify
-        	how long the data is stored at its level (for the local storage
-        	solution), BDP extension Frame proposes a extension_lifetime
-        	parameter and "token SHOULD have an expiration time" 
-        	<xref target="RFC9000"></xref>.
-        	</t>
-       </section><!-- Use Cases: Tradeoff -->
     </section> <!--  Use Cases -->
 
     <section title="Identifying the Path">
