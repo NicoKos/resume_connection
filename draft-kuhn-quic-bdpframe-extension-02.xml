@@ -139,7 +139,7 @@ the CC parameters -->
 	saved_endpoint_token within a BDP_FRAME.
 	The sender computes a secured hash with 
 	its own selection of the CC parameters of the BDP_FRAME,
-	encrypts the hash and sends this within the BDP_FRAME;  
+	encrypts the hash and sends this within the BDP_FRAME. The sender encrypts the hash so that the receiver can not read nor modify the content of the secured hash ;  
 	</t>
 	<t>
 	The receiver can read the non-encrypted portion of the BDP_FRAME parameters,
