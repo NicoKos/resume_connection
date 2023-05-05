@@ -425,7 +425,7 @@ BDP_FRAME {
 			Using the previous values of bytes_in_flight defined in 
                         <xref target="RFC9002"></xref>
 			can result in overshoot of
-			the bottleneck capacity, and is not advised.
+				the bottleneck capacity, and should be used carefully. It is advised to not only use the amount of bytes in flight but also the goodput.
 			</t>
 
 			<t>
