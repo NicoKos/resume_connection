@@ -378,7 +378,7 @@ the CC parameters -->
                 This section describes the use of a new Frame, the BDP_FRAME.
                 The BDP_FRAME can be utilized by the congestion controller
                 and its data is not be limited by flow control limits. The sender and the receiver MAY
-                send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections. 
+                send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections. The rate of update SHOULD be limited.
 		</t>
 
 		<section anchor="sec:bdp_metadata" title="BDP_FRAME Format">

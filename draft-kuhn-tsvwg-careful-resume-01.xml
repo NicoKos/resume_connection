@@ -456,7 +456,11 @@ keywords will be used for the search engine. -->
           	information related to an estimated bottleneck bandwidth
           	(saved_bb) (see <xref target="sec-terms_def"></xref> for more
           	details on bottleneck bandwidth definition), if the cwnd is not at
-		least four times larger than the IW.</t>
+			least four times larger than the IW.</t>
+          	<t>(Observe Phase) The sender SHOULD update the stored CC parameters and/or send updated CC parameter
+          	information related to an estimated bottleneck bandwidth
+          	(saved_bb) (see <xref target="sec-terms_def"></xref> for more
+          	details on bottleneck bandwidth definition), if significant changes in CC parameters value the session as been measured. The rate of the updates transmission SHOULD be limited.</t>
 	</list></t>
 	    
     </section> <!-- Observe Phase  (measure) -->
