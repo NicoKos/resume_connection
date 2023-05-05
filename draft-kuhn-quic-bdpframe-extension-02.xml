@@ -573,6 +573,10 @@ BDP_FRAME {
 		avoid exploiting previously estimated CC parameters. 
 		</t>
 		
+	        <t>
+		An example of implementation where the sender computes an Endpoint Token that seeks to uniquely identify the receiver is provided in <xref "sec_example-token"></xref>. Implementation details are being left independent from the specification of BDP-FRAME.</t>
+	        </t>
+	
 	<section title="Interoperability and Use Cases">
           	<t>A sender that stores a resumption ticket for each receiver to
           	protect against replay on a third party, could also store the
@@ -695,7 +699,7 @@ BDP_FRAME {
        			of any mechanism that relies on the token).
        		</t>
 
-		<section title="Example use of an Endpoint Token"> <!-- subsection of Identify path-->
+		<section anchor="sec_example-token" title="Example use of an Endpoint Token"> <!-- subsection of Identify path-->
 
 
     		<t>
