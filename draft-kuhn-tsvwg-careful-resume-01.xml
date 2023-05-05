@@ -349,7 +349,7 @@ keywords will be used for the search engine. -->
 	  to indicate the capacity that was available. It includes the current RTT
           (current_rtt), bottleneck bandwidth (current_bb) and current receiver
           Endpoint Token (current_endpoint_token) stored as saved_rtt, saved_bb and
-          saved_endpoint_token. <xref target="sec-measure"></xref>.</t>
+          saved_endpoint_token <xref target="sec-measure"></xref>.</t>
 
           <t>Reconnaissance Phase: When a sender resumes between the same pair of endpoints, 
 	  (aka the same path) it enters the Reconnaissance Phase.
@@ -364,7 +364,7 @@ keywords will be used for the search engine. -->
 	  phase checks whether the current path is consistent with the saved path information.
 	  The sender measures the path characteristics of the present
           path to confirm that the path is consistent with the previously characterised path
-          (including a similar RTT) <xref target="sec-recon"></xref>.. 
+          (including a similar RTT) <xref target="sec-recon"></xref>.
 	  <list>
 	  	<t>If the sender determines that the path RTT or the other saved path information
 	 	 are not consistent with the current path, 
@@ -404,7 +404,7 @@ keywords will be used for the search engine. -->
 	  The sender needs to re-initialise CC parameters to drain any queue built
 	  at the bottleneck during the Unvalidated Phase and allow other flows to then regain
 	  their share of the available capacity. This reaction differs to a traditional
-	  CC reaction to congestion, because in this case the capacity estimate was unvalidated <xref target="sec-retreat"></xref>..
+	  CC reaction to congestion, because in this case the capacity estimate was unvalidated <xref target="sec-retreat"></xref>.
 	  Saved CC parameters for this path should be removed from any cache, to prevent the
 	  parameters being used again with other flows.</t>
 	  
