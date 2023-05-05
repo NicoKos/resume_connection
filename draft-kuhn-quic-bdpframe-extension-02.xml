@@ -200,8 +200,18 @@ the CC parameters -->
       </section><!-- End of intro: Optimizing Client Requests -->
 	
       <section title ="Three approaches">
-	    <t>This section reviews three approaches to implement Careful Resume.</t>
-     	   
+	    <t>This section reviews three approaches to implement Careful Resume.
+		<list>
+			<t>(1) The saved CC parameters are stored at the sender 
+        		("Local storage") and is never sent to a receiver;</t>
+			<t>(2) Some CC parameters are transmitted to the receiver,
+        		which can be used when reconnecting, but the receiver cannot read the
+        		CC parameters received from the sender ("NEW TOKEN");</t>
+			<t>(3) the saved CC parameters are
+        		transmitted to a receiver, which can use it when reconnecting.
+        		The receiver can read the CC parameters to accept or not the use of
+			CC parameters (a.k.a. "BDP extension").</t>
+		</list></t>
 	    <section anchor="sec-local_storage"
                title="Independent Local Storage of Values">
         	<t>This approach independently lets both a receiver and a sender store
@@ -511,20 +521,7 @@ BDP_FRAME {
 		<t>Careful exploitation of the CC parameters is discussed in <xref target="I-D.kuhn-tsvwg-careful-resume"></xref>.</t>
       	</section>  <!--- end of use with care --> 
 		
-	<section title="Saving Path CC Parameters">
-		<t>Three approaches are compared:</t>
-		<list>
-			<t>(1) The saved CC parameters are stored at the sender 
-        		("Local storage") and is never sent to a receiver;</t>
-			<t>(2) Some CC parameters are transmitted to the receiver,
-        		which can be used when reconnecting, but the receiver cannot read the
-        		CC parameters received from the sender ("NEW TOKEN");</t>
-			<t>(3) the saved CC parameters are
-        		transmitted to a receiver, which can use it when reconnecting.
-        		The receiver can read the CC parameters to accept or not the use of
-			CC parameters (a.k.a. "BDP extension").</t>
-		</list>
-	</section> <!-- End of BDP Frame: Saving path CC Parameters -->
+
 </section>	 <!-- End of BDP Frame -->
 
 <section anchor="sec:discuss" title="Discussion">
@@ -710,7 +707,7 @@ BDP_FRAME {
     		together with the Endpoint Token. The sender recomputes the Endpoint
     		Token and compares this with the received Endpoint Token before using
 		the CC parameters. 
-    		</t>
+    		
 
     		<list style="numbers">
 	    	    <t>The Sender transmits the Endpoint Token to the Receiver
@@ -719,7 +716,7 @@ BDP_FRAME {
 	            </t> 
 	            <t>The Receiver transmits the Endpoint Token to the Sender 
 	            </t>
-    		</list>
+    		</list> </t>
 	</section> <!-- Example use of an Identify path: Endpoint Token -->    
 		
         <section title="Security Related to use of the Endpoint Token">
