@@ -200,8 +200,18 @@ the CC parameters -->
       </section><!-- End of intro: Optimizing Client Requests -->
 	
       <section title ="Three approaches">
-	    <t>This section reviews three approaches to implement Careful Resume.</t>
-     	   
+	    <t>This section reviews three approaches to implement Careful Resume.
+		<list>
+			<t>(1) The saved CC parameters are stored at the sender 
+        		("Local storage") and is never sent to a receiver;</t>
+			<t>(2) Some CC parameters are transmitted to the receiver,
+        		which can be used when reconnecting, but the receiver cannot read the
+        		CC parameters received from the sender ("NEW TOKEN");</t>
+			<t>(3) the saved CC parameters are
+        		transmitted to a receiver, which can use it when reconnecting.
+        		The receiver can read the CC parameters to accept or not the use of
+			CC parameters (a.k.a. "BDP extension").</t>
+		</list></t>
 	    <section anchor="sec-local_storage"
                title="Independent Local Storage of Values">
         	<t>This approach independently lets both a receiver and a sender store
@@ -368,7 +378,7 @@ the CC parameters -->
                 This section describes the use of a new Frame, the BDP_FRAME.
                 The BDP_FRAME can be utilized by the congestion controller
                 and its data is not be limited by flow control limits. The sender and the receiver MAY
-                send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections. 
+                send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections. The rate of update SHOULD be limited (e.g. much less frequent than once for several RTTs).
 		</t>
 
 		<section anchor="sec:bdp_metadata" title="BDP_FRAME Format">
@@ -415,7 +425,7 @@ BDP_FRAME {
 			Using the previous values of bytes_in_flight defined in 
                         <xref target="RFC9002"></xref>
 			can result in overshoot of
-			the bottleneck capacity, and is not advised.
+				the bottleneck capacity, and ought to be used carefully. It is advised to not only use the amount of bytes in flight but also the goodput.
 			</t>
 
 			<t>
@@ -511,20 +521,7 @@ BDP_FRAME {
 		<t>Careful exploitation of the CC parameters is discussed in <xref target="I-D.kuhn-tsvwg-careful-resume"></xref>.</t>
       	</section>  <!--- end of use with care --> 
 		
-	<section title="Saving Path CC Parameters">
-		<t>Three approaches are compared:</t>
-		<list>
-			<t>(1) The saved CC parameters are stored at the sender 
-        		("Local storage") and is never sent to a receiver;</t>
-			<t>(2) Some CC parameters are transmitted to the receiver,
-        		which can be used when reconnecting, but the receiver cannot read the
-        		CC parameters received from the sender ("NEW TOKEN");</t>
-			<t>(3) the saved CC parameters are
-        		transmitted to a receiver, which can use it when reconnecting.
-        		The receiver can read the CC parameters to accept or not the use of
-			CC parameters (a.k.a. "BDP extension").</t>
-		</list>
-	</section> <!-- End of BDP Frame: Saving path CC Parameters -->
+
 </section>	 <!-- End of BDP Frame -->
 
 <section anchor="sec:discuss" title="Discussion">
@@ -625,31 +622,7 @@ BDP_FRAME {
 </section>
 	
 		
-		
-         <section anchor="sec:discuss_bdp_default"
-               title="Trade-off between the different solutions">
-	       <!-- Subsection: Use Cases: Tradeoff -->
-        	<t>This section provides a description of several implementation
-       		options and discusses their respective advantages and drawbacks. </t>
 
-        	<t>While there are some discussions for the solutions regarding
-        	Rationale #2, the sender MUST consider Rationale #1 - Solution #2 and
-        	avoid Rationale #1 - Solution #1: the sender MUST implement a safety
-        	check to measure whether the saved CC parameters (i.e. saved_rtt and
-        	saved_bb) are relevant or check that their usage would not cause
-		 excessive congestion over the path. </t>
-
-        	<t>
-        	The method used to store the CC parameters
-        	SHOULD be associated with a lifetime. If no lifetime expiration
-        	is provided, safety guidelines should help guarantee that the
-        	session resumption is careful. While the sender may not specify
-        	how long the data is stored at its level (for the local storage
-        	solution), BDP extension Frame proposes a extension_lifetime
-        	parameter and "token SHOULD have an expiration time" 
-        	<xref target="RFC9000"></xref>.
-        	</t>
-       </section><!-- Use Cases: Tradeoff -->
     </section> <!--  Use Cases -->
 
     <section title="Identifying the Path">
@@ -710,7 +683,7 @@ BDP_FRAME {
     		together with the Endpoint Token. The sender recomputes the Endpoint
     		Token and compares this with the received Endpoint Token before using
 		the CC parameters. 
-    		</t>
+    		
 
     		<list style="numbers">
 	    	    <t>The Sender transmits the Endpoint Token to the Receiver
@@ -719,7 +692,7 @@ BDP_FRAME {
 	            </t> 
 	            <t>The Receiver transmits the Endpoint Token to the Sender 
 	            </t>
-    		</list>
+    		</list> </t>
 	</section> <!-- Example use of an Identify path: Endpoint Token -->    
 		
         <section title="Security Related to use of the Endpoint Token">
