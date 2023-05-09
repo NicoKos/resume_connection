@@ -218,7 +218,7 @@ keywords will be used for the search engine. -->
             each other (e.g., remote execution of an application, or a
             bidirectional video conference call).</t>
 		
-            <section title="A Mobility Example">
+            <section title="An Example of a Moving Endpoint">
 
                 <t>In this example, an application resumes using capacity after a pause
                 in transmission. Without the method, the application that
