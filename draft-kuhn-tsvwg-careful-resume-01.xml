@@ -334,7 +334,7 @@ keywords will be used for the search engine. -->
       
       <!-- GF: Changed to subsections to match next section format -->
       
-        <section title="Observe Phase:">
+        <section title="Observe Phase">
               <t>During a previous connection, information about the specific path
           to an endpoint is saved. This is used to characterise the path and
           to indicate the capacity that was available. It includes the current RTT
@@ -343,7 +343,7 @@ keywords will be used for the search engine. -->
               saved_endpoint_token <xref target="sec-measure"></xref>.</t>
          </section> <!-- title="Observe Phase:"-->
 	      
-         <section title="Reconnaissance Phase:">
+         <section title="Reconnaissance Phase">
               <t> When a sender resumes between the same pair of endpoints,
           (aka the same path) it enters the Reconnaissance Phase.
           The sender only enters this phase when there are saved CC parameters for the same
@@ -372,7 +372,7 @@ keywords will be used for the search engine. -->
             was correctly received, the sender enters the Unvalidated Phase.</t>
           </list>
           </t>
-         </section> <!-- title="Reconnaissance Phase:" -->
+         </section> <!-- title="Reconnaissance Phase" -->
 	      
          <section title="Unvalidated Phase:">
               <t>In the Unvalidated Phase, a sender can
@@ -392,9 +392,9 @@ keywords will be used for the search engine. -->
                then the sender is permitted to continue at the rate used in
                in the unvalidated phase when it continues in the Normal Phase.</t>
                 </list></t>
-         </section> <!-- title="Unvalidated Phase:" -->
+         </section> <!-- title="Unvalidated Phase" -->
 	      
-         <section title="Retreat Phase:">
+         <section title="Retreat Phase">
               <t>In the Retreat Phase, the sender stops using the saved CC parameters.
               This phase is designed to mitigate the impact on other
               flows that might have been sharing a congested bottleneck when in the Unvalidated Phase.
@@ -419,9 +419,9 @@ keywords will be used for the search engine. -->
             <list style="numbers">
                   <t>The sender then enters the Normal phase with re-initialised CC parameters.</t>
             </list></t>
-         </section> <!-- title="Retreat Phase:" -->
+         </section> <!-- title="Retreat Phase" -->
 	      
-        <section title="Normal Phase:">
+        <section title="Normal Phase">
             <t>The sender resumes using the normal CC method.</t>
             <t>If the sender experiences an Retransmission Time Out (RTO) expiry,
             the sender returns to the normal CC phase and processes the RTO expiry.</t>
