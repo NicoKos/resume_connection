@@ -172,7 +172,7 @@ keywords will be used for the search engine. -->
             the receiver's preference, there are cases where a client at the receiver
             could have information that
             is not available at the sender. In these cases, a client
-            could explicitely ask for tuning the
+            could explicitly ask for tuning the
             slow start when the application continues transmission, or to to inhibit tuning.
             Examples where this could have benefit include:
             <list style="numbers">
@@ -638,7 +638,7 @@ keywords will be used for the search engine. -->
             If there are indications of congestion, this also indicates that the parameters
             no longer reflect the current path, and the cwnd must be reduced to avoid
             overshoot of the bottleneck
-            capacity. This can result from changes in traffic at the bootleneck and/or
+            capacity. This can result from changes in traffic at the bottleneck and/or
             changes in the path capacity.</t>
 	    
             <t>{XXX-Editor note: A later revision will guide on the mitigation after detected congestion.}</t>
