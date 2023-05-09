@@ -416,9 +416,7 @@ keywords will be used for the search engine. -->
              successful resending of data that lost in the Unvalidated Phase.
              The loss of the packets used to resend data is considered a separate congestion event,
              and this does also trigger another CC reaction.
-            <list style="numbers">
                   <t>The sender then enters the Normal phase with re-initialised CC parameters.</t>
-            </list></t>
          </section> <!-- title="Retreat Phase" -->
 	      
         <section title="Normal Phase">
