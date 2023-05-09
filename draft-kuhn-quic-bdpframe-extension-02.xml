@@ -506,6 +506,11 @@ BDP_FRAME {
                 	described in Section 18 of 
                 	<xref target="RFC9000"></xref>.
 			</t>
+		        <t> 
+			If the receiver activates the extension, it agrees to receive and read BDP_FRAMEs.
+			If the receiver activates the optimization, it allows the sender to utilise the previously computed CC parameters.
+			The receiver could then agree to do session resumption optimization without actually reading the previous CC parameters.
+		        </t>
 	</section> <!-- End of Extension activation -->
 
 	<section title="Using the CC parameters with Care">
