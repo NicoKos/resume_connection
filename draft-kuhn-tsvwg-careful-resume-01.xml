@@ -336,8 +336,8 @@ keywords will be used for the search engine. -->
       
         <section title="Observe Phase">
               <t>During a previous connection, information about the specific path
-          to an endpoint is saved. This is used to characterise the path and
-          to indicate the capacity that was available. It includes the current RTT
+          	to an endpoint is saved. This is used to characterise the path and
+         	to indicate the capacity that was available. It includes the current RTT
               (current_rtt), bottleneck bandwidth (current_bb) and current receiver
               Endpoint Token (current_endpoint_token) stored as saved_rtt, saved_bb and
               saved_endpoint_token <xref target="sec-measure"></xref>.</t>
@@ -616,7 +616,7 @@ keywords will be used for the search engine. -->
               		the ratio between the saved_bb and saved_rtt. A tunable safety
               		margin can avoid sending more than a recommended maximum IW
               		(recom_iw): 
-                    <list style="symbols">
+			<list style="symbols">
                   		<t>current_iw = min(recom_iw,saved_bb)</t>
                   		<t>ITT = MSS/(current_iw/saved_rtt)</t>
                 	</list></t>
@@ -654,9 +654,7 @@ keywords will be used for the search engine. -->
                 state.</t>
             </list></t>
             <t>{XXX-Editor note: A later revision will guide on the entering normal CC.}</t>
-
         </section><!-- End of normal-->
-
     </section> <!--  Guidelines -->
 
     <section anchor="sec-acknowledgments" title="Acknowledgments">
@@ -672,10 +670,10 @@ keywords will be used for the search engine. -->
     </section>
 
     <section anchor="sec-security" title="Security Considerations">
-
-        <t>This document does not exhibit specific security considerations since only sender level considerations are proposed. Security considerations for the interactions with the receiver are discussed in <xref
-            target="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
-
+        <t>This document does not exhibit specific security considerations since only 
+	sender level considerations are proposed. Security considerations for the 
+	interactions with the receiver are discussed in <xref
+        target="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
     </section> <!-- Sec Considerations -->
 	    
 </middle>
