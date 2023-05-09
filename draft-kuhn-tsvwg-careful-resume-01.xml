@@ -383,7 +383,7 @@ keywords will be used for the search engine. -->
               previous rate is expected to be faster, but should not be instantaneous, to avoid
               adding congestion to an already congested bottleneck. In this phase, the sender
           continues to check the saved and current path information are consistent <xref target="sec-unvalid"></xref>.
-          <list style="numbers">
+          <list style="symbols">
                   <t>If a sender determines either that previous parameters
                   are not valid (due to a detected change in the path) or congestion was experienced,
                   then the sender needs to enter the Retreat Phase (see below).</t>
