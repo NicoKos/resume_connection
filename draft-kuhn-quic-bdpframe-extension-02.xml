@@ -498,7 +498,7 @@ BDP_FRAME {
 			</t>
 		        <t> 
 			If the receiver activates the extension, it agrees to receive and read BDP_FRAMEs.
-			If the receiver activates the optimization, it agrees the exploitation of previously computed CC parameters by the sender.
+			If the receiver activates the optimization, it allows the sender to utilise the previously computed CC parameters.
 			The receiver could then agree to do session resumption optimization without actually reading the previous CC parameters.
 		        </t>
 	</section> <!-- End of Extension activation -->
