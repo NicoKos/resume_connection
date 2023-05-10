@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="info" docName="draft-kuhn-quic-bdpframe-extension-02" ipr="trust200902">
+<rfc category="std" docName="draft-kuhn-quic-bdpframe-extension-02" ipr="trust200902">
 	<!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN"
@@ -46,7 +46,7 @@
           			<street>Fraser Noble Building</street>
           			<city>Aberdeen</city>
           			<code>AB24 3UE</code>
-          			<country>Scotland, UK</country>
+          			<country>UK</country>
         			</postal>
 
 				<email>gorry@erg.abdn.ac.uk</email>
@@ -576,8 +576,8 @@ BDP_FRAME {
 		</t>
 		
 	        <t>
-		An example of implementation where the sender computes an Endpoint Token that seeks to uniquely identify the receiver is provided in <xref "sec_example-token"></xref>. Implementation details are being left independent from the specification of BDP-FRAME.</t>
-	        </t>
+		An example of implementation where the sender computes an Endpoint Token that seeks to uniquely identify the receiver is provided in <xref target="sec_example-token"></xref>. Implementation details are being left independent from the specification of BDP-FRAME.</t>
+	        </section>
 	
 	<section title="Interoperability and Use Cases">
           	<t>A sender that stores a resumption ticket for each receiver to
@@ -724,8 +724,6 @@ BDP_FRAME {
     	privacy but consequently eliminating any performance benefits.
     	</t>
     </section> <!-- End of: Endpoint Token Sec -->
-
-    </section> <!-- End of Identify path -->
 
 </section> <!-- End of Discussion -->
 	
