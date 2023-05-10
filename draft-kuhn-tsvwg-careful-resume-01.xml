@@ -330,7 +330,7 @@ keywords will be used for the search engine. -->
     <section anchor="sec-phase" title="The Phases of CC using Careful Resume">
       <t>This section defines a series of phases that the
       CC algorithm moves through as a connection gets up to speed
-      when it uses the Careful Resume method. 
+	      when it uses the Careful Resume method.</t> 
       
       <!-- GF: Changed to subsections to match next section format -->
       
@@ -340,7 +340,8 @@ keywords will be used for the search engine. -->
          	to indicate the capacity that was available. It includes the current RTT
               (current_rtt), bottleneck bandwidth (current_bb) and current receiver
               Endpoint Token (current_endpoint_token) stored as saved_rtt, saved_bb and
-              saved_endpoint_token <xref target="sec-measure"></xref>.</t>
+		      saved_endpoint_token <xref target="sec-measure"></xref>. An implementation solution
+	      could be to store the information at the server. Different implementation solutions are detailed in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
          </section> <!-- title="Observe Phase:"-->
 	      
          <section title="Reconnaissance Phase">
@@ -415,7 +416,7 @@ keywords will be used for the search engine. -->
              In the case of multiple loss, this could require multiple RTTs to complete
              successful resending of data that lost in the Unvalidated Phase.
              The loss of the packets used to resend data is considered a separate congestion event,
-             and this does also trigger another CC reaction.
+		     and this does also trigger another CC reaction.</t>
                   <t>The sender then enters the Normal phase with re-initialised CC parameters.</t>
          </section> <!-- title="Retreat Phase" -->
 	      
@@ -424,9 +425,7 @@ keywords will be used for the search engine. -->
             <t>If the sender experiences an Retransmission Time Out (RTO) expiry,
             the sender returns to the normal CC phase and processes the RTO expiry.</t>
         </section> <!-- title="Normal Phase:" -->
-
-      </section> <!-- End of Phases -->
-
+	</section>
       <section title="Congestion Control Guidelines and Requirements">
 	
         <t>The sender is limited by any rate-limitation of the transport
