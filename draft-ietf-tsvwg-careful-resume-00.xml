@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="info" docName="draft-ietf-tsvwg-careful-resume-01"
+<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-01"
      ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
 ipr values: full3667, noModification3667, noDerivatives3667
@@ -527,17 +527,17 @@ keywords will be used for the search engine. -->
                 <t>{NOTE: A future revision of this document needs to specify how long
                 CC Parameters can be cached, possibly based on TCP-new-CWV or TCB}.
 
-                <list style="symbols">
-                    <t>Reconnaissance Phase: The sender MUST compare the measured
+                <t>Reconnaissance Phase:</t><list style="symbols">
+                    <t>The sender in the Reconnaissance Phase MUST compare the measured
                     transport parameters (in particular current_rtt) of the new session
                     with those of the previous session (in particular
                     saved_rtt). The method MUST NOT be used when the path fails to be
                     validated.</t>
-                    <t>Reconnaissance Phase: The sender MUST NOT use the parameters unless
-                    the first IW packets when packets are detected as lost or
-                    acknowledgments indicate the packets were ECN CE-marked. These are
-                    indication of potential congestion and therefore the method MUST NOT
-                    be used; </t>
+                    <t>The sender MUST NOT use the parameters
+                    if any packets sent in the IW are detected as lost or
+                    acknowledgments indicate these packets were ECN CE-marked. The first
+                    indication of potential congestion therefore MUST result in 
+		    a transition to the Normal Phase; </t>
                 </list></t>
 	    
                 <t>{XXX-Editor-note: RTT check should be a range rather than an
@@ -556,7 +556,11 @@ keywords will be used for the search engine. -->
             How strong should this be stated: ... MUST or SHOULD ... What safety
             factor is appropriate for the resuming sender? If using slow-start it
             would anyway double the rate on the next RTT, so is capacity*2/3
-            appropriate to initially try?} </t>
+            appropriate to initially try?
+            Could this be a MUST NOT for the part about not using the values without somehow 
+	    curbing them with maybe a SHOULD for a specific value?
+	  Do we need to factor in the degree of the indication?  
+	 This could be nice, but then it makes it even harder to pick something useful? }</t>
 		
             <t>The method needs to be designed to avoid sending
             excessive data into a congested bottleneck, because this can have
@@ -653,6 +657,9 @@ keywords will be used for the search engine. -->
                 state.</t>
             </list></t>
             <t>{XXX-Editor note: A later revision will guide on the entering normal CC.}</t>
+	     <t>{XXX-Editor note: It would be good to have a discussing about updating 
+	  the saved values, whether used or not, after reaching normal operation for use 
+	  the next time even if that update is to just refresh the expiration time.}</t>
         </section><!-- End of normal-->
     </section> <!--  Guidelines -->
 
@@ -875,5 +882,14 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 <!-- text relating to BDP Frame moved out of this draft -->
 		
 </section> <!-- end of Summary -->
+<section anchor="rev" title="Appendix: Revision details">
+<t>Previous individual submissions were discussed in TSVWG and QUIC.</t>
+<list>
+<t>WG -00 included clarifications and restructuring to form the 1st WG draft.</t>
+<t>WG -01 included review comments and suggestions from John Border, and follows milestone 
+	with an intended status of "Proposed Standard".</t>
+</list>
+</section> <!-- end of Revisions -->
+
 </back>
 </rfc>
