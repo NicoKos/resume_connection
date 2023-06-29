@@ -886,7 +886,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 <t>Previous individual submissions were discussed in TSVWG and QUIC.</t>
 <list>
 <t>WG -00 included clarifications and restructuring to form the 1st WG draft.</t>
-<t>WG -01 included review comments and suggestions from John Border, and follows milestone 
+<t>WG -01 included review comments and suggestions from John Border, 
+	and follows the setting of the TSVWG milestone 
 	with an intended status of "Proposed Standard".</t>
 </list>
 </section> <!-- end of Revisions -->
