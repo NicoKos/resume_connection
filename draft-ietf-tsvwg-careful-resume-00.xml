@@ -553,12 +553,12 @@ keywords will be used for the search engine. -->
 		
             <t>{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
             used, to avoid starving other flows that started or increased their capacity after the last measurement.
-            How strong should this be stated: ... MUST or SHOULD ... What safety
+            How strong should this be stated:  What safety
             factor is appropriate for the resuming sender? If using slow-start it
-            would anyway double the rate on the next RTT, so is capacity*2/3
+            would anyway double the rate on the next RTT, so is capacity*2/3 or 1/2
             appropriate to initially try?
             Could this be a MUST NOT for the part about not using the values without somehow 
-	    curbing them with maybe a SHOULD for a specific value?
+	    curbing them, with maybe a SHOULD for a specific value?
 	  Do we need to factor in the degree of the indication?  
 	 This could be nice, but then it makes it even harder to pick something useful? }</t>
 		
