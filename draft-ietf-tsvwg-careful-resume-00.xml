@@ -199,8 +199,8 @@ keywords will be used for the search engine. -->
 
             <t> This section provides a set of examples where the method is expected to improve performance.</t>
 
-            <t> The method is expected to have benefit in reduced time to complete when a transfer
-            sends significantly more data than allowed by the IW,
+            <t> The method is expected to reduce the time to complete a transfer
+            when the transfer sends significantly more data than allowed by the IW,
             and the BDP is also significantly
             more than the IW.</t>
 
