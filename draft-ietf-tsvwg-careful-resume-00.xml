@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="info" docName="draft-ietf-tsvwg-careful-resume-00"
+<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-01"
      ipr="trust200902">
   <!-- category values: std, bcp, info, exp, and historic
 ipr values: full3667, noModification3667, noDerivatives3667
@@ -123,14 +123,14 @@ keywords will be used for the search engine. -->
         to constrain their rate of transmission <xref target="RFC8085"></xref>. In 2010,
         a survey of alternative CC methods <xref target="RFC5783"></xref>, noted that there
         are challenges when a CC operates across an Internet path with a high and/or
-		variable bandwidth-delay product (BDP), this mechanisms targets this challenge.</t>
+		variable bandwidth-delay product (BDP). This mechanism targets these challenges.</t>
 
         <t>A CC method typically takes time to ramp-up the packet rate,
         called the "slow-start phase", informally known as the time to "Get up
         to speed". This slow start phase is a period in which a sender
         intentionally uses less capacity than might be available, with the
         intention to avoid or limit overshooting the actual capacity at a bottleneck.
-        This can result in increased queuing (latency/jitter) and/or
+        This can increase queuing (latency/jitter) and/or
         congestion packet loss to the flow. Any overshoot in the capacity can also have a
         detrimental effect on other flows sharing a common bottleneck. In the
         extreme case, persistent congestion could result in unwanted starvation of
@@ -199,8 +199,8 @@ keywords will be used for the search engine. -->
 
             <t> This section provides a set of examples where the method is expected to improve performance.</t>
 
-            <t> The method is expected to have benefit when a transfer
-            send significantly more data than allowed by the IW,
+            <t> The method is expected to reduce the time to complete a transfer
+            when the transfer sends significantly more data than allowed by the IW,
             and the BDP is also significantly
             more than the IW.</t>
 
@@ -226,7 +226,7 @@ keywords will be used for the search engine. -->
                 each time it connects to the same endpoint.</t>
                 <t>A variant of this example is when the application reconnects after a disruption that
                 had temporarily reduced the path
-                capacity (e.g., after to a link propagation
+                capacity (e.g., after a link propagation
                 impairment, or  where a user on a train journey travels through
                 different areas of connectivity) before the endpoint
                 returns to use a path with the original characteristics.</t>
@@ -387,26 +387,26 @@ keywords will be used for the search engine. -->
           <list style="symbols">
                   <t>If a sender determines either that previous parameters
                   are not valid (due to a detected change in the path) or congestion was experienced,
-                  then the sender needs to enter the Retreat Phase (see below).</t>
+                  then the sender needs to enter the Safe Retreat Phase (see below).</t>
                <t>If acknowledgments show that the unvalidated rate was successfully used
                without inducing significant congestion to the path,
                then the sender is permitted to continue at the rate used in
-               in the unvalidated phase when it continues in the Normal Phase.</t>
+               the Unvalidated Phase when it continues in the Normal Phase.</t>
                 </list></t>
          </section> <!-- title="Unvalidated Phase" -->
 	      
-         <section title="Retreat Phase">
-              <t>In the Retreat Phase, the sender stops using the saved CC parameters.
+         <section title="Safe Retreat Phase">
+              <t>In the Safe Retreat Phase, the sender stops using the saved CC parameters.
               This phase is designed to mitigate the impact on other
               flows that might have been sharing a congested bottleneck when in the Unvalidated Phase.
               The sender needs to re-initialize CC parameters to drain any queue that has built
               at the bottleneck during the Unvalidated Phase and allow other flows to then regain
               their share of the available capacity. This reaction differs to a traditional
               CC reaction to congestion, because in this case the capacity estimate was unvalidated <xref target="sec-retreat"></xref>.
-              Saved CC parameters for this path should be removed from any cache, to prevent the
+              Saved CC parameters for this path need be removed from any cache, to prevent the
               parameters being used again with other flows.</t>
               
-              <t>When the sender transitions to the Safe Retreat Phase, there may still be packets
+              <t>When the sender transitions to the Safe Retreat Phase, there could still be packets
               that were sent in the Unvalidated Phase that have not yet been acknowledged.
               If these packets from the Unvalidated Phase are declared lost,
               they do not trigger an additional CC reaction.</t>
@@ -418,11 +418,11 @@ keywords will be used for the search engine. -->
              The loss of the packets used to resend data is considered a separate congestion event,
 		     and this does also trigger another CC reaction.</t>
                   <t>The sender then enters the Normal phase with re-initialized CC parameters.</t>
-         </section> <!-- title="Retreat Phase" -->
+         </section> <!-- title="Safe Retreat Phase" -->
 	      
         <section title="Normal Phase">
             <t>The sender resumes using the normal CC method.</t>
-            <t>If the sender experiences an Retransmission Time Out (RTO) expiry,
+            <t>If the sender experiences a Retransmission Time Out (RTO) expiry,
             the sender returns to the normal CC phase and processes the RTO expiry.</t>
         </section> <!-- title="Normal Phase:" -->
 	</section>
@@ -527,17 +527,17 @@ keywords will be used for the search engine. -->
                 <t>{NOTE: A future revision of this document needs to specify how long
                 CC Parameters can be cached, possibly based on TCP-new-CWV or TCB}.
 
-                <list style="symbols">
-                    <t>Reconnaissance Phase: The sender MUST compare the measured
+                <t>Reconnaissance Phase:</t><list style="symbols">
+                    <t>The sender in the Reconnaissance Phase MUST compare the measured
                     transport parameters (in particular current_rtt) of the new session
                     with those of the previous session (in particular
                     saved_rtt). The method MUST NOT be used when the path fails to be
                     validated.</t>
-                    <t>Reconnaissance Phase: The sender MUST NOT use the parameters unless
-                    the first IW packets when packets are detected as lost or
-                    acknowledgments indicate the packets were ECN CE-marked. These are
-                    indication of potential congestion and therefore the method MUST NOT
-                    be used; </t>
+                    <t>The sender MUST NOT use the parameters
+                    if any packets sent in the IW are detected as lost or
+                    acknowledgments indicate these packets were ECN CE-marked. The first
+                    indication of potential congestion therefore MUST result in 
+		    a transition to the Normal Phase; </t>
                 </list></t>
 	    
                 <t>{XXX-Editor-note: RTT check should be a range rather than an
@@ -553,10 +553,14 @@ keywords will be used for the search engine. -->
 		
             <t>{XXX-Editor note: The sender ought not to re-utilize all the capacity it previously
             used, to avoid starving other flows that started or increased their capacity after the last measurement.
-            How strong should this be stated: ... MUST or SHOULD ... What safety
+            How strong should this be stated:  What safety
             factor is appropriate for the resuming sender? If using slow-start it
-            would anyway double the rate on the next RTT, so is capacity*2/3
-            appropriate to initially try?} </t>
+            would anyway double the rate on the next RTT, so is capacity*2/3 or 1/2
+            appropriate to initially try?
+            Could this be a MUST NOT for the part about not using the values without somehow 
+	    curbing them, with maybe a SHOULD for a specific value?
+	  Do we need to factor in the degree of the indication?  
+	 This could be nice, but then it makes it even harder to pick something useful? }</t>
 		
             <t>The method needs to be designed to avoid sending
             excessive data into a congested bottleneck, because this can have
@@ -590,7 +594,7 @@ keywords will be used for the search engine. -->
             	mitigation could be to restrict to only a fraction (e.g., 1/2) of
             	the previously used cwnd.</t>
 
-                    <t>Unvalidated Phase: The sender MUST transition to the Retreat Phase
+                    <t>Unvalidated Phase: The sender MUST transition to the Safe Retreat Phase
                     when packets are detected as lost or acknowledgments indicate the
                     packets were ECN CE-marked. These are indication of potential
                     congestion and therefore the method is not used.</t>
@@ -627,20 +631,20 @@ keywords will be used for the search engine. -->
             </section> <!-- Unvalidated Phase: Pacing  -->
         </section> <!-- Unvalidated Phase -->
 
-        <section anchor="sec-retreat" title="Safety Requirements for the Retreat Phase">
+        <section anchor="sec-retreat" title="Safety Requirements for the Safe Retreat Phase">
             <t>This section defines the safety requirements
             after a path change or congestion has been detected during the Unvalidated Phase.</t>
 
             <t>The transport parameters are adjusted in the Unvalidated Phase, resulting in a higher cwnd.
             If there are indications of congestion, this also indicates that the parameters
-            no longer reflect the current path, and the cwnd must be reduced to avoid
+            no longer reflect the current path, and the cwnd needs to be reduced to avoid
             overshoot of the bottleneck
             capacity. This can result from changes in traffic at the bottleneck and/or
             changes in the path capacity.</t>
 	    
             <t>{XXX-Editor note: A later revision will guide on the mitigation after detected congestion.}</t>
 
-        </section><!-- Safety Requirements for the Retreat Phase -->
+        </section><!-- Safety Requirements for the Safe Retreat Phase -->
 		
         <section anchor="sec-normal" title="Returning to Normal Congestion Control">
             <t>The CC controller returns to the Normal Phase.
@@ -653,6 +657,9 @@ keywords will be used for the search engine. -->
                 state.</t>
             </list></t>
             <t>{XXX-Editor note: A later revision will guide on the entering normal CC.}</t>
+	     <t>{XXX-Editor note: It would be good to have a discussing about updating 
+	  the saved values, whether used or not, after reaching normal operation for use 
+	  the next time even if that update is to just refresh the expiration time.}</t>
         </section><!-- End of normal-->
     </section> <!--  Guidelines -->
 
@@ -793,15 +800,15 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         the path on which it sends, for example:
         <list style="symbols">
 	    <t>
-            it must include a unique identifier for itself (e.g., a globally
+            it needs to include a unique identifier for itself (e.g., a globally
             assigned address/prefix; or randomly chosen value).
 	    </t>
 	    <t>
-            it must include an identifier for the destination (e.g., a
+            it needs to include an identifier for the destination (e.g., a
             destination IP address or name).
 	    </t>
 	    <t>
-            it must include an interface identifier (e.g., an index value or a MAC address to associate the
+            it needs to include an interface identifier (e.g., an index value or a MAC address to associate the
             endpoint with the interface on which the path starts);
 	    </t>
 	    <t>
@@ -829,7 +836,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <list style="numbers">
 	    <t>
             To reduce the likelihood of misuse of the Endpoint Token, the value
-            should be encoded in a way that hides the component information
+            ought to be encoded in a way that hides the component information
 	    from the recipient and any eavesdropper on the path.
             </t>
 	    <t>
@@ -875,5 +882,15 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 <!-- text relating to BDP Frame moved out of this draft -->
 		
 </section> <!-- end of Summary -->
+<section anchor="rev" title="Appendix: Revision details">
+<t>Previous individual submissions were discussed in TSVWG and QUIC.</t>
+<list>
+<t>WG -00 included clarifications and restructuring to form the 1st WG draft.</t>
+<t>WG -01 included review comments and suggestions from John Border, 
+	and follows the setting of the TSVWG milestone 
+	with an intended status of "Proposed Standard".</t>
+</list>
+</section> <!-- end of Revisions -->
+
 </back>
 </rfc>
