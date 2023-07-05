@@ -355,7 +355,8 @@ keywords will be used for the search engine. -->
           	When a method is provided (such as the BDP_Frame), a receiver can request
           	the sender to not enter this phase.</t>
           
-          	<t>In the Reconnaissance Phase, the sender sends initial data, limited by the Initial Window.
+          	<t>In the Reconnaissance Phase, the sender sends initial data, limited by the Initial Window,
+		and monitors its reception in the acknowledgements from the receiver.
           	This phase checks whether the current path is consistent with the saved path information.
           	The sender measures the path characteristics of the present
           	path to confirm that the path is consistent with the previously characterized path
@@ -376,13 +377,14 @@ keywords will be used for the search engine. -->
           	</list>
           	</t>
 		
-		 <t>The Reconnaissance Phase calculates the jump_cwnd based on the saved CC parameters.
-		 Transmission using this cwnd is monitored in the Unvalidated Phase.</t>
+		 <t>The Reconnaissance Phase calculates a jump_cwnd based on the saved CC parameters.
+		 The correct reception of packets sent using the jump_cwnd is monitored during the Unvalidated Phase.</t>
 		 <t>To avoid starving other flows that started or increased their capacity
 		 after the Observation Phase, the
-		 sender MUST NOT use a jump_cwnd 
-		 that corresponds to all the capacity it previously
-            	 used. <t>{XXX-Editor note: What safety
+		 sender MUST NOT set a jump_cwnd 
+		 that corresponds to all the capacity that it previously
+            	 used.</t>
+		 <t>{XXX-Editor note: What safety
             	factor is appropriate for the resuming sender? If using slow-start it
             	would anyway double the rate on the next RTT, so is capacity*2/3 or 1/2
             	appropriate?
@@ -391,22 +393,25 @@ keywords will be used for the search engine. -->
 	  	Do we need to factor-in the degree of the indication?  
 	 	This could be nice, but then it makes it even harder to pick something useful? }</t>
 		 
-	  	<t>{XXX-Editor Note:  it is possible to start unvalidated transmisison while
-		still in the Reconnaissance Phase, by sending
-	  	packets using the jump_cwnd, before the full initial window is acknowledged, by
-	  	increaseing cwnd in proportion to the volume of data acknowledged in each ACK receivd
-		corresponding to the data sent in the initial window.
- 		This still requires the transmisison to be paced, and still requires the ACKs to be monitored in the
-		  method defined above for reconnaisance. This reduces the impact of delayed acknowledgements,
-		  which could otherwise delay the start of the unvalidated transmisison.}</t>
+	  	<t>{XXX-Editor Note:  It is possible that an implementation
+		can start sending data using the jump_cwnd while
+		still in the Reconnaissance Phase, before the all initial data is acknowledged.
+		In this method, the cwnd is increased for each new ACK received, 
+		in proportion to the acknowledged volume of initial data, i.e. 
+		cwnd+=(jump_cwnd*(acknowledged_bytes/Initial_Window)).
+ 		Transmission of this unvalidated data still requires pacing (see section XXX), 
+		and is tentative based on the rules for the Reconnaisance Phase. 
+		This proprtional method reduces the impact of delayed acknowledgements,
+		which could otherwise delay the start of transmisison using the jump_cwnd, 
+		it also reduces additional delay when the IW was paced.}</t>
          </section> <!-- title="Reconnaissance Phase" -->
 	      
          <section title="Unvalidated Phase:">
               <t>In the Unvalidated Phase, a sender monitors the tentaive use
-          	of the updated CC parameters. These CC parameters are basd on
-		saved path information and allows a
+          	of the updated CC parameters. (These CC parameters are based on
+		saved path information and allow a
               rate higher than allowed by a traditional
-              slow-start mechanism. The convergence towards the
+              slow-start mechanism.) The convergence towards the
               previous rate is expected to be faster, but should not be instantaneous, to avoid
               adding congestion to an already congested bottleneck. In this phase, the sender
           continues to check the saved and current path information are consistent <xref target="sec-unvalid"></xref>.
@@ -414,10 +419,10 @@ keywords will be used for the search engine. -->
                   <t>If a sender determines either that previous parameters
                   are not valid (due to a detected change in the path) or congestion was experienced,
                   then the sender needs to enter the Safe Retreat Phase (see below).</t>
-               	  <t>If acknowledgments show that the unvalidated rate was successfully used
+               	  <t>If acknowledgments show that the data sent at the unvalidated rate was successful
                   without inducing significant congestion to the path,
-                  then the sender is permitted to continue at the rate used in
-                  the Unvalidated Phase when it continues in the Normal Phase.</t>
+                  then the sender is permitted to continue at the rate in
+                  the Unvalidated Phase when it enters the Normal Phase.</t>
             </list></t>
          </section> <!-- title="Unvalidated Phase" -->
 	      
