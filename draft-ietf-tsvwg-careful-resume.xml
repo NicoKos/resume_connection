@@ -377,9 +377,7 @@ keywords will be used for the search engine. -->
 		To avoid starving other (potential) flows that could have started or increased their capacity
 		 after the Observation Phase, the
 		jump_cwnd MUST NOT exceed a half of the previously observed
-		capacity. This avoids starvation by allowing some capacity for any flows that have previously started or
-		that start at the same time. (If the Unvalidated Phase successfuly completes, the sender
-		will later increase the rate in the next RTT using the normal CC method).</t>
+		capacity.</t>
 	         <t>In the Unvalidated Phase, a sender monitors the correct reception 
 	         of packets that were sent using the jump_cwnd:
 	        <xref target="sec-unvalid"></xref>.
