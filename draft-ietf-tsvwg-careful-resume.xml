@@ -653,7 +653,7 @@ keywords will be used for the search engine. -->
             capacity. This can result from changes in traffic at the bottleneck and/or
             changes in the path capacity.</t>
 	    
-            <t>{XXX-Editor note: A later revision will guide on the mitigation after detected congestion. Initial text follows:}</t>
+            <t>{XXX-Editor note:  Initial text follows:}</t>
 
 	     <t>A CC that records the capacity used (e.g., Pipe) when congestion was detected, needs to update
 	     this value (e.g., ssthresh=Pipe/2) before leaving the Safe Retreat Phase. The measured capacity does
@@ -661,9 +661,11 @@ keywords will be used for the search engine. -->
 	     there was a significant overshoot of capacity, hence the flow needs to be initially limited to less capacity
 		(i.e., cwnd < ssthresh).</t>
 
+	    <t>{Add method 3: using cwnd-Pipe to account for overshoot } </t>
+
         </section><!-- Safety Requirements for the Safe Retreat Phase -->
--->		
-        <section anchor="sec-normal" title="Returning to Normal Congestion Control">
+
+	<section anchor="sec-normal" title="Returning to Normal Congestion Control">
             <t>After using the method, the CC controller returns to the Normal Phase.
 	  
             <list style="symbols">
@@ -673,8 +675,7 @@ keywords will be used for the search engine. -->
                 <t>For BBR CC, it is recommended to enter the "probe bandwidth"
                 state.</t>
             </list></t>
-            <t>{XXX-Editor note: A later revision will guide on the entering normal CC.}</t>
-	     <t>{XXX-Editor note: It would be good to have a discussing about updating 
+	     <t>{XXX-Editor note: This should discuss updating 
 	  the saved values, whether used or not, after reaching normal operation for use 
 	  the next time even if that update is to just refresh the expiration time.}</t>
         </section><!-- End of normal-->
@@ -682,7 +683,7 @@ keywords will be used for the search engine. -->
 
     <section anchor="sec-acknowledgments" title="Acknowledgments">
       <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
-      Ian Swett, Igor Lubashev, Robin Marx, Roland Bless and Franklin Simo for
+      Ian Swett, Igor Lubashev, Robin Marx, Roland Bless, Franklin Simo, Raffaello Secchi for
       their fruitful comments on earlier versions of this document.</t>
       <t>The authors would like to particularly thank Tom Jones for co-authoring 
       previous versions of this document.</t>
