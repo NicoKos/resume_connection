@@ -625,7 +625,7 @@ keywords will be used for the search engine. -->
             the ratio between the saved_bb and saved_rtt. A tunable safety
             margin can avoid sending more than a recommended maximum IW
             (recom_iw):
-            <list style="symbols">
+            <list>
                 <t>current_iw = min(recom_iw,saved_bb)</t>
                 <t>ITT = MSS/(current_iw/saved_rtt)</t>
             </list></t>
