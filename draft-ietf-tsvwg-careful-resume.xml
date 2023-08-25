@@ -340,81 +340,81 @@ keywords will be used for the search engine. -->
           	path to confirm that the path is consistent with the previously characterized path
           	(including experiencing a similar RTT) <xref target="sec-recon"></xref>.
           	<list>
-            		<t>If the sender determines that the path RTT or the other saved path information
+            		<t>If the sender determines that the current path RTT or the other saved path information
              		are not consistent with the current path,
             		then it reverts to using the standard CC, and enters
             		the Normal Phase.</t>
              		<t>To ensure a sender avoids resuming under severely congested conditions,
 	                if any sent initial data
              	 	was not correctly acknowledged or congestion was detected, 
-			then the sender also reverts to using the standard CC, and enters
-            		the Normal Phase. </t>
-            		<t>If the sender confirms that the saved and current path information are consistent
+			then the sender also enters the Normal Phase. </t>
+            		<t>When the sender has confirmed that the saved and current path information are consistent
             		and also that the sent initial data
-            		was correctly received, it is allowed to enter the Unvalidated Phase.
-			This transition occurs when the sender wishes to send more data than allowed
+            		was acknowledged, it may enter the Unvalidated Phase.
+			This transition occurs when the sender is able to send more data than allowed
 			by the current cwnd.</t>
           	</list>
           	</t>
 		
-			 
-	  	<t>{XXX-Editor Note:  An implementation
-		could start sending data using the jump_cwnd before the all 
-		all the IW data is all acknowledged.
-		In this design, the cwnd is increased for each new ACK received, 
-		in proportion to the acknowledged volume of initial data, i.e. 
+	  	<t>{XXX-Editor Note: A proportional increase in cwnd/rate: An implementation
+		could transition to the Unvalidated Phase when the first initial data has been
+		acknowledged and some initial data  is still pending acknowledgedment.
+		This would allow each new recived ACK to increase cwnd  
+		in proportion to the acknowledged volume of initial data, e.g.,
 		cwnd+=(jump_cwnd*(acknowledged_bytes/Initial_Window)).
- 		Transmission of using an unvalidated cwnd/rate 
-		is tentative based on the rules for the Reconnaisance Phase
-		and requires pacing.
-		A proportional method reduces the impact of delayed acknowledgements,
-		which could otherwise delay the start of transmisison using the jump_cwnd, 
-		it also reduces additional delay when the IW was paced.}</t>
-         </section> <!-- title="Reconnaissance Phase" -->
+		Such a proportional method reduces the impact of delayed acknowledgements
+		and any pacing of initial data,
+		which could otherwise delay the start of transmission using the jump_cwnd.}</t>
+         </section> <!-- End of Reconnaissance Phase -->
 	      
          <section title="Unvalidated Phase:">
- 		<t>A jump_cwnd is calculated based on the saved CC parameters.
+	     <t>This phase utilises paced transmission using an icreased rate/cwnd. A jump_cwnd that is calculated based 
+		on the saved CC parameters:</t>
+	     <list style="symbols">
+ 		<t>A 
 		To avoid starving other (potential) flows that could have started or increased their capacity
 		 after the Observation Phase, the
-		jump_cwnd MUST NOT exceed a half of the previously observed
+		jump_cwnd MUST NOT exceed a half of the saved
 		capacity.</t>
-	         <t>In the Unvalidated Phase, a sender monitors the correct reception 
-	         of packets that were sent using the jump_cwnd:
-	        <xref target="sec-unvalid"></xref>.
-          <list style="symbols">
-                  <t>If a sender determines either that previous parameters
-                  are not valid (due to a detected change in the path) or congestion was experienced,
-                  then the sender enters the Safe Retreat Phase (see below).</t>
-		  <t> The sender MUST reset CWND 
-	           on entry to the normal Phase to reflect the volume of
-		   acknowledged data received during the Unvalidated Phase. 
-		   (When the sender used the entire jump_cwnd, and this was acknowledged in full, no adjustment is needed.)
-            </list></t>
-         </section> <!-- title="Unvalidated Phase" -->
+		 <t>Transmission using an unvalidated cwnd/rate MUST use pacing.</t>
+	         <t>A sender monitors the correct reception 
+	         of packets that were sent using the unvalidated jump_cwnd:
+	        <xref target="sec-unvalid"></xref>. If a sender determines either that the previous parameters
+                  are not valid (due to a detected change in the path) or that congestion was experienced,
+                  it enters the Safe Retreat Phase.</t>
+            </list> <!-- End of list of actions -->
+	   
+         </section> <!-- End of Unvalidated Phase -->
 	      
          <section title="Safe Retreat Phase">
-              <t>In the Safe Retreat Phase, the sender stops using the jump_cwnd.
-              This phase is designed to mitigate the impact on other
-              flows that might have been sharing a congested bottleneck when in the Unvalidated Phase.</t>
-	 
-              <t>On entry to the phase, any saved CC parameters for 
-	       this path need be removed from any cache, to prevent these
-              parameters being used again with other flows.</t>  
-	      <t> The sender re-initializes the flows CC parameters to compensate for
-	      any overshoot in the Unvalidated Phase. 
-	      This is designed to allow other flows to then regain
-              their share of the available capacity.</t>
+	      
+              <t>Ths phase is designed to mitigate the impact on other
+              flows that follows while sharing a congested bottleneck 
+	      in the Unvalidated Phase:</t>
+	      <list>
+              	<t>On entry to the phase, any saved CC parameters for 
+	       	this path are removed from any cache, to prevent these
+              	parameters being used again with other flows.</t>  
+	      	<t> The sender re-initializes the flows CC parameters to compensate for
+	      	any overshoot in the Unvalidated Phase. 
+	      	This is to allow other flows to then regain
+              	their share of the available capacity.</t>
+	      </list> <!-- End of list of actions -->
 
-		 <t> For example, a conservative approach sets cwnd to 2*IW and performs slow start 
-		 - the pattern of transmission follows the cwnd growth that would have occurred had the method not been used.<t>
-	        <t> Better performance can be achieved by tracking the volume of 
-		successfully transmitted packets in each RTT, Pipe. A method can
+	      <t>The following examples provide methods that implement the Safe Retreat Phase:</t>
+	      <list>
+		 <t>1. A simple conservative approach sets cwnd to 2*IW and performs slow start. 
+		The pattern of cwnd growth that would have occurred had the method not been used.<t>
+	        <t>2. Better performance can be achieved by tracking the volume of 
+		successfully transmitted packets in each RTT (the Pipe). A method can
 		use this parameter to update the cwnd:
-		     A sender MUST set CWND to no more than pipe/2 when entering safe retreat. 
-	      This adjustment in cwnd ought further be reduced to reflect the size of overshoot 
-	(which could have resulted in further loss to sharing flows). 
-	Under significant congestion the cwnd must be no more than 2*IW.</t>
-			 
+		A sender MUST set CWND to no more than pipe/2 when entering the Safe Retreat phase. 
+	        This adjustment in cwnd ought further be reduced to reflect the size of overshoot 
+		(which could have resulted in further loss to sharing flows). 
+		Under significant congestion the cwnd must be no more than 2*IW.</t>
+		<t>3. A method can discount.</t>
+
+	      </list> (!--- list of examples -->
 	      <t>Note: The Safe Retreat reaction differs to a traditional
               CC reaction to congestion, because
 	        the jump_cwnd typically results in a higher rate than allowed by a traditional
@@ -422,29 +422,32 @@ keywords will be used for the search engine. -->
 	      The resulting overshoot could replace the capacity used by packets from other flows. 
 	      For this reason, a sender needs to reduce its rate more than normal.</t>
 		              
-
-
 	    <section title="Loss Recovery after entering Safe Retreat">
 
-             <t>Note: In the case of multiple loss, recovery could require multiple RTTs to complete,
-		     since the Safe Retreat Phase reduces the cwnd.</t>
-
-		<t>There will often be packets
+		<t>There can be packets
               that were sent in the Unvalidated Phase that have not yet been acknowledged 
 	      and are declared lost.
-              This loss recovery commences using the reduced window set on entry to the Safe Retreat Phase.</t
-	
-	     <t>Note: A TCP sender is always required to retransmit all lost data, although QUIC
-		does not require a sender to perform this loss recovery, and this therefore
-		depends on the sender policy for retransmission.</t>
+              This loss recovery commences using the reduced window that was set on entry to the Safe Retreat Phase.</t
+
+		<t>Note: In the case of multiple loss, recovery can require multiple RTTs to complete,
+		 since the Safe Retreat Phase reduces the cwnd on entry..</t>
+
+	     <t>Note: A TCP or SCTP sender is always required to retransmit all lost data.
+		For QUIC and DCCP, loss recovery depends on the sender policy for retransmission.</t>
 		 
              <t>The sender then enters the Normal phase with the re-initialized CC parameters.</t>
 	    </section>     <!-- End of Safe Retreat Phase: loss recovery -->
          </section> <!-- title="Safe Retreat Phase" -->
 	      
         <section title="Normal Phase">
-            <t>In the Normal Phase, the sender continues transmission using the normal CC method.</t>
+            <!-- We need to be careful here of the corner case that sender either did not utilise the jump, or the jump was not successful -->
+		<t> The sender MUST reset CWND 
+	           on entry to the normal Phase to reflect the volume of
+		   acknowledged data that was received during the Unvalidated Phase. 
+		   (When the sender has used the entire jump_cwnd and this was acknowledged in full, no adjustment is needed.)</t>
+	   <t>In the Normal Phase, the sender continues transmission using the normal CC method.</t>
         </section> <!-- title="Normal Phase:" -->
+	    
 	<section title="RTO Expiry while using Carefsul Resume">
 	     <t>If the sender experiences a Retransmission Time Out (RTO) expiry
 	     at any time while using Careful Resume, 
