@@ -357,11 +357,10 @@ keywords will be used for the search engine. -->
             changes, but long-term use of previous values is not appropriate.</t>
         </list></t>
 
-        <t>When a sender confirms the path
-        characteristics
-        (i.e., current_rtt &lt; 1.2*saved_rtt and &gt; 0.8 x saved_rtt) and
-        receives acknowledgement for the initial data without reported congestion,
-        it may enter the Unvalidated Phase.
+        <t>When a sender confirms the path characteristics
+        (i.e., 0.5 *saved_rtt &gt; current_rtt &lt; 2.0 x saved_rtt) and it
+        receives an acknowledgement for the initial data without reported congestion,
+        it MAY then enter the Unvalidated Phase.
         This transition occurs when a sender has more data than permitted
         by the current cwnd.</t>
 
@@ -406,15 +405,19 @@ keywords will be used for the search engine. -->
             any overshoot in the Unvalidated Phase.
             This avoids starvation by helping other flows to regain
             their share of the available capacity:</t>
+
+	     <t>On entry, the cwnd MUST be initialised to 
+	     no more than would have been
+             used had the Careful Resume method not been used
+            (i.e., cwnd &le; (2*IW)).</t>
+
+            <t>The updated cwnd/rate MAY be further increased during recovery,
+	    when the sender receives acknowledgments indicating reception of packets that 
+	    were sent during the Unvalidated Phase. Each acknowledged packet
+	    indicates a packet was successfuly traversed the path, 
+	    and allows cwnd to be correspondingly increased.
+	    (An implementation could track this using a Pipe variable).</t>
             
-            <t>The cwnd/rate MUST be updated to be no more the acknowledged
-            rate during the Unvalidated Phase.</t>
-            
-            <t>When the acknowledged rate during the Unvalidated Phase
-            is much less than the transmission rate
-            in the Unvalidated Phase, the rate MUST be no more than would have been
-            used after sending the IW
-            (i.e., cwnd &le; (2*IW).</t>
         </list>
      
      <list><t>NOTE: The Safe Retreat reaction must differ from a traditional
