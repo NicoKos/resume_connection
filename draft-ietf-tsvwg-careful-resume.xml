@@ -21,7 +21,7 @@
     <!-- The abbreviated title is used in the page header - it is only necessary if the
 full title is longer than 39 characters -->
 
-    <title abbrev="Careful Congestion Control Convergence">Careful Convergence of Congestion 
+    <title abbrev="Careful Congestion Control Convergence">Careful Convergence of Congestion
     Control from Retained State</title>
 
     <author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
@@ -158,7 +158,7 @@ keywords will be used for the search engine. -->
             This allows a later sender to
             determine an appropriate set of CC parameters for re-using the path.</t>
         </list></t>
-	       
+           
             <t>"Generally, implementations are advised
             to be cautious when using previous values on a new path", as stated in <xref
                 target="RFC9000"></xref>. This advice is appropriate for any IETF transport protocol.
@@ -174,11 +174,11 @@ keywords will be used for the search engine. -->
             the receiver's preference, there are cases where a receiver
             could have information that
             is not available at the sender, or might benefit from
-	     understanding that careful resume might be used. In these cases, a receiver
+         understanding that careful resume might be used. In these cases, a receiver
             could explicitly ask to enable or inhibit tuning of the CC
              when an application continues transmission.</t>
             
-	    <t>An indication from the sender that the method is available, could also
+        <t>An indication from the sender that the method is available, could also
             allow a receiver to tune policies for using the connection (e.g., managing the
             receiver window or flow credit).</t>
            <t> Examples where a receiver could request not to use the method include:</t>
@@ -274,7 +274,7 @@ keywords will be used for the search engine. -->
 
             <!-- GF (Feb 2023): Removed the IW from this information block??? -->
             <!-- it could potentially be in BDP but is not needed here -->
-            <!--	<t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
+            <!--    <t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
             <!--            <t>current_iw: Current IW;</t> -->
             <!--            <t>recom_iw: Recommended IW;</t> -->
 
@@ -323,7 +323,7 @@ keywords will be used for the search engine. -->
         can store this information at the server (or could exchange this information
         with a receiver, as detailed in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
     </section> <!-- End of define "Observe Phase:"-->
-	      
+          
     <section title="Reconnaissance Phase">
         <t> When a sender resumes transmission between the same pair of endpoints,
         (aka thinks it uses the same path) it enters the Reconnaissance Phase.
@@ -389,7 +389,7 @@ keywords will be used for the search engine. -->
 
         <t>Implementation requirements are provided in <xref target="req-unvalid"></xref>. </t>
     </section> <!-- End of define Unvalidated Phase -->
-	      
+          
     <section title="Safe Retreat Phase">
 
         <t>This phase is entered when a jump in the
@@ -406,17 +406,17 @@ keywords will be used for the search engine. -->
             This avoids starvation by helping other flows to regain
             their share of the available capacity:</t>
 
-	     <t>On entry, the cwnd MUST be initialised to 
-	     no more than would have been
+         <t>On entry, the cwnd MUST be initialised to
+         no more than would have been
              used had the Careful Resume method not been used
             (i.e., cwnd &le; (2*IW)).</t>
 
             <t>The updated cwnd/rate MAY be further increased during recovery,
-	    when the sender receives acknowledgments indicating reception of packets that 
-	    were sent during the Unvalidated Phase. Each acknowledged packet
-	    indicates a packet was successfuly traversed the path, 
-	    and allows cwnd to be correspondingly increased.
-	    (An implementation could track this using a Pipe variable).</t>
+        when the sender receives acknowledgments indicating reception of packets that
+        were sent during the Unvalidated Phase. Each acknowledged packet
+        indicates a packet was successfuly traversed the path,
+        and allows cwnd to be correspondingly increased.
+        (An implementation could track this using a Pipe variable).</t>
             
         </list>
      
@@ -451,7 +451,7 @@ keywords will be used for the search engine. -->
     </section>     <!-- End of Safe Retreat Phase: loss recovery -->
     </section> <!-- End of define "Safe Retreat Phase" -->
 
-	      
+          
     <section title="Normal Phase">
         <!-- We need to be careful here of the corner case that sender either did not
           utilise the jump, or the jump was not successful -->
@@ -467,16 +467,16 @@ keywords will be used for the search engine. -->
         <t>Implementation requirements are provided in <xref target="req-normal"></xref>.</t>
 
     </section> <!-- End of define "Normal Phase:" -->
-	    
+        
     <section title="RTO Expiry while using Careful Resume">
-	     <t>A sender that experiences a Retransmission Time Out (RTO) expiry
-	     while using Careful Resume, ceases to use the method, continuing using normal CC.</t>
+         <t>A sender that experiences a Retransmission Time Out (RTO) expiry
+         while using Careful Resume, ceases to use the method, continuing using normal CC.</t>
     </section> <!-- End of define  ="RTO Expiry:" -->
 </section>
 
 <!-- ****************************************************************************************** -->
 <!--- Here we provide guidance and requirements on implementation     -->
-	
+    
 <section title="Congestion Control Guidelines and Requirements">
 
     <t>This section provides requirements for implementation and guidance on use.</t>
@@ -495,10 +495,10 @@ keywords will be used for the search engine. -->
         Unless configured at a receiver, the rwnd can constrain the rate
         of increase for a connection and reduce the expected benefit of the method.</t>
 
-    </section>	 <!-- End of flow control, etc -->
+    </section>     <!-- End of flow control, etc -->
 
     <section anchor="req-observe" title="Determining the current Path Capacity in the Observe Phase">
-			
+            
         <t>There are various approaches to measuring the capacity that have
         been used by a connection.
         Congestion controllers, such as CUBIC or RENO, can estimate the
@@ -506,7 +506,7 @@ keywords will be used for the search engine. -->
         cwnd/flight_size and the minimum RTT. A different approach could
         estimate the same values for a rate-based congestion
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.
-	   
+       
         <list style="symbols">
             <!-- Avoid unhelpful use of the method for small cwnds.-->
             <t>Observe Phase: If the cwnd is less than four times the IW
@@ -538,7 +538,7 @@ keywords will be used for the search engine. -->
             much less data than allowed. This case also ought to be discounted when
             estimating the bottleneck bandwidth.</t>
         </list></t>
-	    
+        
     </section> <!-- Observe Phase  (measuring) -->
 
     <section anchor="req-recon"  title="Confirming the Path in the Reconnaissance Phase">
@@ -597,16 +597,16 @@ keywords will be used for the search engine. -->
     
         <section title="Exit for the Unvalidated Phase because of Variable Network Conditions">
                 <t>Unvalidated and Reconnaissance Phases: The method MUST be robust to
-            	network conditions that can differ from one connection to the next,
-            	due to variations in the forwarding path, reconfiguration of
-            	equipment, or changes in the link conditions.</t>
-	
+                network conditions that can differ from one connection to the next,
+                due to variations in the forwarding path, reconfiguration of
+                equipment, or changes in the link conditions.</t>
+    
                 <t><list style="symbols">
-		
+        
                     <t>Unvalidated Phase: The method MUST be robust to changes
                         in network traffic, including the
                      arrival of new traffic flows that compete for capacity at a shared bottleneck.</t>
-            	<t>Unvalidated Phase: The method MUST prevent unduly suppressing flows
+                <t>Unvalidated Phase: The method MUST prevent unduly suppressing flows
                 that used capacity since the available capacity was measured.</t>
 
                     <t>Unvalidated Phase: The sender MUST transition to the Safe Retreat Phase
@@ -615,9 +615,9 @@ keywords will be used for the search engine. -->
                     congestion.</t>
                 </list></t>
         </section> <!--  Unvalidated Phase:  Network Conditions -->
-			
+            
         <section anchor="req-pace" title="Pacing in the Unvalidated Phase">
-		    
+            
             <t> The sender MUST avoid sending a burst of packets greater than IW as a result of a
             step-increase in the congestion window <xref target="RFC8085"></xref>,
             <xref target="RFC9000"></xref>.
@@ -669,14 +669,14 @@ keywords will be used for the search engine. -->
             The Pipe is not a safe measure of the current
             available share of the capacity whenever
             there was also a significant overshoot of the capacity,
-	     as indicated by excessive packet loss.
+         as indicated by excessive packet loss.
             Hence, the updated cwnd/rate must be further be reduced
             to reflect the size of the overshoot, because this
             which could have resulted in further loss to sharing flows
             (i.e., cwnd &lt;&lt; ssthresh).
-            This ought to modify update : cwnd = (Pipe/2) x (Pipe/cwnd).</t>
-	    <t>{Editor-Note: This method is still to be confirmed. }</t>
-	      </list> <!--- End of list of examples -->
+            This ought to modify the update to cwnd: cwnd = (Pipe/2) x (Pipe/cwnd).</t>
+        <t>{Editor-Note: This method is still to be confirmed. }</t>
+          </list> <!--- End of list of examples -->
 
     </section><!-- End of Safety Requirements for the Safe Retreat Phase -->
 
@@ -700,7 +700,7 @@ keywords will be used for the search engine. -->
       <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
       Ian Swett, Igor Lubashev, Robin Marx, Roland Bless, Franklin Simo, Raffaello Secchi for
       their fruitful comments on earlier versions of this document.</t>
-      <t>The authors would like to particularly thank Tom Jones for co-authoring 
+      <t>The authors would like to particularly thank Tom Jones for co-authoring
       previous versions of this document.</t>
     </section>
 
@@ -709,12 +709,12 @@ keywords will be used for the search engine. -->
     </section>
 
     <section anchor="sec-security" title="Security Considerations">
-        <t>This document does not exhibit specific security considerations. 
-	Security considerations for the 
-	interactions with the receiver are discussed in <xref
+        <t>This document does not exhibit specific security considerations.
+    Security considerations for the
+    interactions with the receiver are discussed in <xref
         target="I-D.kuhn-quic-bdpframe-extension"></xref>.</t>
     </section> <!-- Sec Considerations -->
-	    
+        
 </middle>
 
   <!--  BACK MATTER -->
@@ -750,10 +750,10 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </references>
 
     <references title="Informative References">
-      	<?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
-      	<?rfc include="reference.I-D.hughes-restart.xml"?>
-	<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
-      	<?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
+          <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
+          <?rfc include="reference.I-D.hughes-restart.xml"?>
+    <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+          <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
         <?rfc include="reference.RFC.4782.xml"?>
 
       <?rfc include="reference.RFC.5783.xml"?>
@@ -821,8 +821,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     <t>
     This annex proposes an Endpoint Token to allow a sender to identify its own
-		    view of the network path that it is using. In <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>
-	    this Endpoint Token could be shared and used as an
+            view of the network path that it is using. In <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>
+        this Endpoint Token could be shared and used as an
     opaque path identifier to other parties and the sender can verify if
     this is one of its current paths.
     </t>
@@ -832,53 +832,53 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         When computing the Endpoint Token, the sender includes information to identify
         the path on which it sends, for example:
         <list style="symbols">
-	    <t>
+        <t>
             it needs to include a unique identifier for itself (e.g., a globally
             assigned address/prefix; or randomly chosen value).
-	    </t>
-	    <t>
+        </t>
+        <t>
             it needs to include an identifier for the destination (e.g., a
             destination IP address or name).
-	    </t>
-	    <t>
+        </t>
+        <t>
             it needs to include an interface identifier (e.g., an index value or a MAC address to associate the
             endpoint with the interface on which the path starts);
-	    </t>
-	    <t>
+        </t>
+        <t>
             it could include other information such as the DSCP, ports, flow
             label, etc (recognising that this additional information might improve the path
             differentiation, but that this can can reduce the re-usability of the
             token);
-	    </t>
-	    <t>
+        </t>
+        <t>
             it could include any other information the sender chooses to
-	    include, and potentially including PvD information <xref target="RFC8801"></xref> or
+        include, and potentially including PvD information <xref target="RFC8801"></xref> or
             information relating to its public-facing IP address;
-	    </t>
-	    <t>
+        </t>
+        <t>
             it could include a nonce;
-	    </t>
-	    <t>
+        </t>
+        <t>
             it could include a time-dependent value to define the validity
             period of the token.
-	    </t>
-       </list></t> 
+        </t>
+       </list></t>
 
         <t>
         When creating an Endpoint Token, the sender has to ensure the following:
         <list style="numbers">
-	    <t>
+        <t>
             To reduce the likelihood of misuse of the Endpoint Token, the value
             ought to be encoded in a way that hides the component information
-	    from the recipient and any eavesdropper on the path.
+        from the recipient and any eavesdropper on the path.
             </t>
-	    <t>
+        <t>
             The sender can recalculate the Endpoint Token if it needs to validate a
             previously issued token; and that the Endpoint Token itself can be
             included in the computed integrity check for any path
             information it provides.
-	    </t>
-	    <t>
+        </t>
+        <t>
             The Endpoint Token is designed so that if shared, it prevents another party from deriving
             private data from the token, or to use the token to perform
             unwanted likability with other information. This implies that
@@ -889,16 +889,17 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
     </section>
 
  </section> <!-- End of An Endpoint Token -->
-	  
+      
 <section anchor="rev" title="Appendix: Revision details">
 <t>Previous individual submissions were discussed in TSVWG and QUIC.</t>
 <list>
 <t>WG -00 included clarifications and restructuring to form the 1st WG draft.</t>
-<t>WG -01 included review comments and suggestions from John Border, 
-	and follows the setting of the TSVWG milestone 
-	with an intended status of "Proposed Standard".</t>
+<t>WG -01 included review comments and suggestions from John Border,
+    and follows the setting of the TSVWG milestone
+    with an intended status of "Proposed Standard".</t>
 </list>
 </section> <!-- End of Revisions -->
 
 </back>
 </rfc>
+
