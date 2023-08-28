@@ -167,7 +167,7 @@ keywords will be used for the search engine. -->
             in traffic patterns, network routing and link/node conditions.
             There are cases where using the saved parameters of a previous
             connection are not appropriate.</t>
-    </section>  <!-- end of use with care -->
+    </section>  <!-- End of use with care -->
           
     <section title="Receiver Preference">
             <t>Whilst a sender could take optimization decisions without considering
@@ -203,7 +203,7 @@ keywords will be used for the search engine. -->
             sender to retain transport state for each
             receiver. This document also evaluates the potential
             for malicious use of this exchange.</t>
-    </section> <!-- end of Receiver Preference -->
+    </section> <!-- End of Receiver Preference -->
 
     <section anchor="sec-use_case" title="Examples of Scenarios of Interest">
 
@@ -243,9 +243,9 @@ keywords will be used for the search engine. -->
         characteristics when a path has a large BDP.</t>
 
         <t>{XXX-Editor note: A future revision would helpfully provide further Path Examples here.}</t>
-    </section> <!-- Introduction: end of examples -->
+    </section> <!-- Introduction: End of examples -->
    
-</section> <!-- end of introduction and motivation -->
+</section> <!-- End of introduction and motivation -->
 
 <!-- ****************************************************************************************** -->
 <!-- The protocol spec follows below here, examples later -->
@@ -303,7 +303,7 @@ keywords will be used for the search engine. -->
         <t>The Endpoint Token is described in <xref target="endpoint_token"></xref>.
         </t>
 
-    </section> <!-- End of Notation: end of terms -->
+    </section> <!-- End of Notation: End of terms -->
 </section><!-- End of Notation -->
 
 <section anchor="sec-phase" title="The Phases of CC using Careful Resume">
@@ -523,7 +523,7 @@ keywords will be used for the search engine. -->
             one update for several RTTs of time.</t>
 
             <t>Observe Phase: There are cases where the current cwnd/rate
-            does not reflect the bottleneck bandwidth. At the end of the CC slow
+            does not reflect the bottleneck bandwidth. At the End of the CC slow
             start phase, the value can be significantly larger than
             needed to fully utilize the path (i.e., a cwnd
             overshoot). It is inappropriate to use an
@@ -666,14 +666,16 @@ keywords will be used for the search engine. -->
             Methods using a slow start threshold need to update this
             threshold using the Pipe
             (i.e.,  ssthresh = Pipe).
-            The Pipe must not be treated as a measure of the current
-            share available whenever
-            there was a significant overshoot of capacity.
+            The Pipe is not a safe measure of the current
+            available share of the capacity whenever
+            there was also a significant overshoot of the capacity,
+	     as indicated by excessive packet loss.
             Hence, the updated cwnd/rate must be further be reduced
-            to reflect the size of overshoot, because this
+            to reflect the size of the overshoot, because this
             which could have resulted in further loss to sharing flows
             (i.e., cwnd &lt;&lt; ssthresh).
-            This could update : cwnd = (Pipe/2) x (Pipe/cwnd).</t>
+            This ought to modify update : cwnd = (Pipe/2) x (Pipe/cwnd).</t>
+	    <t>{Editor-Note: This method is still to be confirmed. }</t>
 	      </list> <!--- End of list of examples -->
 
     </section><!-- End of Safety Requirements for the Safe Retreat Phase -->
@@ -691,7 +693,7 @@ keywords will be used for the search engine. -->
         <t>{XXX-Editor note: This should discuss updating
         the saved values, whether used or not, after reaching normal operation for use
         the next time even if that update is to just refresh the expiration time.}</t>
-    </section><!-- End of normal-->
+    </section><!-- End of Normal Phase -->
 </section> <!--  End of Guidelines -->
 
 <section anchor="sec-acknowledgments" title="Acknowledgments">
@@ -896,7 +898,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 	and follows the setting of the TSVWG milestone 
 	with an intended status of "Proposed Standard".</t>
 </list>
-</section> <!-- end of Revisions -->
+</section> <!-- End of Revisions -->
 
 </back>
 </rfc>
