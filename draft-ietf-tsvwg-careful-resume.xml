@@ -283,10 +283,11 @@ keywords will be used for the search engine. -->
             <t>saved_bb: The estimated bottleneck bandwidth preserved from a
             previous connection;</t>
 
-            <t>current_rtt: The current RTT;</t>
+            <t>current_rtt: A sample measurment of the current RTT;</t>
 
-            <t>saved_rtt: The measured RTT, preserved from a previous
-            connection;</t>
+            <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
+            of a set RTT measurements taken at the time when the
+            current_bb was estimated;</t>
 
             <t>endpoint_token: An Endpoint Token for a receiver;</t>
 
@@ -316,10 +317,9 @@ keywords will be used for the search engine. -->
     <section title="Observe Phase">
         <t>During a previous connection, information about the specific path
         to an endpoint is saved. This is used to characterize the path and
-        to indicate the capacity that was available. This includes the current RTT
-        (current_rtt), bottleneck bandwidth (current_bb) and a current receiver
-        Endpoint Token (current_endpoint_token) stored as the saved_rtt, saved_bb and
-        saved_endpoint_token. An implementation
+        to indicate the capacity that was available. This includes the minimum RTT
+        (saved_rtt), bottleneck bandwidth (saved_bb) and the receiver
+        Endpoint Token (saved_endpoint_token). An implementation
         can store this information at the server (or could exchange this information
         with a receiver, as detailed in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
     </section> <!-- End of define "Observe Phase:"-->
@@ -334,12 +334,12 @@ keywords will be used for the search engine. -->
         the sender to not enter this phase.</t>
 
         <t>In this phase, the sender transmits initial data, limited by the Initial Window,
-        and monitors its reception using received acknowledgements.
+        and monitors its reception.
         This phase measures the current path characteristics
         and confirms these are consistent with the previously characterized path
         (including experiencing a similar RTT).
 
-        <list style="symbols"> <!-- overview list of phase -->
+        <list style="symbols"> <!--Overview list of phase -->
             <t>Reconnaissance Phase: Endpoint change:
             If the current endpoint is not the same,
             the sender MUST revert to using the standard CC, and enters
@@ -350,7 +350,9 @@ keywords will be used for the search engine. -->
              <t>Reconnaissance Phase: RTT change: Since the CC information
              is directly impacted by the RTT, a significant change in the RTT
              is a strong indication that the previously estimated BDP
-             parameters are not valid for the current path.</t>
+             parameters are not valid for the current path.
+             An RTT measurement is confirmed when  current_rtt &ge; 
+             (saved_rtt/2) and the current_rtt  &le;  (saved_rtt x 10).</t>
 
             <t>Reconnaissance Phase: Lifetime of the information: The CC information is temporal.
             Frequent connections to the same endpoint are likely to track
@@ -358,7 +360,7 @@ keywords will be used for the search engine. -->
         </list></t>
 
         <t>When a sender confirms the path characteristics
-        (i.e., 0.5 *saved_rtt &gt; current_rtt &lt; 2.0 x saved_rtt) and it
+        and it
         receives an acknowledgement for the initial data without reported congestion,
         it MAY then enter the Unvalidated Phase.
         This transition occurs when a sender has more data than permitted
@@ -371,7 +373,16 @@ keywords will be used for the search engine. -->
 
     </section> <!-- End of define Reconnaissance Phase -->
     <section title="Unvalidated Phase">
-        <t>This phase paces transmission using an increased rate/cwnd.
+        <t>The Unvalidated Phase is designed to enable the cwnd/rate 
+        to more rapidly get up to speed, but this require data to send. 
+         If the application is data limited, the sender sends insufficient data 
+        to be able to validate the tentative higher rate. 
+        The method therefore remains in the Reconnaissance Phase and does not 
+        transition to the Unvalidated Phase until the current cwnd has been exhausted. 
+        In some implementations, this might require coordination with the management 
+       of buffers in the interface to the higher layers.</t>
+
+         <t>This phase paces transmission using an increased rate/cwnd.
         A rate or jump_cwnd that is calculated based
         on the saved CC parameters:</t>
         <t><list style="symbols">
@@ -394,30 +405,22 @@ keywords will be used for the search engine. -->
 
         <t>This phase is entered when a jump in the
         Unvalidated Phase has overshot the congested bottleneck capacity.
-        It mitigates the impact on other flows :</t>
-        
+        On entry, the sender re-initializes the CC parameters to compensate for
+            any overshoot in the Unvalidated Phase:</t>
+         
         <list style="symbols">
-            <t>On entry, any saved CC parameters for
+            <t>Any saved CC parameters for
             this path are removed from any cache, to prevent these
             parameters being used again with other flows.</t>
-
-            <t>The sender re-initializes the CC parameters to compensate for
-            any overshoot in the Unvalidated Phase.
+            <t>
+            Implementations using ssthresh reset the ssthresh based on flightsize,
+            to refleact an upper bound on the available capacity.</t>
+            <t>The cwnd MUST be initialised to
+              no more than would have been
+             used had the Careful Resume method not been used
+            (i.e., cwnd &le; (2*IW)). 
             This avoids starvation by helping other flows to regain
             their share of the available capacity:</t>
-
-         <t>On entry, the cwnd MUST be initialised to
-         no more than would have been
-             used had the Careful Resume method not been used
-            (i.e., cwnd &le; (2*IW)).</t>
-
-            <t>The updated cwnd/rate MAY be further increased during recovery,
-        when the sender receives acknowledgments indicating reception of packets that
-        were sent during the Unvalidated Phase. Each acknowledged packet
-        indicates a packet was successfuly traversed the path,
-        and allows cwnd to be correspondingly increased.
-        (An implementation could track this using a Pipe variable).</t>
-            
         </list>
      
      <list><t>NOTE: The Safe Retreat reaction must differ from a traditional
@@ -435,7 +438,7 @@ keywords will be used for the search engine. -->
     <section title="Loss Recovery after entering Safe Retreat">
 
             <t>Unacknowledged packets that were sent in the Unvalidated Phase
-            can be declared lost.
+            can be lost when there is congestion.
             Loss recovery commences using the reduced window
             that was set on entry to the Safe Retreat Phase.</t>
 
@@ -443,11 +446,17 @@ keywords will be used for the search engine. -->
             For QUIC and DCCP, loss recovery
             depends on the sender policy for retransmission.</t></list>
 
-            <list><t>NOTE: On entry to the Safe Retreat Phase the cwnd can be
+            <t>NOTE: During loss recovery, a TCP receiver can culmulatively also acknowledge
+                 previously sent data from the Unvalidated Phase.  
+                 <xref target="RFC3465"></xref> describes how to appropriately 
+                 account for such acknowledgments.</t>
+            </t></list>
+            <t>NOTE: On entry to the Safe Retreat Phase the cwnd can be
             significantly reduced, in the case of multiple loss,
-            recovery could require multiple RTTs to complete.</t></list>
+            recovery could require multiple RTTs to complete.</t>
 
             <t>On completion of any required recovery, the sender enters the Normal phase.</t>
+
     </section>     <!-- End of Safe Retreat Phase: loss recovery -->
     </section> <!-- End of define "Safe Retreat Phase" -->
 
@@ -470,7 +479,7 @@ keywords will be used for the search engine. -->
         
     <section title="RTO Expiry while using Careful Resume">
          <t>A sender that experiences a Retransmission Time Out (RTO) expiry
-         while using Careful Resume, ceases to use the method, continuing using normal CC.</t>
+         while using Careful Resume, ceases to use the method. It continues using normal CC.</t>
     </section> <!-- End of define  ="RTO Expiry:" -->
 </section>
 
@@ -562,35 +571,53 @@ keywords will be used for the search engine. -->
         <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
         CC Parameters can be cached, possibly based on TCP-new-CWV or TCB.}</t>
 
+         <t> NOTE: Some transport protocols implement methods that detect potential congestion 
+         by reacting to changes in the RTT (e.g., inferred by an increase in the latency). 
+        In the Reconnaissance Phase, this indication is earlier than that provided by 
+        reported loss or ECN marking, and therefore designs need to consider if this is 
+       a suitable trigger for exiting the Reconnaissance Phase, or whether to remain 
+       in the Reconnaissance Phase until there is either a confirmed indication of 
+       the congestion, or the RTT variation reaches the configured limit.</t>
+
+       
+
         <section anchor="sec-confirm" title="Confirming the Path">
              <t>Paths can change with respect to time for many reasons.
             This could result in previously measured CC parameters
             becoming irrelevant.</t>
         
             <t><list style="symbols">
-                <t>The sender in the Reconnaissance Phase MUST compare the measured
-                transport parameters (in particular current_rtt) of the new connection
-                with the saved parameters (in particular, confirm the
-                saved_rtt is consistent with the current RTT).
+                <t>The sender confirms the RTT by comparing each of a 
+                series of measured RTT samples against the previously measured saved_RTT. 
                 The method MUST NOT be used when the path RTT fails to be
                 confirmed.</t>
                 
-                <t>The sender MUST NOT use the parameters
+                <t>The sender MUST NOT use the method
                 if any sent packet in the Reconnaissance Phase is detected as lost or
-                acknowledgments indicate these packets were ECN CE-marked
-                this MUST result in a transition to the Safe Retreat Phase. </t>
+                acknowledgments indicate these packets were ECN CE-marked. </t>
             </list></t>
+
+         <t>A current RTT sample that is less than a half of the
+        saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
+        (The factor of two arises, since the jump_cwnd is 1/2 of the measured bandwidth,
+        and a current_RTT lower than the saved_RTT/2 would result in an unacceptably 
+        high transmission rate). A sample more than ten times the
+        saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
+        (The factor of ten accommodates both increases in latency from buffering
+        on a path, and the variation between samples.)</t>
+             
+
         </section><!-- End of Reconnaissance:Confirming the Path -->
     </section> <!-- End of Reconnaissance(req-recon)  -->
 
     <section anchor="req-unvalid" title="Safety Requirements for the Unvalidated Phase">
             <t> This section defines the safety requirements
             for using saved CC parameters to tentaively update the cwnd.
-            These safety guidelines mitigate the risk that sender
+            These safety guidelines mitigate the risk that a sender
             adds excessive congestion to an already congested path.</t>
 
             <list style="symbols">
-                <t>Unvalidated Phase: A new connection MUST NOT directly use the previously measured saved_rtt and
+                <t>Unvalidated Phase: A connection MUST NOT directly use the previously measured saved_rtt and
                 saved_bb to simply initialize a new flow to resume sending at the same
                 rate. The jump_cwnd MUST be no more than 1/2 the previous saved capacity based on the current RTT (saved BDP/ current RTT).</t>
             </list>
@@ -647,6 +674,14 @@ keywords will be used for the search engine. -->
     <section anchor="req-retreat" title="Safety Requirements for the Safe Retreat Phase">
         <t>This section defines the safety requirements
         after congestion has been detected during the Unvalidated Phase.</t>
+
+         <t>The updated cwnd/rate MAY be further increased during recovery,
+        when the sender receives acknowledgments indicating reception of packets that
+        were sent during the Unvalidated Phase. Each acknowledged packet
+        indicates a packet was successfuly traversed the path,
+        and allows cwnd to be correspondingly increased.
+        (An implementation could track this using a Pipe variable).</t>
+            
 
         <t>The following examples provide some alternative examples of
         how to implement the Safe Retreat Phase:</t>
