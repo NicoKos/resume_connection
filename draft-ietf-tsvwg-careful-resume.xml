@@ -384,7 +384,7 @@ keywords will be used for the search engine. -->
 
          <t>This phase paces transmission using an increased rate/cwnd.
         A rate or jump_cwnd that is calculated based
-        on the saved CC parameters:</t>
+        on the saved CC parameters.</t>
         <t><list style="symbols">
         <t>To avoid starving other (potential) flows that could have started
         or increased their capacity after the Observation Phase,
@@ -406,7 +406,7 @@ keywords will be used for the search engine. -->
         <t>This phase is entered when a jump in the
         Unvalidated Phase has overshot the congested bottleneck capacity.
         On entry, the sender re-initializes the CC parameters to compensate for
-            any overshoot in the Unvalidated Phase:</t>
+            any overshoot in the Unvalidated Phase.</t>
          
         <list style="symbols">
             <t>Any saved CC parameters for
@@ -420,7 +420,7 @@ keywords will be used for the search engine. -->
              used had the Careful Resume method not been used
             (i.e., cwnd &le; (2*IW)). 
             This avoids starvation by helping other flows to regain
-            their share of the available capacity:</t>
+            their share of the available capacity.</t>
         </list>
      
      <list><t>NOTE: The Safe Retreat reaction must differ from a traditional
