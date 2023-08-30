@@ -15,10 +15,11 @@
     you can add the attributes updates="NNNN" and obsoletes="NNNN"
     they will automatically be output with "(if approved)" -->
 
-  <!-- ***** FRONT MATTER ***** -->
+    <!-- ***** FRONT MATTER ***** -->
 
   <front>
-    <!-- The abbreviated title is used in the page header - it is only necessary if the
+    <!-- The abbreviated title is used in the page header 
+     - it is only necessary if the
 full title is longer than 39 characters -->
 
     <title abbrev="Careful Congestion Control Convergence">Careful Convergence of Congestion
@@ -77,17 +78,17 @@ specify just the year. -->
 
     <workgroup>Internet Engineering Task Force</workgroup>
 
-    <!-- WG name at the upperleft corner of the doc,
-IETF is fine for individual submissions.
-If this element is not present, the default is "Network Working Group",
-which is used by the RFC Editor as a nod to the history of the IETF. -->
+     <!-- WG name at the upperleft corner of the doc,
+     IETF is fine for individual submissions.
+     If this element is not present, the default is "Network Working Group",
+     which is used by the RFC Editor as a nod to the history of the IETF. -->
 
-    <keyword>Transport, Congestion Control, QUIC</keyword>
+     <keyword>Transport, Congestion Control, QUIC</keyword>
 
     <!-- Keywords will be incorporated into HTML output
-files in a meta tag but they have no effect on text or nroff
-output. If you submit your draft to the RFC Editor, the
-keywords will be used for the search engine. -->
+     files in a meta tag but they have no effect on text or nroff
+     output. If you submit your draft to the RFC Editor, the
+     keywords will be used for the search engine. -->
 
     <abstract>
       <t>This document specifies a cautious method for IETF transports that
@@ -109,14 +110,15 @@ keywords will be used for the search engine. -->
 
 <middle>
 <section anchor="sec:introduction" title="Introduction">
-    <t>All Internet transports are required to either use a Congestion Control (CC) method, or
+    <t>All Internet transports are required to either 
+    use a Congestion Control (CC) method, or
     to constrain their rate of transmission <xref target="RFC8085"></xref>. In 2010,
     a survey of alternative CC methods <xref target="RFC5783"></xref>, noted that there
     are challenges when a CC method operates across an Internet path with a high and/or
-    variable bandwidth-delay product (BDP). This mechanism targets a
+    variable bandwidth-delay product. This mechanism targets a
     solution for these challenges.</t>
 
-    <t>A CC method typically takes time to ramp-up the packet rate,
+    <t>A CC method typically takes time to ramp-up the sending rate,
     called the "slow-start phase", informally known as the time to "Get up
     to speed". This slow start phase defines a time in which a sender
     intentionally uses less capacity than might be available, with the
@@ -131,18 +133,19 @@ keywords will be used for the search engine. -->
     <t>The method is expected to reduce the time to complete a transfer
     when the transfer sends significantly more data than allowed by the
     Initial congestion window (IW), and
-    where the BDP is also significantly
-    more than the product of the IW and the  Round Trip Rime (RTT).</t>
+    where the Bandwidth Delay Product (BDP) is also significantly
+    more than the product of the IW and the Round Trip Rime (RTT).</t>
     <t>It introduces an alternative method to select initial CC parameters,
-    that seek to more rapidly and safely grow the congestion
-    window (cwnd).
+    that seek to more rapidly and safely grow the sending rate (or congestion
+    window, cwnd).
     This method is based on temporal sharing (sometimes known as
     caching) of a saved set of CC parameters that relate to previous observations
     of the same path. The saved CC parameters include:
     the bottleneck
     bandwidth, available capacity, and RTT. These
     parameters are stored and used to modify the CC
-    behavior of a subsequent connection between the same local and remote endpoints.</t>
+    behavior of a subsequent connection between the 
+    same local and remote endpoints.</t>
 
     <t>When used with the QUIC transport, this provides transport services that resemble
     those currently available in TCP, using methods such as TCP Control Block (TCB)
@@ -160,8 +163,9 @@ keywords will be used for the search engine. -->
         </list></t>
            
             <t>"Generally, implementations are advised
-            to be cautious when using previous values on a new path", as stated in <xref
-                target="RFC9000"></xref>. This advice is appropriate for any IETF transport protocol.
+            to be cautious when using previous values on a new path", 
+            as stated in <xref target="RFC9000"></xref>. 
+            This advice is appropriate for any IETF transport protocol.
             Care is therefore needed
             to assure safe use and to be robust to changes
             in traffic patterns, network routing and link/node conditions.
@@ -174,14 +178,14 @@ keywords will be used for the search engine. -->
             the receiver's preference, there are cases where a receiver
             could have information that
             is not available at the sender, or might benefit from
-         understanding that careful resume might be used. In these cases, a receiver
+            understanding that careful resume might be used. In these cases, a receiver
             could explicitly ask to enable or inhibit tuning of the CC
-             when an application continues transmission.</t>
+            when an application continues transmission.</t>
             
-        <t>An indication from the sender that the method is available, could also
+            <t>An indication from the sender that the method is available, could also
             allow a receiver to tune policies for using the connection (e.g., managing the
             receiver window or flow credit).</t>
-           <t> Examples where a receiver could request not to use the method include:</t>
+            <t> Examples where a receiver could request not to use the method include:</t>
             <list style="numbers">
                 <t>a receiver that can predict the pattern of traffic
                 (e.g., insight into the volume of data to be sent,
@@ -283,6 +287,8 @@ keywords will be used for the search engine. -->
             <t>saved_bb: The estimated bottleneck bandwidth preserved from a
             previous connection;</t>
 
+            <t>recom_jump : The maximum configured jump_size;</t>
+
             <t>current_rtt: A sample measurment of the current RTT;</t>
 
             <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
@@ -317,7 +323,7 @@ keywords will be used for the search engine. -->
     <section title="Observe Phase">
         <t>During a previous connection, information about the specific path
         to an endpoint is saved. This is used to characterize the path and
-        to indicate the capacity that was available. This includes the minimum RTT
+        to measure the capacity that was available. This includes the minimum RTT
         (saved_rtt), bottleneck bandwidth (saved_bb) and the receiver
         Endpoint Token (saved_endpoint_token). An implementation
         can store this information at the server (or could exchange this information
@@ -330,10 +336,10 @@ keywords will be used for the search engine. -->
         The sender only enters this phase when there are saved CC parameters for the same
         pair of endpoints and this information is currently valid (i.e., the saved parameters have
         not expired.)
-        When a method is provided (such as the BDP_Frame), a receiver can request
+        When a method is used (such as the BDP_Frame), a receiver can request
         the sender to not enter this phase.</t>
 
-        <t>In this phase, the sender transmits initial data, limited by the Initial Window,
+        <t>In this phase, the sender transmits initial data, limited by the IW,
         and monitors its reception.
         This phase measures the current path characteristics
         and confirms these are consistent with the previously characterized path
@@ -358,7 +364,8 @@ keywords will be used for the search engine. -->
             Frequent connections to the same endpoint are likely to track
             changes, but long-term use of previous values is not appropriate.</t>
 
-            <!-- How many samples are needed? Reconnaissance Phase (Number of required samples) -->
+            <!-- A future version may say how many samples are needed? 
+             Reconnaissance Phase (Number of required samples): ????  -->
         </list></t>
 
         <t>When a sender confirms the path characteristics and it
@@ -372,32 +379,43 @@ keywords will be used for the search engine. -->
         <t>When the path is not confirmed, the method is not used
         and the sender returns to normal CC.</t>
 
-    </section> <!-- End of define Reconnaissance Phase -->
+    </section> <!-- End of Reconnaissance Phase -->
      
     <section anchor="unv-phase" title="Unvalidated Phase">
-        <t>The Unvalidated Phase is designed to enable the cwnd/rate
+        <t>The Unvalidated Phase is designed to enable the rate/cwnd
         to more rapidly get up to speed, but this require data to send.
          If the application is data limited, the sender sends insufficient data
         to be able to validate the tentative higher rate.
         The method therefore remains in the Reconnaissance Phase and does not
-        transition to the Unvalidated Phase until the current cwnd has been exhausted.
+        transition to the Unvalidated Phase until the sender
+        has more data ready to send in the transmission buffer
+        than is permitted by the current cwnd.
         In some implementations, this might require coordination with the management
-       of buffers in the interface to the higher layers.</t>
+        of buffers in the interface to the higher layers.</t>
 
-         <t>This phase paces transmission using an increased rate/cwnd.
-        A rate or jump_cwnd that is calculated based
-        on the saved CC parameters.</t>
+        <t>This phase paces transmission using an increased rate/cwnd (jump_cwnd)
+        that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
-        <t>Unvalidated Phase (jump_size): To avoid starving other (potential) flows that could have started
-        or increased their capacity after the Observation Phase,
-        the jump_cwnd MUST be no more than half of the previous saved capacity based on the current RTT.
-        Hence, jump_cwnd &le; (saved_BDP/current_RTT).</t>
-        <t>Unvalidated Phase (Pacing): Transmission using an unvalidated cwnd/rate MUST use pacing.</t>
-        <t>Unvalidated Phase (Confirming the path):A sender monitors the correct reception
-        of the packets that were sent using the unvalidated jump.
-        If a sender determines either that the previous parameters
-        are not valid (due to a detected change in the path)
-        or that congestion was experienced, the method enters the Safe Retreat Phase.</t>
+             <t>Unvalidated Phase (jump_size): 
+             To avoid starving other (potential) flows that could have started
+             or increased their capacity after the Observation Phase,
+             the jump_cwnd MUST be no more than half of the previous saved capacity based on the current RTT.
+             Hence, jump_cwnd &le; (saved_BDP/current_RTT).</t>
+             
+             <t>Unvalidated Phase (Pacing): Transmission using an unvalidated 
+             rate/cwnd MUST use pacing.</t>
+             
+             <t>Unvalidated Phase (Confirming the path):
+             A sender monitors the correct reception
+             of the packets that were sent using the unvalidated jump.
+             If a sender determines either that the previous parameters
+             are not valid (due to a detected change in the path)
+             or that congestion was experienced, the method enters the 
+             Safe Retreat Phase.</t>
+             <t>The sender enters the Normal Phase when an acknowledgement is
+             received for the last packet number (or higher) sent in one RTT after
+             entering the Unvalidated Phase. (When the full jump_cwnd is not
+             utlised, this results in s smaller cpapcity being validated.)</t>
         </list></t> <!-- End of list of actions -->
 
         <t>Implementation requirements are provided in <xref target="req-unvalid"></xref>. </t>
@@ -405,69 +423,79 @@ keywords will be used for the search engine. -->
           
     <section anchor="ret-phase" title="Safe Retreat Phase">
 
-        <t>This phase is entered when a jump in the
-        Unvalidated Phase has overshot the congested bottleneck capacity.
-        On entry, the sender re-initializes the CC parameters to compensate for
-            any overshoot in the Unvalidated Phase.</t>
+      <t>This phase is entered when a jump in the
+      Unvalidated Phase has overshot the congested bottleneck capacity.
+      On entry, the sender re-initializes the CC parameters to compensate for
+      any overshoot in the Unvalidated Phase.</t>
          
-        <list style="symbols">
+      <list style="symbols">
             <t>Safe Retreat Phase (Saved information): Any saved CC parameters for
             this path are removed from any cache, to prevent these
             parameters being used again with other flows.</t>
-            <t>Safe Retreat Phase (Re-initializing CC): On entry, the cwnd/rate MUST be initialised to
-              no more than would have been
-             used had the Careful Resume method not been used
+            <t>Safe Retreat Phase (Re-initializing CC): On entry, the rate/cwnd MUST be initialised to
+            no more than would have been
+            used had the Careful Resume method not been used
             (i.e., cwnd &le; (2*IW)).
             This avoids starvation by helping other flows to regain
             their share of the available capacity.</t>
-        </list>
+     </list>
      
-     <list><t>NOTE: The Safe Retreat reaction must differ from a traditional
-        reaction to detected congestion, because
-        the jump_cwnd can result in a significantly higher rate than would be allowed by the
-        slow-start mechanism. This could aggressively feed a congested bottleneck,
-        resulting in overshoot where a disproportionate number of packets
-        from existing flows are displaced from
-        the buffer at a congested bottleneck.
-        For this reason, a sender needs to reduce its rate significantly
-        below any measured capacity.</t></list>
+     <list>
+          <t>NOTE: The Safe Retreat reaction must differ from a traditional
+          reaction to detected congestion, because
+          the jump_cwnd can result in a significantly higher rate than would be allowed by the
+          slow-start mechanism. This could aggressively feed a congested bottleneck,
+          resulting in overshoot where a disproportionate number of packets
+          from existing flows are displaced from
+          the buffer at the congested bottleneck.
+          For this reason, a sender needs to reduce its rate/cwnd significantly
+          below the observed bandwidth.</t></list>
           
-        <t>Implementation requirements are provided in <xref target="req-retreat"></xref>.</t>
+         <t>Implementation requirements are provided in 
+         <xref target="req-retreat"></xref>.</t>
 
-    <section anchor="loss" title="Loss Recovery after entering Safe Retreat">
+         <section anchor="loss" title="Loss Recovery after entering Safe Retreat">
 
             <t>Unacknowledged packets that were sent in the Unvalidated Phase
             can be lost when there is congestion.
             Loss recovery commences using the reduced window
             that was set on entry to the Safe Retreat Phase.</t>
 
-            <list><t>NOTE: A TCP or SCTP sender is always required to retransmit all lost data.
-            For QUIC and DCCP, the need for loss recovery
-            depends on the sender policy for retransmission.</t>
+            <list>
+                 <t>NOTE: A TCP or SCTP sender is always required to retransmit 
+                 all lost data.
+                 For QUIC and DCCP, the need for loss recovery
+                 depends on the sender policy for retransmission.</t>
                 
-            <t>NOTE: During loss recovery, a receiver can culmulatively acknowledge
+                 <t>NOTE: During loss recovery, a receiver can culmulatively acknowledge
                  data that was previously sent in the Unvalidated Phase in addition
                  to acknowledging successful retransmission of data.
                  <xref target="RFC3465"></xref> describes how to appropriately
                  account for such acknowledgments.</t>
             
-                <t>NOTE: On entry to the Safe Retreat Phase, the cwnd/rate can be
-                significantly reduced, in the case of multiple loss,
+                <t>NOTE: On entry to the Safe Retreat Phase, the rate/cwnd can be
+                significantly reduced, when there was multiple loss,
                 recovery could require multiple RTTs to complete.</t>
             </list>
-            <t>On completion of any required recovery, the sender enters the Normal phase.</t>
 
-    </section>     <!-- End of Safe Retreat Phase: loss recovery -->
-    </section> <!-- End of define "Safe Retreat Phase" -->
+            <t>The sender leaves the Safe Retreat Phase when an acknowledgement is
+            received for the last packet number (or higher) sent using the jump_cwnd.
+            If the last packet number is not culmulatievly acknowledged, then 
+            additional packet might need to be retranmitted.
+            The sender then enters the Normal Phase.</t>
+
+         </section>     <!-- End of Safe Retreat Phase: loss recovery -->
+    </section> <!-- End of Safe Retreat Phase -->
      
     <section anchor="Normal Phase" title="Normal Phase">
         <!-- We need to be careful here of the corner case that sender either did not
-          utilise the jump, or the jump was not successful -->
+        utilise the jump, or the jump was not successful -->
 
         <t>In the Normal Phase, the sender transitions to using the normal CC method.</t>
         <list style="symbols">
-            <t>Normal Phase (Updating CC): The sender MUST reset cwnd
-            on entry to the normal Phase to reflect the volume of
+
+            <t>Normal Phase (Updating CC): The sender MUST reset the rate/cwnd
+            on entry to the Normal Phase to reflect the volume of
             acknowledged data that was received during the Unvalidated Phase.
             (When the sender has used the entire jump_cwnd and this was acknowledged
             in full, no adjustment is needed.)</t>
@@ -478,12 +506,15 @@ keywords will be used for the search engine. -->
         
     <section title="RTO Expiry while using Careful Resume">
         <t>A sender that experiences a Retransmission Time Out (RTO) expiry
-            while using Careful Resume, ceases to use the method. It continues using normal CC.
-        </t>
+        while using Careful Resume, ceases to use the method. 
+        The sender continues using normal CC.</t>
         
-        <list><t>NOTE: As in loss recovery, data sent in the Unvalidated Phase could be acknowledged after RTO (see <xref target="loss"></xref>).</t>
+        <list>
+             <t>NOTE: As in loss recovery, data sent in the 
+             Unvalidated Phase could be acknowledged after RTO 
+             (see <xref target="loss"></xref>).</t>
         </list>
-    </section> <!-- End of define  ="RTO Expiry:" -->
+    </section> <!-- End of RTO Expiry -->
 </section>
 
 <!-- ****************************************************************************************** -->
@@ -498,7 +529,7 @@ keywords will be used for the search engine. -->
         <t>A sender is limited by any rate-limitation of the transport
         protocol that is used.</t>
 
-        <t>For QUIC this includes: flow control mechanisms or preventing amplification
+        <t>For QUIC this includes flow control mechanisms or preventing amplification
         attack. In particular, a QUIC receiver might need to issue proactive
         MAX_DATA frames to increase the flow control limits of a connection
         that is started with this method to gain the expected benefit.</t>
@@ -521,7 +552,7 @@ keywords will be used for the search engine. -->
        
         <list style="symbols">
             <!-- Avoid unhelpful use of the method for small cwnds.-->
-            <t>Observe Phase: If the cwnd is less than four times the IW
+            <t>Observe Phase: If the measured cwnd is less than four times the IW
             (or the rate is less than would be permitted by IW*4/RTT),
             a sender SHOULD NOT store and/or send CC parameter
             information.</t>
@@ -529,23 +560,23 @@ keywords will be used for the search engine. -->
             <t>Observe Phase: The sender SHOULD update the stored CC parameters and/or send updated CC parameter
             information related to an estimated bottleneck bandwidth
             (saved_bb).</t>
-            <t>Observe Phase: The stored CC parameters SHOULD be updated \
-            if there are significant changes in the CC parameters.
+            <t>Observe Phase: The stored CC parameters SHOULD be updated 
+            if there are significant changes in the saved CC parameters.
             The rate of update MUST be less than
             one update for several RTTs of time.</t>
 
-            <t>Observe Phase: There are cases where the current cwnd/rate
+            <t>Observe Phase: There are cases where the current rate/cwnd
             does not reflect the bottleneck bandwidth. At the End of the CC slow
             start phase, the value can be significantly larger than
             needed to fully utilize the path (i.e., a cwnd
             overshoot). It is inappropriate to use an
-            overshoot in the cwnd as a basis for estimating the bottleneck
-            bandwidth. In most case, the cwnd will converge to a stable
+            overshoot in the rate/cwnd as a basis for estimating the bottleneck
+            bandwidth. In most case, the rate/cwnd will converge to a stable
             value after several more RTTs.
             One mitigation could be to calculate the bottleneck
             bandwidth based on
-            the flight_size or an averaged cwnd/rate. Also when
-            is application-limited or in the final RTT following a burst of
+            the flight_size or an averaged rate/cwnd. Also when the sender
+            is application-limited or in an RTT following a burst of
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
             estimating the bottleneck bandwidth.</t>
@@ -562,8 +593,8 @@ keywords will be used for the search engine. -->
             to not more than the IW <xref target="RFC9000"></xref>.</t>
         </list></t>
 
-        <t> The transmission using the IW  is
-        assumed a safe starting point for any path to avoid
+        <t> Transmission using the IW is
+        assumed to be a safe starting point for any path to avoid
         adding excessive load to a potentially congested path.
         any initial data. (When used in a controlled
         network, additional information about local path characteristics
@@ -571,24 +602,28 @@ keywords will be used for the search engine. -->
         IW.)</t>
 
         <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
-        CC Parameters can be cached, possibly based on TCP-new-CWV or TCB.}</t>
+        CC Parameters can be cached, possibly based on TCP-new-CWV or TCB, RFC9040.}</t>
 
-         <t> NOTE: Some transport protocols implement methods that detect potential congestion
-         by reacting to changes in the RTT (e.g., inferred by an increase in the latency).
-        In the Reconnaissance Phase, this indication is earlier than reported by
-        loss or ECN marking, and therefore designs need to consider if this is
-       a suitable trigger for exiting the Reconnaissance Phase, or whether to remain
-       in the Reconnaissance Phase until there is either a confirmed indication of
-       the congestion, or the RTT is not confirmed.</t>
+        <t> NOTE: Some transport protocols implement methods that detect potential congestion
+        by infering congestion from an increase in the RTT.
+        In the Reconnaissance Phase, this indication occurs earlier than congestion
+        which is reported by
+        loss or by ECN marking. Designs need to consider if this is
+        a suitable trigger for exiting the Reconnaissance Phase, but need to exit
+        the Reconnaissance Phase if the path is not confirmed or there is an 
+        indication of actual congestion.</t>
 
         <section anchor="sec-confirm" title="Confirming the Path">
-             <t>Paths can change with respect to time for many reasons.
+             
+            <!-- GF - These set of rules are already included -->
+            <t>Paths can change with respect to time for many reasons.
             This could result in previously measured CC parameters
             becoming irrelevant.</t>
         
             <t><list style="symbols">
                 <t>The sender confirms the RTT by comparing each of a
-                series of measured RTT samples against the previously measured saved_RTT.
+                series of measured RTT samples against 
+                the previously measured saved_RTT.
                 The sender must not use the method when the path RTT fails to be
                 confirmed.</t>
                 
@@ -597,21 +632,20 @@ keywords will be used for the search engine. -->
                 acknowledgments indicate these packets were ECN CE-marked. </t>
             </list></t>
 
-         <t>A current RTT sample that is less than a half of the
-        saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
-        (The factor of two arises, since the rate should not exceed the previous rate when
-        the bandwidth was measured, because the jump cwnd is calculated as 1/2 x   
-         measured bandwidth.) An RTT sample more than ten times the
-        saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
-        (The factor of ten accommodates both increases in latency from buffering
-        on a path, and the variation between samples.</t>
-             
-        </section><!-- End of Reconnaissance:Confirming the Path -->
-    </section> <!-- End of Reconnaissance(req-recon)  -->
+             <t>A current RTT sample that is less than a half of the
+             saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
+             (The factor of two arises, since the rate should not exceed the previous rate when
+             the bandwidth was measured, because the jump_cwnd is calculated as 1/2 x   
+             measured bandwidth.) An RTT sample more than ten times the
+             saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
+             (The factor of ten accommodates both increases in latency from buffering
+             on a path, and the variation between samples.</t>     
+        </section> <!-- End of Reconnaissance:Confirming the Path -->
+    </section> <!-- End of Reconnaissance(req-recon) -->
 
     <section anchor="req-unvalid" title="Safety Requirements for the Unvalidated Phase">
             <t> This section defines the safety requirements
-            for using saved CC parameters to tentaively update the cwnd.
+            for using saved CC parameters to tentaively update the rate/cwnd.
             These safety guidelines mitigate the risk that a sender
             adds excessive congestion to an already congested path.</t>
 
@@ -626,7 +660,7 @@ keywords will be used for the search engine. -->
     
         <section title="Exit for the Unvalidated Phase because of Variable Network Conditions">
                 <t>Unvalidated and Reconnaissance Phases: The method MUST be robust to
-                network conditions that can differ from one connection to the next,
+                network conditions that are different
                 due to variations in the forwarding path, reconfiguration of
                 equipment, or changes in the link conditions.</t>
     
@@ -649,17 +683,17 @@ keywords will be used for the search engine. -->
             <t> The sender MUST avoid sending a burst of packets greater than IW as a result of a
             step-increase in the congestion window <xref target="RFC8085"></xref>,
             <xref target="RFC9000"></xref>.
-            Pacing sentpackets as a function of
-            the current RTT can provide this additional safety during the
+            Pacing sent packets as a function of
+            the current RTT provides an additional safety during the
             Unvalidated Phase.
-            Various other sender mitigatuons have also been suggested to
+            Other sender mitigatuons have also been suggested to
             avoid line-rate bursts (e.g., <xref target="I-D.hughes-restart"></xref>).</t>
 
             <t>The following example provides a relevant pacing rhythm:
-            The sender estimates a pacing rhythm using saved_rtt and
+            The sender estimates a pacing rhythm using the RTT and the
             saved_bb. The Inter-packet Transmission Time (ITT) is determined
             from the ratio between the current Maximum Message Size (MMS) and
-            the ratio between the saved_bb and saved_rtt. A tunable safety
+            the ratio between the saved_bb and the RTT. A safety
             margin can avoid sending more than a recommended maximum
             (recom_jump):
             <list>
@@ -677,7 +711,7 @@ keywords will be used for the search engine. -->
          <t>This section defines the safety requirements
         after congestion has been detected during the Unvalidated Phase.</t>
 
-         <t>The updated cwnd/rate MAY be further increased during recovery,
+         <t>The updated rate/cwnd MAY be further increased during recovery,
         when the sender receives acknowledgments indicating reception of packets that
         were sent during the Unvalidated Phase. Each acknowledged packet
         indicates a packet was successfuly traversed the path,
@@ -711,7 +745,7 @@ keywords will be used for the search engine. -->
             available share of the capacity whenever
             there was also a significant overshoot of the capacity,
              as indicated by excessive loss.
-            Therefore, the cwnd/rate is increased using received acknowledgments
+            Therefore, the rate/cwnd is increased using received acknowledgments
              after 1 RTT, scaled
             to reflect the size of the overshoot, because this
             could have resulted in further loss to sharing flows.</t>
@@ -745,7 +779,7 @@ keywords will be used for the search engine. -->
       Ian Swett, Igor Lubashev, Robin Marx, Roland Bless, Franklin Simo, Raffaello Secchi for
       their fruitful comments on earlier versions of this document.</t>
       <t>The authors would like to particularly thank Tom Jones for co-authoring
-      previous versions of this document.</t>
+      several previous versions of this document.</t>
     </section>
 
     <section anchor="sec-IANA" title="IANA Considerations">
@@ -942,6 +976,9 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 <t>WG -01 included review comments and suggestions from John Border,
     and follows the setting of the TSVWG milestone
     with an intended status of "Proposed Standard".</t>
+<t>WG -02 includes steps to complete the spec. In particular, consideration of application-limited
+     senders; selection of reasoned parameters; specification of safe retreat; and 
+     improvements to the consistency throughout.</t>
 </list>
 </section> <!-- End of Revisions -->
 
