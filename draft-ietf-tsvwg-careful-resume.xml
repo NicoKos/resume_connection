@@ -351,16 +351,17 @@ keywords will be used for the search engine. -->
              is directly impacted by the RTT, a significant change in the RTT
              is a strong indication that the previously estimated BDP
              parameters are not valid for the current path.
-             An RTT measurement is confirmed when  current_rtt &ge;
-             (saved_rtt/2) and the current_rtt  &le;  (saved_rtt x 10).</t>
+             An RTT measurement is confirmed when current_rtt &ge;
+             (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10).</t>
 
             <t>Reconnaissance Phase (Lifetime of saved information): The CC information is temporal.
             Frequent connections to the same endpoint are likely to track
             changes, but long-term use of previous values is not appropriate.</t>
+
+            <!-- How many samples are needed? Reconnaissance Phase (Number of required samples) -->
         </list></t>
 
-        <t>When a sender confirms the path characteristics
-        and it
+        <t>When a sender confirms the path characteristics and it
         receives an acknowledgement for the initial data without reported congestion,
         it MAY then enter the Unvalidated Phase.
         This transition occurs when a sender has more data than permitted
@@ -372,6 +373,7 @@ keywords will be used for the search engine. -->
         and the sender returns to normal CC.</t>
 
     </section> <!-- End of define Reconnaissance Phase -->
+     
     <section anchor="unv-phase" title="Unvalidated Phase">
         <t>The Unvalidated Phase is designed to enable the cwnd/rate
         to more rapidly get up to speed, but this require data to send.
@@ -412,10 +414,7 @@ keywords will be used for the search engine. -->
             <t>Safe Retreat Phase (Saved information): Any saved CC parameters for
             this path are removed from any cache, to prevent these
             parameters being used again with other flows.</t>
-            <t>Safe Retreat Phase (Re-initializing CC):
-            Implementations using ssthresh reset the ssthresh based on flightsize,
-            to refleact an upper bound on the available capacity.</t>
-            <t>Safe Retreat Phase (Re-initializing CC): The cwnd MUST be initialised to
+            <t>Safe Retreat Phase (Re-initializing CC): On entry, the cwnd/rate MUST be initialised to
               no more than would have been
              used had the Careful Resume method not been used
             (i.e., cwnd &le; (2*IW)).
@@ -446,8 +445,7 @@ keywords will be used for the search engine. -->
             For QUIC and DCCP, the need for loss recovery
             depends on the sender policy for retransmission.</t>
                 
-
-            <t>NOTE: During loss recovery, a TCP receiver can culmulatively acknowledge
+            <t>NOTE: During loss recovery, a receiver can culmulatively acknowledge
                  data that was previously sent in the Unvalidated Phase in addition
                  to acknowledging successful retransmission of data.
                  <xref target="RFC3465"></xref> describes how to appropriately
@@ -461,9 +459,8 @@ keywords will be used for the search engine. -->
 
     </section>     <!-- End of Safe Retreat Phase: loss recovery -->
     </section> <!-- End of define "Safe Retreat Phase" -->
-
-          
-    <section title="Normal Phase">
+     
+    <section anchor="Normal Phase" title="Normal Phase">
         <!-- We need to be careful here of the corner case that sender either did not
           utilise the jump, or the jump was not successful -->
 
@@ -552,8 +549,7 @@ keywords will be used for the search engine. -->
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
             estimating the bottleneck bandwidth.</t>
-        </list></t>
-        
+        </list></t>    
     </section> <!-- Observe Phase  (measuring) -->
 
     <section anchor="req-recon"  title="Confirming the Path in the Reconnaissance Phase">
@@ -579,13 +575,11 @@ keywords will be used for the search engine. -->
 
          <t> NOTE: Some transport protocols implement methods that detect potential congestion
          by reacting to changes in the RTT (e.g., inferred by an increase in the latency).
-        In the Reconnaissance Phase, this indication is earlier than that provided by
-        reported loss or ECN marking, and therefore designs need to consider if this is
+        In the Reconnaissance Phase, this indication is earlier than reported by
+        loss or ECN marking, and therefore designs need to consider if this is
        a suitable trigger for exiting the Reconnaissance Phase, or whether to remain
        in the Reconnaissance Phase until there is either a confirmed indication of
-       the congestion, or the RTT variation reaches the configured limit.</t>
-
-       
+       the congestion, or the RTT is not confirmed.</t>
 
         <section anchor="sec-confirm" title="Confirming the Path">
              <t>Paths can change with respect to time for many reasons.
@@ -605,14 +599,13 @@ keywords will be used for the search engine. -->
 
          <t>A current RTT sample that is less than a half of the
         saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
-        (The factor of two arises, since the jump_cwnd is 1/2 of the measured bandwidth,
-        and a current_RTT lower than the saved_RTT/2 would result in an unacceptably
-        high transmission rate). A sample more than ten times the
+        (The factor of two arises, since the rate should not exceed the previous rate when
+        the bandwidth was measured, because the jump cwnd is calculated as 1/2 x   
+         measured bandwidth.) An RTT sample more than ten times the
         saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
         (The factor of ten accommodates both increases in latency from buffering
-        on a path, and the variation between samples.)</t>
+        on a path, and the variation between samples.</t>
              
-
         </section><!-- End of Reconnaissance:Confirming the Path -->
     </section> <!-- End of Reconnaissance(req-recon)  -->
 
@@ -638,7 +631,6 @@ keywords will be used for the search engine. -->
                 equipment, or changes in the link conditions.</t>
     
                 <t><list style="symbols">
-        
                     <t>Unvalidated Phase: The method MUST be robust to changes
                         in network traffic, including the
                      arrival of new traffic flows that compete for capacity at a shared bottleneck.</t>
@@ -681,7 +673,8 @@ keywords will be used for the search engine. -->
     </section> <!-- Unvalidated Phase -->
 
     <section anchor="req-retreat" title="Safety Requirements for the Safe Retreat Phase">
-        <t>This section defines the safety requirements
+
+         <t>This section defines the safety requirements
         after congestion has been detected during the Unvalidated Phase.</t>
 
          <t>The updated cwnd/rate MAY be further increased during recovery,
@@ -689,12 +682,14 @@ keywords will be used for the search engine. -->
         were sent during the Unvalidated Phase. Each acknowledged packet
         indicates a packet was successfuly traversed the path,
         and allows cwnd to be correspondingly increased.
-        (An implementation could track this using a Pipe variable).</t>
+        (An implementation could track this using a Pipe variable).
+        The increase during recovery ought to be reduced to compensate 
+        for potential overshoot <xref target="ret-phase"></xref>.</t>
             
-
         <t>The following examples provide some alternative examples of
         how to implement the Safe Retreat Phase:</t>
         <list style="numbers">
+             
             <t>A simple conservative approach sets cwnd = 2 x IW and then
             resumes using normal slow start.
             This method does not require measuring the capacity at congestion.
@@ -703,23 +698,28 @@ keywords will be used for the search engine. -->
             (i.e.,  ssthresh = cwnd).
             The resulting pattern of cwnd growth resembles that which
             would have occurred had the method not been used.</t>
+             
             <t>Performanance can be improved by tracking the volume of
-            successfully transmitted packets during the RTT
-            when using the Unvalidated Phase.
+            successfully transmitted packets
+            when using the Unvalidated Phase (e.g., by recording the sequence number
+             of the first oacket sent in the phase.).
             This measured capacity under congestion is called the Pipe.
             Methods using a slow start threshold need to update this
-            threshold using the Pipe
-            (i.e.,  ssthresh = Pipe).
+            threshold using the Pipe, when this is known, on exit of the Safe Retreat Phase
+            (i.e., ssthresh = Pipe).
             The Pipe is not a safe measure of the current
             available share of the capacity whenever
             there was also a significant overshoot of the capacity,
-         as indicated by excessive packet loss.
-            Hence, the updated cwnd/rate must be further be reduced
+             as indicated by excessive loss.
+            Therefore, the cwnd/rate is increased using received acknowledgments
+             after 1 RTT, scaled
             to reflect the size of the overshoot, because this
-            which could have resulted in further loss to sharing flows
-            (i.e., cwnd &lt;&lt; ssthresh).
-            This ought to modify the update to cwnd: cwnd = (Pipe/2) x (Pipe/cwnd).</t>
-        <t>{Editor-Note: This method is still to be confirmed. }</t>
+            could have resulted in further loss to sharing flows.</t>
+
+          <t>{Editor Note-XXXX: Note this could be different 
+          to the persistent congestion control reaction,
+          but it  must be a different reaction to normal recovery.}</t>
+             
           </list> <!--- End of list of examples -->
 
     </section><!-- End of Safety Requirements for the Safe Retreat Phase -->
