@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="US-ASCII"?>
-<!DOCTYPE rfc SYSTEM "rfc2629-xhtml.ent">
-<?xml-stylesheet type="text/xsl" href="rfc2629.xslt" ?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes" ?>
 <?rfc toc="yes"?>
 <?rfc tocdepth="4"?>
@@ -185,7 +187,7 @@ specify just the year. -->
             <t>An indication from the sender that the method is available, could also
             allow a receiver to tune policies for using the connection (e.g., managing the
             receiver window or flow credit).</t>
-            <t> Examples where a receiver could request not to use the method include:</t>
+            <t> Examples where a receiver could request not to use the method include:
             <list style="numbers">
                 <t>a receiver that can predict the pattern of traffic
                 (e.g., insight into the volume of data to be sent,
@@ -196,7 +198,7 @@ specify just the year. -->
                 <t>a receiver that can predit additional capacity will be needed
                 for other concurrent/later flows
                 (i.e., prefers to use the method for the other flows).</t>
-            </list>
+	    </list></t>
 
             <t>QUIC introduces the concept of transport parameters (Section 4 of
                 <xref target="RFC9000"></xref>).
@@ -428,7 +430,7 @@ specify just the year. -->
       On entry, the sender re-initializes the CC parameters to compensate for
       any overshoot in the Unvalidated Phase.</t>
          
-      <list style="symbols">
+      <t><list style="symbols">
             <t>Safe Retreat Phase (Saved information): Any saved CC parameters for
             this path are removed from any cache, to prevent these
             parameters being used again with other flows.</t>
@@ -438,9 +440,9 @@ specify just the year. -->
             (i.e., cwnd &le; (2*IW)).
             This avoids starvation by helping other flows to regain
             their share of the available capacity.</t>
-     </list>
+    </list></t>
      
-     <list>
+    <t><list>
           <t>NOTE: The Safe Retreat reaction must differ from a traditional
           reaction to detected congestion, because
           the jump_cwnd can result in a significantly higher rate than would be allowed by the
@@ -449,7 +451,8 @@ specify just the year. -->
           from existing flows are displaced from
           the buffer at the congested bottleneck.
           For this reason, a sender needs to reduce its rate/cwnd significantly
-          below the observed bandwidth.</t></list>
+		  below the observed bandwidth.</t>
+    </list></t>
           
          <t>Implementation requirements are provided in 
          <xref target="req-retreat"></xref>.</t>
@@ -461,7 +464,7 @@ specify just the year. -->
             Loss recovery commences using the reduced window
             that was set on entry to the Safe Retreat Phase.</t>
 
-            <list>
+            <t><list>
                  <t>NOTE: A TCP or SCTP sender is always required to retransmit 
                  all lost data.
                  For QUIC and DCCP, the need for loss recovery
@@ -476,7 +479,7 @@ specify just the year. -->
                 <t>NOTE: On entry to the Safe Retreat Phase, the rate/cwnd can be
                 significantly reduced, when there was multiple loss,
                 recovery could require multiple RTTs to complete.</t>
-            </list>
+	    </list></t>
 
             <t>The sender leaves the Safe Retreat Phase when an acknowledgement is
             received for the last packet number (or higher) sent using the jump_cwnd.
@@ -487,11 +490,11 @@ specify just the year. -->
          </section>     <!-- End of Safe Retreat Phase: loss recovery -->
     </section> <!-- End of Safe Retreat Phase -->
      
-    <section anchor="Normal Phase" title="Normal Phase">
+    <section anchor="Normal_Phase" title="Normal Phase">
         <!-- We need to be careful here of the corner case that sender either did not
         utilise the jump, or the jump was not successful -->
 
-        <t>In the Normal Phase, the sender transitions to using the normal CC method.</t>
+        <t>In the Normal Phase, the sender transitions to using the normal CC method.
         <list style="symbols">
 
             <t>Normal Phase (Updating CC): The sender MUST reset the rate/cwnd
@@ -499,7 +502,7 @@ specify just the year. -->
             acknowledged data that was received during the Unvalidated Phase.
             (When the sender has used the entire jump_cwnd and this was acknowledged
             in full, no adjustment is needed.)</t>
-        </list>
+        </list></t>
         <t>Implementation requirements are provided in <xref target="req-normal"></xref>.</t>
 
     </section> <!-- End of define "Normal Phase:" -->
@@ -507,13 +510,13 @@ specify just the year. -->
     <section title="RTO Expiry while using Careful Resume">
         <t>A sender that experiences a Retransmission Time Out (RTO) expiry
         while using Careful Resume, ceases to use the method. 
-        The sender continues using normal CC.</t>
+        The sender continues using normal CC.
         
         <list>
              <t>NOTE: As in loss recovery, data sent in the 
              Unvalidated Phase could be acknowledged after RTO 
              (see <xref target="loss"></xref>).</t>
-        </list>
+        </list></t>
     </section> <!-- End of RTO Expiry -->
 </section>
 
@@ -647,7 +650,7 @@ specify just the year. -->
             <t> This section defines the safety requirements
             for using saved CC parameters to tentaively update the rate/cwnd.
             These safety guidelines mitigate the risk that a sender
-            adds excessive congestion to an already congested path.</t>
+            adds excessive congestion to an already congested path.
 
             <list style="symbols">
                 <t>Unvalidated Phase: A connection MUST NOT directly use the previously measured saved_rtt and
@@ -656,7 +659,7 @@ specify just the year. -->
                     current RTT (saved_BDP / current_RTT). Using the current_rtt rather than a saved RTT value
                     helps to ensure appropriate pacing, but places a limitation on the minimum acceptable RTT
                 for using the method to avoid sending at a rate higher than previously observed.</t>
-            </list>
+	    </list></t>
     
         <section title="Exit for the Unvalidated Phase because of Variable Network Conditions">
                 <t>Unvalidated and Reconnaissance Phases: The method MUST be robust to
@@ -721,7 +724,7 @@ specify just the year. -->
         for potential overshoot <xref target="ret-phase"></xref>.</t>
             
         <t>The following examples provide some alternative examples of
-        how to implement the Safe Retreat Phase:</t>
+        how to implement the Safe Retreat Phase:
         <list style="numbers">
              
             <t>A simple conservative approach sets cwnd = 2 x IW and then
@@ -754,7 +757,7 @@ specify just the year. -->
           to the persistent congestion control reaction,
           but it  must be a different reaction to normal recovery.}</t>
              
-          </list> <!--- End of list of examples -->
+	  </list></t> <!--- End of list of examples -->
 
     </section><!-- End of Safety Requirements for the Safe Retreat Phase -->
 
@@ -970,7 +973,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
  </section> <!-- End of An Endpoint Token -->
       
 <section anchor="rev" title="Appendix: Revision details">
-<t>Previous individual submissions were discussed in TSVWG and QUIC.</t>
+<t>Previous individual submissions were discussed in TSVWG and QUIC.
 <list>
 <t>WG -00 included clarifications and restructuring to form the 1st WG draft.</t>
 <t>WG -01 included review comments and suggestions from John Border,
@@ -979,7 +982,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 <t>WG -02 includes steps to complete the spec. In particular, consideration of application-limited
      senders; selection of reasoned parameters; specification of safe retreat; and 
      improvements to the consistency throughout.</t>
-</list>
+</list></t>
 </section> <!-- End of Revisions -->
 
 </back>
