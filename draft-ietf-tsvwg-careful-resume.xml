@@ -140,7 +140,7 @@ specify just the year. -->
     more than the product of the IW and the Round Trip Rime (RTT).</t>
     <t>It introduces an alternative method to select initial CC parameters,
     that seek to more rapidly and safely grow the sending rate (or congestion
-    window, cwnd).
+    window, CWND).
     This method is based on temporal sharing (sometimes known as
     caching) of a saved set of CC parameters that relate to previous observations
     of the same path. The saved CC parameters include:
@@ -305,7 +305,7 @@ specify just the year. -->
             <t>saved_endpoint_token: The Endpoint Token of a previous connection by the
             receiver;</t>
 
-            <t>jump_cwnd: The resumed cwnd, used in the Unvalidated Phase.</t>
+            <t>jump_cwnd: The resumed CWND, used in the Unvalidated Phase.</t>
             <t>Pipe: The estimated capacity at the time of congestion.</t>
         </list>
         </t>
@@ -375,7 +375,7 @@ specify just the year. -->
         receives an acknowledgement for the initial data without reported congestion,
         it MAY then enter the Unvalidated Phase.
         This transition occurs when a sender has more data than permitted
-        by the current cwnd.</t>
+        by the current CWND.</t>
 
         <t>Implementation requirements are provided in <xref target="req-recon"></xref>.</t>
 
@@ -385,18 +385,18 @@ specify just the year. -->
     </section> <!-- End of Reconnaissance Phase -->
      
     <section anchor="unv-phase" title="Unvalidated Phase">
-        <t>The Unvalidated Phase is designed to enable the rate/cwnd
+        <t>The Unvalidated Phase is designed to enable the rate/CWND
         to more rapidly get up to speed, but this require data to send.
          If the application is data limited, the sender sends insufficient data
         to be able to validate the tentative higher rate.
         The method therefore remains in the Reconnaissance Phase and does not
         transition to the Unvalidated Phase until the sender
         has more data ready to send in the transmission buffer
-        than is permitted by the current cwnd.
+        than is permitted by the current CWND.
         In some implementations, this might require coordination with the management
         of buffers in the interface to the higher layers.</t>
 
-        <t>This phase paces transmission using an increased rate/cwnd (jump_cwnd)
+        <t>This phase paces transmission using an increased rate/CWND (jump_cwnd)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
              <t>Unvalidated Phase (jump_size): 
@@ -406,7 +406,7 @@ specify just the year. -->
              Hence, jump_cwnd &le; (saved_BDP/current_RTT).</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated 
-             rate/cwnd MUST use pacing.</t>
+             rate/CWND MUST use pacing.</t>
              
              <t>Unvalidated Phase (Confirming the path):
              A sender monitors the correct reception
@@ -418,7 +418,7 @@ specify just the year. -->
              <t>The sender enters the Normal Phase when an acknowledgement is
              received for the last packet number (or higher) sent in one RTT after
              entering the Unvalidated Phase. (When the full jump_cwnd is not
-             utlised, this results in s smaller cpapcity being validated.)</t>
+             utilised, this results in s smaller cpapcity being validated.)</t>
         </list></t> <!-- End of list of actions -->
 
         <t>Implementation requirements are provided in <xref target="req-unvalid"></xref>. </t>
@@ -435,10 +435,10 @@ specify just the year. -->
             <t>Safe Retreat Phase (Saved information): Any saved CC parameters for
             this path are removed from any cache, to prevent these
             parameters being used again with other flows.</t>
-            <t>Safe Retreat Phase (Re-initializing CC): On entry, the rate/cwnd MUST be initialised to
+            <t>Safe Retreat Phase (Re-initializing CC): On entry, the rate/CWND MUST be initialised to
             no more than would have been
             used had the Careful Resume method not been used
-            (i.e., cwnd &le; (2*IW)).
+            (i.e., CWND &le; (2*IW)).
             This avoids starvation by helping other flows to regain
             their share of the available capacity.</t>
     </list></t>
@@ -451,7 +451,7 @@ specify just the year. -->
           resulting in overshoot where a disproportionate number of packets
           from existing flows are displaced from
           the buffer at the congested bottleneck.
-          For this reason, a sender needs to reduce its rate/cwnd significantly
+          For this reason, a sender needs to reduce its rate/CWND significantly
 		  below the observed bandwidth.</t>
     </list></t>
           
@@ -477,7 +477,7 @@ specify just the year. -->
                  <xref target="RFC3465"></xref> describes how to appropriately
                  account for such acknowledgments.</t>
             
-                <t>NOTE: On entry to the Safe Retreat Phase, the rate/cwnd can be
+                <t>NOTE: On entry to the Safe Retreat Phase, the rate/CWND can be
                 significantly reduced, when there was multiple loss,
                 recovery could require multiple RTTs to complete.</t>
 	    </list></t>
@@ -498,7 +498,7 @@ specify just the year. -->
         <t>In the Normal Phase, the sender transitions to using the normal CC method.
         <list style="symbols">
 
-            <t>Normal Phase (Updating CC): The sender MUST reset the rate/cwnd
+            <t>Normal Phase (Updating CC): The sender MUST reset the rate/CWND
             on entry to the Normal Phase to reflect the volume of
             acknowledged data that was received during the Unvalidated Phase.
             (When the sender has used the entire jump_cwnd and this was acknowledged
@@ -550,13 +550,13 @@ specify just the year. -->
         been used by a connection.
         Congestion controllers, such as CUBIC or RENO, can estimate the
         saved_bb and current_bb values by utilizing a combination of the
-        cwnd/flight_size and the minimum RTT. A different approach could
+        CWND/flight_size and the minimum RTT. A different approach could
         estimate the same values for a rate-based congestion
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.
        
         <list style="symbols">
-            <!-- Avoid unhelpful use of the method for small cwnds.-->
-            <t>Observe Phase: If the measured cwnd is less than four times the IW
+            <!-- Avoid unhelpful use of the method for small CWNDs.-->
+            <t>Observe Phase: If the measured CWND is less than four times the IW
             (or the rate is less than would be permitted by IW*4/RTT),
             a sender SHOULD NOT store and/or send CC parameter
             information.</t>
@@ -569,17 +569,17 @@ specify just the year. -->
             The rate of update MUST be less than
             one update for several RTTs of time.</t>
 
-            <t>Observe Phase: There are cases where the current rate/cwnd
+            <t>Observe Phase: There are cases where the current rate/CWND
             does not reflect the bottleneck bandwidth. At the End of the CC slow
             start phase, the value can be significantly larger than
-            needed to fully utilize the path (i.e., a cwnd
+            needed to fully utilize the path (i.e., a CWND
             overshoot). It is inappropriate to use an
-            overshoot in the rate/cwnd as a basis for estimating the bottleneck
-            bandwidth. In most case, the rate/cwnd will converge to a stable
+            overshoot in the rate/CWND as a basis for estimating the bottleneck
+            bandwidth. In most case, the rate/CWND will converge to a stable
             value after several more RTTs.
             One mitigation could be to calculate the bottleneck
             bandwidth based on
-            the flight_size or an averaged rate/cwnd. Also when the sender
+            the flight_size or an averaged rate/CWND. Also when the sender
             is application-limited or in an RTT following a burst of
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
@@ -649,7 +649,7 @@ specify just the year. -->
 
     <section anchor="req-unvalid" title="Safety Requirements for the Unvalidated Phase">
             <t> This section defines the safety requirements
-            for using saved CC parameters to tentaively update the rate/cwnd.
+            for using saved CC parameters to tentaively update the rate/CWND.
             These safety guidelines mitigate the risk that a sender
             adds excessive congestion to an already congested path.
 
@@ -715,11 +715,11 @@ specify just the year. -->
          <t>This section defines the safety requirements
         after congestion has been detected during the Unvalidated Phase.</t>
 
-         <t>The updated rate/cwnd MAY be further increased during recovery,
+         <t>The updated rate/CWND MAY be further increased during recovery,
         when the sender receives acknowledgments indicating reception of packets that
         were sent during the Unvalidated Phase. Each acknowledged packet
         indicates a packet was successfuly traversed the path,
-        and allows cwnd to be correspondingly increased.
+        and allows CWND to be correspondingly increased.
         (An implementation could track this using a Pipe variable).
         The increase during recovery ought to be reduced to compensate 
         for potential overshoot <xref target="ret-phase"></xref>.</t>
@@ -728,19 +728,19 @@ specify just the year. -->
         how to implement the Safe Retreat Phase:
         <list style="numbers">
              
-            <t>A simple conservative approach sets cwnd = 2 x IW and then
+            <t>A simple conservative approach sets CWND = 2 x IW and then
             resumes using normal slow-start.
             This method does not require measuring the capacity at congestion.
             Methods using a slow-start threshold need to update this
-            threshold using the cwnd
-            (i.e.,  ssthresh = cwnd).
-            The resulting pattern of cwnd growth resembles that which
+            threshold using the CWND
+            (i.e.,  ssthresh = CWND).
+            The resulting pattern of CWND growth resembles that which
             would have occurred had the method not been used.</t>
              
-            <t>Performanance can be improved by tracking the volume of
+            <t>Performance can be improved by tracking the volume of
             successfully transmitted packets
             when using the Unvalidated Phase (e.g., by recording the sequence number
-             of the first oacket sent in the phase.).
+             of the first packet sent in the phase.).
             This measured capacity under congestion is called the Pipe.
             Methods using a slow-start threshold need to update this
             threshold using the Pipe, when this is known, on exit of the Safe Retreat Phase
@@ -749,8 +749,8 @@ specify just the year. -->
             available share of the capacity whenever
             there was also a significant overshoot of the capacity,
              as indicated by excessive loss.
-            Therefore, the rate/cwnd is increased using received acknowledgments
-             after 1 RTT, scaled
+            Therefore, the rate/CWND is increased using received acknowledgments
+             after one RTT, scaled
             to reflect the size of the overshoot, because this
             could have resulted in further loss to sharing flows.</t>
 
