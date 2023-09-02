@@ -100,11 +100,12 @@ specify just the year. -->
       are based on previously observed path characteristics between
       the same pair of transport endpoints. These parameters
       are stored, allowing them to be later used to modify the congestion control behavior
-      of a subsequent connection. The document discusses assumptions
+	      of a subsequent connection.</t>
+      <t>The document discusses assumptions
       and defines requirements around how a
       sender utilizes these parameters to provide opportunities for a
-      connection to more rapidly get up to speed (i.e. utilize the available
-      capacity). It discusses how the method impacts the capacity at a
+      connection to more rapidly get up to speed and rapidly utilize the available
+      capacity. It discusses how the method impacts the capacity at a
       shared network bottleneck and the safe response that is needed after any
       indication that the new rate is inappropriate.</t>
     </abstract>
@@ -122,17 +123,17 @@ specify just the year. -->
 
     <t>A CC method typically takes time to ramp-up the sending rate,
     called the "slow-start phase", informally known as the time to "Get up
-    to speed". This slow start phase defines a time in which a sender
+    to speed". This slow-start phase defines a time in which a sender
     intentionally uses less capacity than might be available, with the
     intention to avoid or limit overshooting the available capacity at a bottleneck.
-    The slow start design can increase queuing (latency/jitter) and/or
+    The slow-start design can increase queuing (latency/jitter) and/or
     congestion packet loss to the flow. Any overshoot in the capacity can have a
     detrimental effect on other flows sharing a common bottleneck. In the
     extreme case, persistent congestion could result in unwanted starvation of
-    other flows <xref target="RFC8867"></xref> (i.e., Preventing other flows
+    other flows <xref target="RFC8867"></xref> (i.e., preventing other flows
     from successfully sharing a common bottleneck).</t>
 
-    <t>The method is expected to reduce the time to complete a transfer
+    <t>This document proposes a method that is expected to reduce the time to complete a transfer
     when the transfer sends significantly more data than allowed by the
     Initial congestion window (IW), and
     where the Bandwidth Delay Product (BDP) is also significantly
@@ -147,7 +148,7 @@ specify just the year. -->
     bandwidth, available capacity, and RTT. These
     parameters are stored and used to modify the CC
     behavior of a subsequent connection between the 
-    same local and remote endpoints.</t>
+    same endpoints.</t>
 
     <t>When used with the QUIC transport, this provides transport services that resemble
     those currently available in TCP, using methods such as TCP Control Block (TCB)
@@ -156,23 +157,23 @@ specify just the year. -->
     <section title="Use of saved CC parameters by a Sender">
         <t>CC parameters are used by this method for two functions:
         <list style="symbols">
+            <t>Information about the measured path capacity.
+            This allows a later sender to
+		    determine an appropriate set of CC parameters for re-using the path.</t>
             <t>Information to characterize the saved path that allow a sender to
             confirm whether the current path
             is consistent with a saved path.</t>
-            <t>Information about the measured path capacity.
-            This allows a later sender to
-            determine an appropriate set of CC parameters for re-using the path.</t>
         </list></t>
            
             <t>"Generally, implementations are advised
             to be cautious when using previous values on a new path", 
             as stated in <xref target="RFC9000"></xref>. 
-            This advice is appropriate for any IETF transport protocol.
+            While this statement has been proposed in the context of QUIC standardization, this advice is appropriate for any IETF transport protocol.
             Care is therefore needed
             to assure safe use and to be robust to changes
             in traffic patterns, network routing and link/node conditions.
             There are cases where using the saved parameters of a previous
-            connection are not appropriate.</t>
+            connection is not appropriate.</t>
     </section>  <!-- End of use with care -->
           
     <section title="Receiver Preference">
@@ -182,7 +183,7 @@ specify just the year. -->
             is not available at the sender, or might benefit from
             understanding that careful resume might be used. In these cases, a receiver
             could explicitly ask to enable or inhibit tuning of the CC
-            when an application continues transmission.</t>
+            when an application initiate a new session or resume an existing one.</t>
             
             <t>An indication from the sender that the method is available, could also
             allow a receiver to tune policies for using the connection (e.g., managing the
@@ -194,7 +195,7 @@ specify just the year. -->
                 the expected length of a session, or the maximum transfer rate required);</t>
                 <t>a receiver with a local indication that a path/local
                 interface has changed since the CC parameters were stored;</t>
-                <t>knoweledge of the current hardware limitations at a receiver;</t>
+                <t>knowledge of the current hardware limitations at a receiver;</t>
                 <t>a receiver that can predit additional capacity will be needed
                 for other concurrent/later flows
                 (i.e., prefers to use the method for the other flows).</t>
@@ -334,7 +335,7 @@ specify just the year. -->
           
     <section anchor="rec-phase" title="Reconnaissance Phase">
         <t> When a sender resumes transmission between the same pair of endpoints,
-        (aka thinks it uses the same path) it enters the Reconnaissance Phase.
+        (a.k.a. thinks it uses the same path) it enters the Reconnaissance Phase.
         The sender only enters this phase when there are saved CC parameters for the same
         pair of endpoints and this information is currently valid (i.e., the saved parameters have
         not expired.)
@@ -728,9 +729,9 @@ specify just the year. -->
         <list style="numbers">
              
             <t>A simple conservative approach sets cwnd = 2 x IW and then
-            resumes using normal slow start.
+            resumes using normal slow-start.
             This method does not require measuring the capacity at congestion.
-            Methods using a slow start threshold need to update this
+            Methods using a slow-start threshold need to update this
             threshold using the cwnd
             (i.e.,  ssthresh = cwnd).
             The resulting pattern of cwnd growth resembles that which
@@ -741,7 +742,7 @@ specify just the year. -->
             when using the Unvalidated Phase (e.g., by recording the sequence number
              of the first oacket sent in the phase.).
             This measured capacity under congestion is called the Pipe.
-            Methods using a slow start threshold need to update this
+            Methods using a slow-start threshold need to update this
             threshold using the Pipe, when this is known, on exit of the Safe Retreat Phase
             (i.e., ssthresh = Pipe).
             The Pipe is not a safe measure of the current
