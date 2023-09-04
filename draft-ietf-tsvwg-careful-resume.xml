@@ -361,7 +361,7 @@ specify just the year. -->
              is a strong indication that the previously estimated BDP
              parameters are not valid for the current path.
              An RTT measurement is confirmed when current_rtt &ge;
-             (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10).</t>
+             (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10 (TBC)).</t>
 
             <t>Reconnaissance Phase (Lifetime of saved information): The CC information is temporal.
             Frequent connections to the same endpoint are likely to track
@@ -403,7 +403,7 @@ specify just the year. -->
              To avoid starving other (potential) flows that could have started
              or increased their capacity after the Observation Phase,
              the jump_cwnd MUST be no more than half of the previous saved capacity based on the current RTT.
-             Hence, jump_cwnd &le; (saved_BDP/current_RTT).</t>
+             Hence, jump_cwnd &le; saved_bb/2.</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated 
              rate/CWND MUST use pacing.</t>
@@ -413,7 +413,7 @@ specify just the year. -->
              of the packets that were sent using the unvalidated jump.
              If a sender determines either that the previous parameters
              are not valid (due to a detected change in the path)
-             or that congestion was experienced, the method enters the 
+             or that congestion was experienced (e.g. packet loss or delay increase), the method enters the 
              Safe Retreat Phase.</t>
              <t>The sender enters the Normal Phase when an acknowledgement is
              received for the last packet number (or higher) sent in one RTT after
@@ -757,7 +757,10 @@ specify just the year. -->
           <t>{Editor Note-XXXX: Note this could be different 
           to the persistent congestion control reaction,
           but it  must be a different reaction to normal recovery.}</t>
-             
+
+          <t>{Editor Note-XXXX: Note that recommendations on how to use 
+          the Pipe.}</t>
+		
 	  </list></t> <!--- End of list of examples -->
 
     </section><!-- End of Safety Requirements for the Safe Retreat Phase -->
