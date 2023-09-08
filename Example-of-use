@@ -1,0 +1,145 @@
+Notes on testing and examples.
+
+This file may perhasp evolve into text useful to explain the workings of Careful Resume. 
+It is a work in progress, and subject to change.
+
+
+This section provides an informative description of using the Careful Resume method.
+This can be used to confirm the details of operation for the method.
+It can also be used to construct test cases for testing an implementation.
+
+===
+
+The first section describes a set of cases where there is data ready at the sender 
+when starting to use Careful Resume, and there has been a previously observed set 
+of congestion control parameters. 
+In these example cases, the observed capacity was 400 packets/RTT, 
+resulting in a jump_cwnd of 200 packets.
+
+For simplicity, all packets are depicted to be in a round of RTT,
+in practice theu use pacing and other
+effects (including application design and cross traffic) will result in packets
+being sent with a more nuanced timing and these will be spread across a round.
+
+===
+The following variables are used:
+
+RTT - A round of interaction.
+Data - Current number of packets from the application at the sender to be delivered over the transport connection.
+Seq -  The packet sequence numbers of packets sent in the round.
+cwnd - congestion window (at end of round); a ' indicates a tenative unvalidated value
+FS - Flight Size at the sender (no of packets in flight at end of round)
+Careful Resume Phase - R=Reconnaissance; U=Unvalidated; S=Safe-Retreat; N=Normal
+
+The values of these variables are shown for each RTT round.
+
+===
+1a) Description: A sender has 500 packets ready to send, and
+Carfeul Resume performs a jump in cwnd during the second RTT,
+once reconaissance has validated the path.
+
+RTT       1        2        3
+Data:    (500)
+Seq:     1…10;    11…211   212..500
+cwnd:    10       200’     400
+FS:      10       200      290
+Phase:   R        U        N
+
+Notes:
+The cwnd in the Reconnaissance Phase is IW, after RTT 1 the sender enters the Unvalidated Phase with a jump_cwnd of 200.
+
+===
+1b) Description: A sender initially has 3 packets to send, then has 500 more packets to send,
+The Careful Resume method performs a jump in cwnd during the second RTT. 
+
+RTT       1          2        3
+Data:    (3)       (500)
+Seq:     1…3;      4…204      205..503
+cwnd:    10        200’       400
+FS:      3         200        300    
+Phase:   R         U          N
+
+Notes:
+The initial cwnd is not fully used in the Reconnaissance Phase but provides sufficient RTT samples to
+confirm the path, therefore after RTT 1, the sender enters the Unvalidated Phase with a jump_cwnd of 200.
+
+===
+1c) Description: A sender initially has 3 packets to send, then has 100 more packets to send,
+The Careful Resume method performs a jump in cwnd during the second RTT. 
+
+RTT       1          2        3
+Data:    (3)       (100)
+Seq:     1…3;      4…100      
+cwnd:    10        200’      100
+FS:      3         100           
+Phase:   R         U          N
+
+Notes:
+The initial cwnd is not fully used in the Reconnaissance Phase but provides sufficient RTT samples to
+confirm the path, therefore after RTT 1, 
+the sender enters the Unvalidated Phase with a jump_cwnd of 200,
+but only confirms 100 packets. The sender completes with a cwnd of 100.
+
+===
+2a) Description: The following test case is where the sender is initially data-limited
+for the first 2 RTTs. The sende sends 10 packets for 2 RTTs before more data becomes available.
+
+RTT       1            2              3             4
+Data:     (10)         (10)          (500)       
+Seq:      1…10         11…21         21…200     201…520
+cwnd:     10           20            200’       400
+FS:       10           10            200        300
+Phase:    R            R             U          N
+
+Notes:
+The growth of cwnd in the Reconnaissance Phase is normal in RTT 1 and 2, although the cwnd
+is not fully used in RTT 2. A jump is made in RTT 3 that uses all the available jump cwnd.
+Careful Resume validates this jump, in the next RTT it completes transmission of all data.
+
+2b) Description: The following are test case is where the sender is initially data-limited 
+and then increases the violume of data in each RTT. Two varients are shown, which
+illustrates how the application sending pattern can impact the details of operation.
+
+Varient 2:
+
+RTT        1           2              3          4
+Data:      (10)       (50)           (200)       
+Seq:       1…10       11…51          52…102      103…203  ....
+cwnd:      10         200’           50          100
+FS:        10         50             50          100
+Phase:     R          U              N           N
+
+Notes:
+The initial cwnd in the Reconnaissance Phase is 10.
+In RTT 2, the enqueuedd data exceeds the cwnd and the Unvalidated phase is entered.
+The jump_cwnd is not fully used in RTT 2. The cwnd in RTTs 3 and 4 is managed
+by normal CC. In this example, the sender's pattern of transmission has
+minimised the benefit of the Careful Resume method based on the 
+principle of "use-it or loose-it".
+
+Varient 2:
+
+RTT        1           2              3          4
+Data:      (10)       (50)           (200)       
+Seq:       1…10       11…21 + 21-51  52…122      123…  ....
+cwnd:      10         20 -> 200'     70          140
+FS:        10         20+30          70          140
+Phase:     R          U              N           N
+
+Notes:
+The initial cwnd in the Reconnaissance Phase is 10.
+In RTT 2, the enqueued data is initially sent using the current cwnd.
+It then grows to exceed the cwnd and the Unvalidated phase is then entered.
+The jump_cwnd is not fully used in RTT 2. The cwnd in RTTs 3 and 4 is managed
+by normal CC. In this example, the sender's pattern of transmission has
+minimised the benefit of the Careful Resume method, and the way in which
+the  timing of the data - i.e. when available to the transport caused
+a later transition to the Unvalidated Phase.
+
+====
+
+XXX: Check Spec that in this case the entry to the normal phase is initialised to
+Min(cwnd_used*2,jump_cwnd);
+
+
+====
