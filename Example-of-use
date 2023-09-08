@@ -4,7 +4,7 @@ This file may perhasp evolve into text useful to explain the workings of Careful
 It is a work in progress, and subject to change.
 
 
-This section provides an informative description of using the Careful Resume method.
+This provides an informative description of using the Careful Resume method.
 This can be used to confirm the details of operation for the method.
 It can also be used to construct test cases for testing an implementation.
 
@@ -17,7 +17,7 @@ In these example cases, the observed capacity was 400 packets/RTT,
 resulting in a jump_cwnd of 200 packets.
 
 For simplicity, all packets are depicted to be in a round of RTT,
-in practice theu use pacing and other
+in practice the use of sender pacing and other
 effects (including application design and cross traffic) will result in packets
 being sent with a more nuanced timing and these will be spread across a round.
 
@@ -27,7 +27,7 @@ The following variables are used:
 RTT - A round of interaction.
 Data - Current number of packets from the application at the sender to be delivered over the transport connection.
 Seq -  The packet sequence numbers of packets sent in the round.
-cwnd - congestion window (at end of round); a ' indicates a tenative unvalidated value
+cwnd - congestion window (at end of round); a ' indicates a tentative unvalidated value
 FS - Flight Size at the sender (no of packets in flight at end of round)
 Careful Resume Phase - R=Reconnaissance; U=Unvalidated; S=Safe-Retreat; N=Normal
 
@@ -35,8 +35,8 @@ The values of these variables are shown for each RTT round.
 
 ===
 1a) Description: A sender has 500 packets ready to send, and
-Carfeul Resume performs a jump in cwnd during the second RTT,
-once reconaissance has validated the path.
+Careful Resume performs a jump in cwnd during the second RTT,
+once the Reconnaissance Phase has validated the path.
 
 RTT       1        2        3
 Data:    (500)
@@ -97,7 +97,7 @@ is not fully used in RTT 2. A jump is made in RTT 3 that uses all the available 
 Careful Resume validates this jump, in the next RTT it completes transmission of all data.
 
 2b) Description: The following are test case is where the sender is initially data-limited 
-and then increases the violume of data in each RTT. Two varients are shown, which
+and then increases the volume of data in each RTT. Two varients are shown, which
 illustrates how the application sending pattern can impact the details of operation.
 
 Varient 2:
@@ -111,7 +111,7 @@ Phase:     R          U              N           N
 
 Notes:
 The initial cwnd in the Reconnaissance Phase is 10.
-In RTT 2, the enqueuedd data exceeds the cwnd and the Unvalidated phase is entered.
+In RTT 2, the data available at the sender exceeds the cwnd and the Unvalidated phase is entered.
 The jump_cwnd is not fully used in RTT 2. The cwnd in RTTs 3 and 4 is managed
 by normal CC. In this example, the sender's pattern of transmission has
 minimised the benefit of the Careful Resume method based on the 
