@@ -289,8 +289,6 @@ specify just the year. -->
             <t>saved_capacity: The capacity preserved from a
             previous connection;</t>
 
-            <t>max_jump : The maximum configured jump_size;</t>
-
             <t>current_rtt: A sample measurement of the current RTT;</t>
 
             <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
@@ -305,6 +303,9 @@ specify just the year. -->
             receiver;</t>
 
             <t>jump_cwnd: The resumed CWND, used in the Unvalidated Phase.</t>
+            
+            <t>max_jump : The maximum configured jump_cwnd;</t>
+            
             <t>Pipe: The estimated available capacity at the time of congestion.</t>
         </list>
         </t>
@@ -407,8 +408,8 @@ is later performed by an established connection.</t>
      
     <section anchor="unv-phase" title="Unvalidated Phase">
         <t>The Unvalidated Phase is designed to enable the rate/CWND
-        to more rapidly get up to speed, but this require data to send.
-         If the application is data limited, the sender sends insufficient data
+        to more rapidly get up to speed, but this requires data to send.
+        If the application is data limited, the sender sends insufficient data
         to be able to validate the tentative higher rate.
         The method therefore remains in the Reconnaissance Phase and does not
         transition to the Unvalidated Phase until the sender
@@ -420,7 +421,7 @@ is later performed by an established connection.</t>
         <t>This phase paces transmission using an increased rate/CWND (jump_cwnd)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
-             <t>Unvalidated Phase (jump_size):
+             <t>Unvalidated Phase (jump_cwnd):
              To avoid starving other (potential) flows that could have started
              or increased their capacity after the Observation Phase,
              the jump_cwnd MUST be no more than half of the previous saved_capacity.
