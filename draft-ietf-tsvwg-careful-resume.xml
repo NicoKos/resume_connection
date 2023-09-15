@@ -973,7 +973,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <list style="symbols">
         <t>
             it needs to include a unique identifier for itself (e.g., a globally
-            assigned address/prefix; or randomly chosen value);
+            assigned address/prefix; or randomly chosen value such as a nonce);
         </t>
         <t>
             it needs to include an identifier for the destination (e.g., a
@@ -993,9 +993,6 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
             it could include any other information the sender chooses to
         include, and potentially including PvD information <xref target="RFC8801"></xref> or
             information relating to its public-facing IP address;
-        </t>
-        <t>
-            it could include a nonce;
         </t>
         <t>
             it could include a time-dependent value to define the validity
