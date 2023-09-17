@@ -135,7 +135,7 @@ specify just the year. -->
 
     <t>This document proposes a method that is expected to reduce the time to complete a transfer
     when the transfer sends significantly more data than allowed by the
-    Initial congestion window (IW), and
+    Initial congestion Window (IW), and
     where the Bandwidth Delay Product (BDP) is also significantly
     more than the product of the IW and the Round Trip Rime (RTT).</t>
     <t>It introduces an alternative method to select initial CC parameters,
@@ -170,8 +170,8 @@ specify just the year. -->
             While this statement has been proposed in the context of QUIC standardization, this advice is appropriate for any IETF transport protocol.
             Care is therefore needed
             to assure safe use and to be robust to changes
-            in traffic patterns, network routing and link/node conditions.
-            There are also cases where using the saved parameters of a previous
+            in traffic patterns, network routing, and link/node conditions.
+            There are cases where using the saved parameters of a previous
             connection is not appropriate.</t>
     </section>  <!-- End of use with care -->
           
@@ -180,9 +180,9 @@ specify just the year. -->
             the receiver's preference, there are cases where a receiver
             could have information that
             is not available at the sender, or might benefit from
-            understanding that careful resume might be used. In these cases, a receiver
+            understanding that Careful Resume might be used. In these cases, a receiver
             could explicitly ask to enable or inhibit tuning of the CC
-            when an application initiate a new session or resume an existing one.</t>
+            when an application initiates a new session or resume an existing one.</t>
             
             <t>An indication from the sender that the method is available, could also
             allow a receiver to tune policies for using the connection (e.g., managing the
@@ -195,14 +195,14 @@ specify just the year. -->
                 <t>a receiver with a local indication that a path/local
                 interface has changed since the CC parameters were stored;</t>
                 <t>knowledge of the current hardware limitations at a receiver;</t>
-                <t>a receiver that can predit additional capacity will be needed
+                <t>a receiver that can predict additional capacity will be needed
                 for other concurrent/later flows
                 (i.e., prefers to use the method for the other flows).</t>
         </list></t>
 
             <t>QUIC introduces the concept of transport parameters (Section 4 of
                 <xref target="RFC9000"></xref>).
-            A related document proposes an exchange for QUIC that requests
+            A related document proposes an extension for QUIC that requests
             the sender-generated CC parameters to be stored at the receiver
             <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>.
             Transferring the information to a receiver releases the need for a
@@ -233,18 +233,17 @@ specify just the year. -->
         impairment, or where a user on a train journey travels through
         different areas of connectivity). When the endpoint
         returns to use a path with the original characteristics, it can resume
-        a transmssion rate based on the previous used capacity.</t>
-
+        a transmission rate based on the previously measured characteristics.</t>
         <t>
         There is particular benefit for
-        any path with an RTT that is much larger than for typical
+        any path with an RTT that is much larger than typical
         Internet paths.
         In a specific example, an application connected via a satellite access network
         <xref target="IJSCN"></xref>
         could require 9 seconds to complete a 5.3 MB transfer
         using standard CC, whereas using the
-        method this transfer time could reduce to 4 seconds. The time to complete a 1 MB transfer could
-        dimilarly reduce by 62 % <xref target="MAPRG111"></xref>. This benefit is also
+        method this transfer time could be reduced to 4 seconds. The time to complete a 1 MB transfer could
+        similarly be reduced by 62 % <xref target="MAPRG111"></xref>. This benefit is also
         expected for other sizes of transfer and for different path
         characteristics when a path has a large BDP.</t>
 
@@ -289,12 +288,10 @@ specify just the year. -->
             <t>saved_capacity: The capacity preserved from a
             previous connection;</t>
 
-            <t>recom_jump : The maximum configured jump_size;</t>
-
-            <t>current_rtt: A sample measurment of the current RTT;</t>
+            <t>current_rtt: A sample measurement of the current RTT;</t>
 
             <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
-            of a set RTT measurements taken at the time when the
+            of a set RTT of measurements taken at the time when the
             saved_capacity was estimated;</t>
 
             <t>endpoint_token: An Endpoint Token for a receiver;</t>
@@ -304,7 +301,10 @@ specify just the year. -->
             <t>saved_endpoint_token: The Endpoint Token of a previous connection by the
             receiver;</t>
 
-            <t>jump_CWND: The resumed CWND, used in the Unvalidated Phase.</t>
+            <t>jump_cwnd: The resumed CWND, used in the Unvalidated Phase.</t>
+            
+            <t>max_jump : The maximum configured jump_cwnd;</t>
+            
             <t>Pipe: The estimated available capacity at the time of congestion.</t>
         </list>
         </t>
@@ -325,15 +325,17 @@ specify just the year. -->
      
 Connect -> Reconaissance --------------------> Normal
              |                                   ^
+             v                                   |
            Unvalidated --> Validating -----------+
              |               |                   |
-             +---------------+-> Safe Retreat ---+
+             |               |                   |
+             +---------------+--> Safe Retreat --+
      
  ]]></artwork>
 </t>
 
-<t> Figure 1: The CC phases when starting to use up a connection using the Careful Resume method. An established connection
-    later performs the Observe Phase (not shown).</t>
+<t> Figure 1: Phases when a connection uses the Careful Resume method. The Observe Phase
+is later performed by an established connection.</t>
      
     <!-- These subsections to match next section format -->
     <section title="Observe Phase">
@@ -358,7 +360,7 @@ Connect -> Reconaissance --------------------> Normal
         (a.k.a. thinks it uses the same path) it enters the Reconnaissance Phase.
         The sender only enters this phase when there are saved CC parameters for the same
         pair of endpoints and this information is currently valid (i.e., the saved parameters have
-        not expired.)
+        not expired).
         When a method is used (such as the BDP_Frame), a receiver can request
         the sender to not enter this phase.</t>
 
@@ -404,8 +406,10 @@ Connect -> Reconaissance --------------------> Normal
     </section> <!-- End of Reconnaissance Phase -->
      
     <section anchor="unv-phase" title="Unvalidated Phase">
-        <t>The Unvalidated Phase is designed to enable the rate or CWND
-        to more rapidly get up to speed.
+        <t>The Unvalidated Phase is designed to enable the rate/CWND
+        to more rapidly get up to speed, but this requires data to send.
+        If the application is data limited, the sender sends insufficient data
+        to be able to validate the tentative higher rate.
         The method therefore remains in the Reconnaissance Phase and does not
         transition to the Unvalidated Phase until the sender
         has more data ready to send in the transmission buffer
@@ -419,7 +423,7 @@ Connect -> Reconaissance --------------------> Normal
         <t>This phase paces transmission using an increased rate or CWND (jump_CWND)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
-             <t>Unvalidated Phase (jump_size):
+             <t>Unvalidated Phase (jump_cwnd):
              To avoid starving other (potential) flows that could have started
              or increased their capacity after the Observation Phase,
              the jump_CWND MUST be no more than half of the previous saved_capacity.
@@ -443,12 +447,11 @@ Connect -> Reconaissance --------------------> Normal
 
     <section anchor="val-phase" title="Validating Phase">
         <t>The Validating Phase is designed to verify that the packets
-            sent in the Unvalidated Phase were received without inducing congestion.
-            The sender typically remains in this phase for 1 RTT.
-            The CWND remains unvalidated in this phase.
-            (Note: When the full jump_CWND is not
-            fully utilised, this results in a smaller capacity being validated.)</t>
-        
+    sent in the Unvalidated Phase were received without inducing congestion.
+    The sender typically remains in this phase for 1 RTT.
+    The CWND remains unvalidated in this phase. (Note: When the full jump_cwnd is not
+    fully utilised, this results in smaller capacity being validated.)
+        </t>
         <t><list style="symbols">
          <t>Validating Phase (Limiting CWND):
              On entry to the Validating Phase, the CWND is set to the flightsize.</t>
@@ -474,13 +477,13 @@ Connect -> Reconaissance --------------------> Normal
       <t>This phase is entered when a jump in the
       Unvalidated Phase has overshot the currently available capacity.
       The phase starts when the first loss/ECN-CE marking is detected.
-      This trigger is the same as used by QUIC sender to transition
+      This trigger is the same as used by a QUIC sender to transition
       from Slow Start to Recovery <xref target="RFC9002"></xref>.</t>
          
       <t><list style="symbols">
             <t>Safe Retreat Phase (Saved information): Any saved CC parameters for
             this path are removed from any cache, to prevent these
-            parameters being used again with other flows.</t>
+            parameters from being used again with other flows.</t>
             <t>Safe Retreat Phase (Re-initializing CC): On entry,
         the CWND MUST be reduced to
             no more than the IW.
@@ -494,7 +497,7 @@ Connect -> Reconaissance --------------------> Normal
              similar to TCP as described in Section 5 of <xref target="RFC6675"></xref>.</t>
          <t>Safe Retreat Phase (Increasing CWND):
          The CWND MAY be increased for each acknowledgment that acknowledges a
-         previously unacknowleded packet that was sent in the Unvalidated Phase,
+         previously unacknowledged packet that was sent in the Unvalidated Phase,
          since this indicates
              a packet has been successfully sent across the path.</t>
          <t>The sender enters Normal Phase
@@ -591,7 +594,7 @@ Connect -> Reconaissance --------------------> Normal
             
         <t>There are various approaches to measuring the capacity that has
         been used by a connection.
-        Congestion controllers, such as CUBIC or RENO, can estimate the
+        Congestion controllers, such as CUBIC or Reno, can estimate the
         capacity by utilizing a combination of the
         CWND/flight_size and the minimum RTT. A different approach could
         estimate the same values for a rate-based congestion
@@ -613,8 +616,8 @@ Connect -> Reconaissance --------------------> Normal
             start phase, the value can be significantly larger than
             needed to fully utilize the path (i.e., a CWND
             overshoot). It is inappropriate to use an
-            overshoot in the rate or CWND as a basis for estimating the
-            capacity. In most case, the rate or CWND will converge to a stable
+            overshoot in the rate/CWND as a basis for estimating the
+            capacity. In most cases, the rate/CWND will converge to a stable
             value after several more RTTs.
             One mitigation could be to calculate the
             capacity based on
@@ -626,8 +629,8 @@ Connect -> Reconaissance --------------------> Normal
         </list></t>
     </section> <!-- Observe Phase  (measuring) -->
 
-    <section anchor="req-recon"  title="Confirming the Path in the Reconaisance Phase">
-        <t>In the Reconaisance Phase a sender initates a connection
+    <section anchor="req-recon"  title="Confirming the Path in the Reconnaissance Phase">
+        <t>In the Reconnaissance Phase a sender initiates a connection
         and starts sending initial data.
         It measures the RTT to confirm the path it wishes to use.</t>
 
@@ -637,7 +640,7 @@ Connect -> Reconaissance --------------------> Normal
         This transmission using the IW is
         assumed to be a safe starting point for any path to avoid
         adding excessive load to a potentially congested path.
-        any initial data. (When used in a controlled
+        (When used in a controlled
         network, additional information about local path characteristics
         could be known, which might be used to configure a non-standard
         IW.)</t>
@@ -652,8 +655,8 @@ Connect -> Reconaissance --------------------> Normal
              <t>A current RTT sample that is less than a half of the
              saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
              (This factor of two arises, since the rate should not exceed the previous rate when
-             the capacity was measured, because the jump_CWND is calculated as 1/2 x
-             saved_capacity.) An RTT sample more than ten times the
+             the bandwidth was measured, because the jump_cwnd is calculated as half the
+             measured bandwidth.) An RTT sample more than ten times the
              saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
              (The factor of ten accommodates both increases in latency from buffering
              on a path, and any variation between samples).</t>
@@ -679,7 +682,7 @@ Connect -> Reconaissance --------------------> Normal
             <list style="symbols">
                 <t>Unvalidated Phase (Jxump): A connection MUST NOT directly use the previously measured saved_rtt and
                     saved_capacity to simply initialize a new flow to resume sending at the same
-                    rate. The jump_CWND must be no more than 1/2 the previous saved capacity based on the
+                    rate. The jump_cwnd must be no more than half the previously saved capacity based on the
                     current RTT (saved_BDP / current_RTT). Using the current_rtt rather than a saved RTT value
                     helps to ensure appropriate pacing, but places a limitation on the minimum acceptable RTT
                 for using the method to avoid sending at a rate higher than previously observed.</t>
@@ -713,7 +716,7 @@ Connect -> Reconaissance --------------------> Normal
             Pacing sent packets as a function of
             the current RTT provides an additional safety during the
             Unvalidated Phase.
-            Other sender mitigatuons have also been suggested to
+            Other sender mitigations have also been suggested to
             avoid line-rate bursts (e.g., <xref target="I-D.hughes-restart"></xref>).</t>
 
             <t>The following example provides a relevant pacing rhythm:
@@ -722,10 +725,10 @@ Connect -> Reconaissance --------------------> Normal
             from the ratio between the current Maximum Message Size (MMS) and
             the ratio between the saved_capacity and the RTT. A safety
             margin can avoid sending more than a recommended maximum
-            (recom_jump):
+            (max_jump):
             <list>
-                <t>jump_CWND = min(recom_jump,saved_capacity/2)</t>
-                <t>ITT = MSS/(jump_CWND/saved_rtt)</t>
+                <t>jump_cwnd = min(max_jump,saved_capacity/2)</t>
+                <t>ITT = MSS/(jump_cwnd/saved_rtt)</t>
             </list></t>
             <t>This follows the idea presented in <xref target="RFC4782"></xref>,
             <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
@@ -734,8 +737,8 @@ Connect -> Reconaissance --------------------> Normal
     </section> <!-- Unvalidated Phase -->
 
      <section anchor="req-val" title="Safety Requirements for the Validating Phase">
-         <t>When a sender completes the unvalidated phase, either by sending the jump_CWND
-             or after 1 RTT, it ceases to use the unvalidated window. That is, CWND is reset
+         <t>When a sender completes the unvalidated phase, either by sending the jump_cwnd
+             or after one RTT, it ceases to use the unvalidated window. That is, CWND is reset
              to the flight size, and the sender awaits reception of the acknowledgments to validate the
              use of this capacity. During this phase, new packets are sent when previously
              sent data is newly acknowledged. The purpose of this phase is to trigger a
@@ -780,7 +783,7 @@ Connect -> Reconaissance --------------------> Normal
              using the Unvalidated Phase (e.g., by recording the sequence number
              of the first packet sent in the phase.).
             This measured capacity is called the Pipe.
-         The Pipe is not a safe measure of the current
+         The Pipe is not a safe measure of the currently
             available share of the capacity whenever
             there was also a significant overshoot of the capacity,
              as indicated by excessive loss.
@@ -815,10 +818,10 @@ Connect -> Reconaissance --------------------> Normal
         protocol that is used.</t>
 
          <t> The implementation details for different transports depend on the
-         deisgn of the transport.</t>
+         design of the transport.</t>
 
         <t>For QUIC this includes flow control mechanisms or preventing amplification
-        attack. In particular, a QUIC receiver might need to issue proactive
+        attacks. In particular, a QUIC receiver might need to issue proactive
         MAX_DATA frames to increase the flow control limits of a connection
         that is started with this method to gain the expected benefit.</t>
 
@@ -974,11 +977,11 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <list style="symbols">
         <t>
             it needs to include a unique identifier for itself (e.g., a globally
-            assigned address/prefix; or randomly chosen value).
+            assigned address/prefix; or randomly chosen value such as a nonce);
         </t>
         <t>
             it needs to include an identifier for the destination (e.g., a
-            destination IP address or name).
+            destination IP address or name);
         </t>
         <t>
             it needs to include an interface identifier (e.g., an index value or a MAC address to associate the
@@ -987,16 +990,13 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <t>
             it could include other information such as the DSCP, ports, flow
             label, etc (recognising that this additional information might improve the path
-            differentiation, but that this can can reduce the re-usability of the
+            differentiation, but that this can reduce the re-usability of the
             token);
         </t>
         <t>
             it could include any other information the sender chooses to
         include, and potentially including PvD information <xref target="RFC8801"></xref> or
             information relating to its public-facing IP address;
-        </t>
-        <t>
-            it could include a nonce;
         </t>
         <t>
             it could include a time-dependent value to define the validity
