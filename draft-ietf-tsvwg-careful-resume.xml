@@ -24,7 +24,7 @@
      - it is only necessary if the
 full title is longer than 39 characters -->
 
-    <title abbrev="Careful Congestion Control Convergence">Careful Convergence of Congestion
+    <title abbrev=" Congestion Control Convergence"> Convergence of Congestion
     Control from Retained State</title>
 
     <author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
@@ -96,7 +96,7 @@ specify just the year. -->
       <t>This document specifies a cautious method for IETF transports that
       enables fast startup of congestion control for a wide
       range of connections or reconnections.</t>
-      <t>The method reuses a set of computed congestion control parameters that
+      <t>It reuses a set of computed congestion control parameters that
       are based on previously observed path characteristics between
       the same pair of transport endpoints. These parameters
       are stored, allowing them to be later used to modify the congestion control behavior
@@ -105,7 +105,7 @@ specify just the year. -->
       and defines requirements for how a
       sender utilizes these parameters to provide opportunities for a
       connection to more rapidly get up to speed and rapidly utilize available
-      capacity. It discusses how the method impacts the capacity at a
+      capacity. It discusses how use of the method impacts the capacity at a
       shared network bottleneck and the safe response that is needed after any
       indication that the new rate is inappropriate.</t>
     </abstract>
@@ -133,7 +133,7 @@ specify just the year. -->
     other flows <xref target="RFC8867"></xref> (i.e., preventing other flows
     from successfully sharing capacity at a common bottleneck).</t>
 
-    <t>This document proposes a method that is expected to reduce the time to complete a transfer
+    <t>This document proposes a CC method that is expected to reduce the time to complete a transfer
     when the transfer sends significantly more data than allowed by the
     Initial congestion Window (IW), and
     where the Bandwidth Delay Product (BDP) is also significantly
@@ -154,7 +154,7 @@ specify just the year. -->
     <xref target="RFC9040"></xref> caching.</t>
 
     <section title="Use of saved CC parameters by a Sender">
-        <t>CC parameters are used by this method for two functions:
+        <t>CC parameters are used by Careful Resume for two functions:
         <list style="symbols">
             <t>Information about the utilised path capacity.
             This allows a later sender to
@@ -180,14 +180,14 @@ specify just the year. -->
             the receiver's preference, there are cases where a receiver
             could have information that
             is not available at the sender, or might benefit from
-            understanding that Careful Resume might be used. In these cases, a receiver
+            understanding that  Resume might be used. In these cases, a receiver
             could explicitly ask to enable or inhibit tuning of the CC
             when an application initiates a new session or resume an existing one.</t>
             
-            <t>An indication from the sender that the method is available, could also
+            <t>An indication from the sender that Careful Resume is available, could also
             allow a receiver to tune policies for using the connection (e.g., managing the
             receiver window or flow credit).</t>
-            <t> Examples where a receiver could request not to use the method include:
+            <t> Examples where a receiver could request not to use Careful Resume include:
             <list style="numbers">
                 <t>a receiver that can predict the pattern of traffic
                 (e.g., insight into the volume of data to be sent,
@@ -197,7 +197,7 @@ specify just the year. -->
                 <t>knowledge of the current hardware limitations at a receiver;</t>
                 <t>a receiver that can predict additional capacity will be needed
                 for other concurrent/later flows
-                (i.e., prefers to use the method for the other flows).</t>
+                (i.e., prefers to activate Careful Resume for the a different connection).</t>
         </list></t>
 
             <t>QUIC introduces the concept of transport parameters (Section 4 of
@@ -213,18 +213,18 @@ specify just the year. -->
 
     <section anchor="sec-use_case" title="Examples of Scenarios of Interest">
 
-        <t> This section provides a set of examples where the method is expected to improve performance.</t>
+        <t> This section provides a set of examples where Careful Resume is expected to improve performance.</t>
 
         <t>Either endpoint can assume the role of a
-        sender or a receiver. The method also supports a bidirectional data transfer,
+        sender or a receiver. Careful Resume also supports a bidirectional data transfer,
         where both endpoints simultaneously send data (e.g., remote execution of an application, or a
         bidirectional video conference call).</t>
 
         <t>In one example, an application uses a series of connections over a path
         (i.e., resumes a connection to the same endpoint).
-        Without this method,
+        Without a new method,
         each connection would need to individually
-        discover appropriate CC parameters, whereas the method allows the flow
+        discover appropriate CC parameters, whereas Careful Resume allows the flow
         to continue at a rate that resembles the previous rate.</t>
 
         <t>In another example, an application reconnects after a disruption
@@ -241,8 +241,8 @@ specify just the year. -->
         In a specific example, an application connected via a satellite access network
         <xref target="IJSCN"></xref>
         could require 9 seconds to complete a 5.3 MB transfer
-        using standard CC, whereas using the
-        method this transfer time could be reduced to 4 seconds. The time to complete a 1 MB transfer could
+        using standard CC, whereas using Careful Resume
+        this transfer time could be reduced to 4 seconds. The time to complete a 1 MB transfer could
         similarly be reduced by 62 % <xref target="MAPRG111"></xref>. This benefit is also
         expected for other sizes of transfer and for different path
         characteristics when a path has a large BDP.</t>
@@ -315,10 +315,10 @@ specify just the year. -->
     </section> <!-- End of Notation: End of terms -->
 </section><!-- End of Notation -->
 
-<section anchor="sec-phase" title="The Phases of CC using Careful Resume">
+<section anchor="sec-phase" title="The Phases of CC using  Resume">
     <t>This section defines a series of phases that the
     CC algorithm moves through as a connection
-    uses the Careful Resume method, as shown in Figure 1.</t>
+    uses Careful Resume, as shown in Figure 1.</t>
 
    <t>
  <artwork align="left" name="" type="" alt=""><![CDATA[
@@ -334,7 +334,7 @@ Connect -> Reconaissance --------------------> Normal
  ]]></artwork>
 </t>
 
-<t> Figure 1: Phases when a connection uses the Careful Resume method. The Observe Phase
+<t> Figure 1: Phases when a connection uses the Careful Resume. The Observe Phase
 is later performed by an established connection.</t>
      
     <!-- These subsections to match next section format -->
@@ -361,8 +361,8 @@ is later performed by an established connection.</t>
         The sender only enters this phase when there are saved CC parameters for the same
         pair of endpoints and this information is currently valid (i.e., the saved parameters have
         not expired).
-        When a method is used (such as the BDP_Frame), a receiver can request
-        the sender to not enter this phase.</t>
+        A receiver can use a method (such as the BDP_Frame) to request
+        that the sender does not enter this phase.</t>
 
         <t>In this phase, the sender transmits initial data, limited by the IW,
         and monitors its reception.
@@ -400,7 +400,7 @@ is later performed by an established connection.</t>
 
         <t>Implementation requirements are provided in <xref target="req-recon"></xref>.</t>
 
-        <t>When the path is not confirmed, the method is not used
+        <t>When the path is not confirmed, Careful Resume is not used
         and the sender enters the Normal Phase.</t>
 
     </section> <!-- End of Reconnaissance Phase -->
@@ -410,7 +410,7 @@ is later performed by an established connection.</t>
         to more rapidly get up to speed, but this requires data to send.
         If the application is data limited, the sender sends insufficient data
         to be able to validate the tentative higher rate.
-        The method therefore remains in the Reconnaissance Phase and does not
+        Careful Resume therefore remains in the Reconnaissance Phase and does not
         transition to the Unvalidated Phase until the sender
         has more data ready to send in the transmission buffer
         than is permitted by the current CWND.
@@ -435,7 +435,7 @@ is later performed by an established connection.</t>
              <t>Unvalidated Phase (Confirming the path):
              If a sender determines that the previous parameters
              are not valid (due to a detected change in the path)
-             (e.g. packet delay has changed), the method enters the
+             (e.g. packet delay has changed), Careful Resume enters the
              Safe Retreat Phase.</t>
              <t>The sender enters the Validating Phase when an acknowledgement is
              received for the first packet number (or higher) sent in the Unvalidated Phase.
@@ -462,7 +462,7 @@ is later performed by an established connection.</t>
              A sender monitors the correct reception
              of the packets that were sent using the unvalidated jump.
              If a sender determines that congestion was experienced 
-             (e.g., packet loss or ECN-CE marking), the method enters the
+             (e.g., packet loss or ECN-CE marking), Careful Resume enters the
              Safe Retreat Phase.</t>
         <t>The sender enters the Normal Phase when an acknowledgement is
              received for the last packet number (or higher) that was sent
@@ -543,7 +543,7 @@ is later performed by an established connection.</t>
             If the last packet number is not cumulatively acknowledged, then
             additional packets might need to be retransmitted.</t>
 
-            <t> Methods using a slowstart threshold need to update this using the CWND
+            <t> CC methods using a slowstart threshold need to update this using the CWND
             (i.e.,  ssthresh = CWND).</t>
 
             <t>The Normal Phase is then entered.</t>
@@ -572,7 +572,7 @@ is later performed by an established connection.</t>
         
     <section title="RTO Expiry while using Careful Resume">
         <t>A sender that experiences a Retransmission Time Out (RTO) expiry
-        while using Careful Resume, ceases to use the method.
+        ceases to use Careful Resume.
         The sender continues using normal CC.
         
         <list>
@@ -601,7 +601,7 @@ is later performed by an established connection.</t>
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.
        
         <list style="symbols">
-            <!-- Avoid unhelpful use of the method for small CWNDs.-->
+            <!-- Avoid unhelpful use of the Careful Resume for small CWNDs.-->
             <t>Observe Phase: The sender should update the stored CC parameters
         and/or send updated CC parameter
             information related to an estimated path capacity
@@ -685,20 +685,20 @@ is later performed by an established connection.</t>
                     rate. The jump_cwnd must be no more than half the previously saved capacity based on the
                     current RTT (saved_BDP / current_RTT). Using the current_rtt rather than a saved RTT value
                     helps to ensure appropriate pacing, but places a limitation on the minimum acceptable RTT
-                for using the method to avoid sending at a rate higher than previously observed.</t>
+                for using Careful Resume to avoid sending at a rate higher than previously observed.</t>
         </list></t>
     
         <section title="Exit for the Unvalidated Phase because of Variable Network Conditions">
-                <t>Unvalidated and Reconnaissance Phases: The method MUST be robust to
+                <t>Unvalidated and Reconnaissance Phases: Careful Resume MUST be robust to
                 network conditions that are different
                 due to variations in the forwarding path, reconfiguration of
                 equipment, or changes in the link conditions.</t>
     
                 <t><list style="symbols">
-                    <t>Unvalidated Phase: The method MUST be robust to changes
+                    <t>Unvalidated Phase: Careful Resume MUST be robust to changes
                         in network traffic, including the
                      arrival of new traffic flows that compete for capacity at a shared bottleneck.</t>
-                <t>Unvalidated Phase: The method MUST prevent unduly suppressing flows
+                <t>Unvalidated Phase: Careful Resume MUST prevent unduly suppressing flows
                 that used the capacity since the available capacity was measured.</t>
 
                     <t>Unvalidated Phase: The sender MUST transition to the Safe Retreat Phase
@@ -762,7 +762,7 @@ is later performed by an established connection.</t>
             
     <t>Note: Proportional Rate Reduction (PRR) assumes that it is safe to reduce
     the rate gradually when in congestion avoidance.
-    The method specified for PRR <xref target="RFC6937"></xref> is therefore not appropriate
+    The method specified by PRR <xref target="RFC6937"></xref> is therefore not appropriate
     when there might be significant overshoot in the use of the capacity.</t>
 
     <t> The CWND is reduced on entry to the Safe Retreat Phase to
@@ -772,11 +772,11 @@ is later performed by an established connection.</t>
         how to implement the Safe Retreat Phase:
         <list style="numbers">
              
-            <t>A simple conservative approach sets CWND = IW and then
+            <t>A simple conservative design sets CWND = IW and then
             resumes using normal slow-start.
-            This method does not require measuring the capacity at congestion.
+            This does not require measuring the capacity at congestion.
             The resulting pattern of CWND growth resembles that which
-            would have occurred had the method not been used.</t>
+            would have occurred had the design not been used.</t>
              
             <t>Performance can be improved by tracking the volume of
             successfully transmitted packets sent
@@ -787,10 +787,10 @@ is later performed by an established connection.</t>
             available share of the capacity whenever
             there was also a significant overshoot of the capacity,
              as indicated by excessive loss.
-            Therefore, any method that increases CWND based on received acknowledgments
+            Therefore, any design that increases CWND based on received acknowledgments
              ought to be scaled, because an overshoot
             could have resulted in unduly taking capacity from sharing flows.</t>
-            <!--Methods using a slow-start threshold need to update this
+            <!--Design using a slow-start threshold need to update this
             threshold using the Pipe, when this is known, on exit of the Safe Retreat Phase
             (i.e., ssthresh = Pipe).-->
           
@@ -799,7 +799,7 @@ is later performed by an established connection.</t>
     </section><!-- End of Safety Requirements for the Safe Retreat Phase -->
 
     <section anchor="req-normal" title="Returning to Normal Congestion Control">
-        <t>After using the method, the CC controller returns to the Normal Phase.
+        <t>After using Careful Resume, the CC controller returns to the Normal Phase.
 
         <list>
             <t>For NewReno and CUBIC, it is recommended to exit slow-start
@@ -823,11 +823,11 @@ is later performed by an established connection.</t>
         <t>For QUIC this includes flow control mechanisms or preventing amplification
         attacks. In particular, a QUIC receiver might need to issue proactive
         MAX_DATA frames to increase the flow control limits of a connection
-        that is started with this method to gain the expected benefit.</t>
+        that is started when using Careful Resume to gain the expected benefit.</t>
 
         <t>A TCP sender is limited by the receiver window (rwnd).
         Unless configured at a receiver, the rwnd constrains the rate
-        of increase for a connection and reduces the benefit of this method.</t>
+        of increase for a connection and reduces the benefit of Careful Resume.</t>
 
     </section>     <!-- End of flow control, etc -->
 
