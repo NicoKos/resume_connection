@@ -94,11 +94,10 @@
                 path characteristics between the receiver
                 and the sender during a connection.
                 These CC parameters can be utilised by the Careful Resume method
-                when a new connection is established or for application-limited
-                traffic. 
-		The CC parameters allows a receiver to prepare to use the additional
-		capacity that could be made available when the method is used.
-                This CC parameters can also be used by the receiver to request that
+                when a new connection is established. 
+		The CC parameters allows a receiver to prepare to use any additional
+		capacity that is made available when Careful Resume is used.
+                The CC parameters can also be used by the receiver to request that
 		previously computed CC parameters related to the 
 		path characteristics, are not used, when the receiver has additional information
 		about the path or traffic to be sent.
@@ -116,14 +115,14 @@ the CC parameters -->
 <section anchor="sec:introduction" title="Introduction">
     <t>
     This document extends the Careful Resume
-		    method <xref target="I-D.kuhn-tsvwg-careful-resume"></xref> 
+    method <xref target="I-D.kuhn-tsvwg-careful-resume"></xref> 
     by allowing 
     sender-generated CC parameters to be stored at the receiver.
     By transfering the CC parameters to a receiver, it also releases the
     sender from needing to retain CC parameter state for each
-    receiver. This specifically allows
+    receiver. This also allows
     a receiver to implement a policy that informs a sender
-    whether the receiver desires the sender to reuse the CC parameters.
+    whether the receiver desires the sender to reuse the saved CC parameters.
     </t>
     <t>
     This document defines the method to exchange the CC parameters between
@@ -132,14 +131,15 @@ the CC parameters -->
     <list style="numbers">
 	<t>
 	For an established connection, the
-	current RTT (current_rtt), bottleneck bandwidth
-	(current_bb) and current receiver Endpoint Token 
-	(current_endpoint_token) are
-	stored as saved_rtt, saved_bb and
+	current RTT, measured capacity
+	and receiver Endpoint Token 
+	are respectively
+	stored as the saved_rtt, saved_capacity and
 	saved_endpoint_token within a BDP_FRAME.
 	The sender computes a secured hash with 
 	its own selection of the CC parameters of the BDP_FRAME,
-	encrypts the hash and sends this within the BDP_FRAME. The sender encrypts the hash so that the receiver can not read nor modify the content of the secured hash ;  
+	encrypts the hash and sends this within the BDP_FRAME.
+	The sender encrypts the hash so that the receiver can not read nor modify the content of the secured hash;  
 	</t>
 	<t>
 	The receiver can read the non-encrypted portion of the BDP_FRAME parameters,
@@ -164,43 +164,39 @@ the CC parameters -->
     </t>
 			
     <section anchor="subsec:rationale_client" title="Optimizing Client Requests">
-	<t>Where the receiver is aware of a high Bandwidth-Delay Product (BDP), it can adapt other CC parameters
+	<t>Where the receiver is aware it is using a path with high Bandwidth-Delay Product (BDP),
+	it can adapt other protocol parameters
 	to better utilize the available capacity, such as 
-	increasing the value of flow control pararemeters.</t>
+	increasing the size of flow credit.</t>
 
         <t>Some designs of application do not use long-lasting transport connections. 
         Instead, they use a series of shorter connections, typically
 	each using the same path. This style of application can benefit 
-	from this method, and could be enhanced by allowing the application
-	to receive an estimate of the expected characteristics, which could help
-	to appropriately use the new connection (e.g.,
+	from this method, and could be enhanced by providing the receiver
+	with an estimate of the expected characteristics, which could help
+	to appropriately use a connection (e.g.,
 	adapting the content of quality for a video application; or anticipating
 	the time taken to complete the transmission of an object). </t>
 	
-	<t> This paragraph considers a scenario where a client uses Dynamic Adaptive Streaming over HTTPS
-        (DASH). Such a client might be unable to receive sufficient data
+	<t>An example scenario consideres a client using Dynamic Adaptive Streaming over HTTPS
+        (DASH). This client could be unable to receive sufficient data
 	to reach the video playback
         quality that is supported by the path, because for each video chunk,
-        the transport protocol needs to independently determine the path
-        capacity. The lower transfer rate is safe, but can also lead to an
+        the transport CC method needs to independently determine the path
+        capacity. A lower transfer rate is safe, but can also lead to an
         overly conservative requested rate to the sender, because clients
         often adapt their application-layer requests based on the transport
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
-        or to send high quality advertisements). </t>
-	      
-        <t> When using Dynamic Adaptive Streaming over HTTPS (DASH), clients
-	might encounter issues in knowing the available path capacity or DASH
-	can encounter issues in reaching the best available video playback
-	quality.  The client requests could then be adapted and specific
-	traffic could utilize the previously observed path characteristics (such
-	as encouraging the client to increase the quality of video chunks, to
-	fill the buffers and avoid video blocking or to send high quality
-	adds).</t>
+        or to send high quality advertisements). 
+	These client requests could then be adapted based on the previously
+	observed path characteristics,
+	 encouraging the client to increase the quality of video chunks, to
+	fill receiver buffers and avoid playback stalling.</t>
       </section><!-- End of intro: Optimizing Client Requests -->
 	
       <section title ="Three approaches">
-	    <t>This section reviews three approaches to implement Careful Resume.
+	    <t>This section reviews three approaches to implement parameter storage:
 		<list>
 			<t>(1) The saved CC parameters are stored at the sender 
         		("Local storage") and is never sent to a receiver;</t>
@@ -209,7 +205,7 @@ the CC parameters -->
         		CC parameters received from the sender ("NEW TOKEN");</t>
 			<t>(3) the saved CC parameters are
         		transmitted to a receiver, which can use it when reconnecting.
-        		The receiver can read the CC parameters to accept or not the use of
+        		The receiver can also read the CC parameters to accept or not the use of
 			CC parameters (a.k.a. "BDP extension").</t>
 		</list></t>
 	    <section anchor="sec-local_storage"
@@ -218,7 +214,7 @@ the CC parameters -->
         	their CC parameters: 
 		<list style="symbols">
         		<t>During a 1-RTT session, the endpoint stores the RTT (as the
-        		saved_rtt) and bottleneck bandwidth (as the saved_bb) together in
+        		saved_rtt) and path capacity (as the saved_capacity) together in
         		the session resume ticket. 
         		</t>
 
@@ -227,25 +223,25 @@ the CC parameters -->
                		uniqueness of the Authenticated Encryption with Associated Data
                		(AEAD) encryption. Old tokens are removed from the table using the
                 	Least Recently Used (LRU) logic. For each ticket identifier, the
-               		table holds the RTT and bottleneck bandwidth (i.e. saved_rtt and
-               		saved_bb), and also the Endpoint Token of the receiver (i.e.
+               		table holds the RTT and path capacity (i.e. saved_rtt and
+               		saved_capacity), and also the Endpoint Token of the receiver (i.e.
                		saved_endpoint_token).</t>
 
-               		<t>During the new session establishment (0-RTT or 1-RTT), the local endpoint waits for the first
+               		<!--During the new session establishment (0-RTT or 1-RTT), the local endpoint waits for the first
        			RTT measurement from the remote peer. This is used to
         		verify that the current_rtt has not significantly changed from the
         		saved_rtt (used as an indication that the CC parameters are
-        		appropriate for the current path).</t>
+        		appropriate for the current path).-->
 
-        		<t>If this RTT is confirmed, the endpoint also verifies that an IW of
+        		<!-- If this RTT is confirmed, the endpoint also verifies that an IW of
         		data has been acknowledged without requiring retransmission or
         		resulting in an ECN CE-mark. This second check detects whether a path
         		is experiencing significant congestion (i.e., where it would not be
-        		safe to update the cwnd based on the saved_bb). In practice, this
+        		safe to update the cwnd based on the saved_capacity). In practice, this
         		could be realized by a proportional increase in the cwnd, where the
-        		increase is (saved_bb/IW)*proportion_of_IW_currently-ACKed.</t>
+        		increase is (saved_capacity/IW)*proportion_of_IW_currently-ACKed.-->
 		</list></t>
-        	<t>This solution does not allow a receiver to request the sender not to
+        	<t>This appraoch does not allow a receiver to request the sender not to
 		 use the CC parameters in the BDP Frame. If the sender does not want to store the
         	metrics from previous connections, an equivalent of the
         	tcp_no_metrics_save for QUIC may be necessary. This option could be
@@ -262,7 +258,7 @@ the CC parameters -->
       </section> <!-- End of intro: Three appoaches: sec-local_storage -->
 
       <section anchor="sec-bdp_frame_section" title="BDP Frame">
-        	<t>Using BDP Frames, the sender could send a set of CC parameters 
+        	<t>Using BDP Frames, the sender is permitted to send a set of CC parameters 
 		to the receiver. The use of the BDP Frame is
         	negotiated with the receiver. The receiver can read its content. If the
         	receiver permits using the previous CC parameters, it can
@@ -273,46 +269,22 @@ the CC parameters -->
 
 </section><!-- End of intro -->
 	
-<section anchor="sec:terms_def" title="Notations and Terms">
+<section anchor="sec:terms_def" title="Notation and Terms">
 			<t>
 			<list style="symbols">
 				<t>
-				BDP: defined below
+				BDP: Bandwdith Delay Product of the path
 				</t>
 				<t>
-                                CWND: the congestion window used by a
-                                sender (maximum number of bytes allowed in flight by the CC)
-				</t>
-				<t>
-				current_bb : Current estimated bottleneck bandwidth
-				</t>
-				<t>
-                                saved_bb: Estimated bottleneck bandwidth preserved
-                                from a previous connection
-				</t>
-				<t>
-				RTT: Round-Trip Time
-				</t>
-				<t>
-				current_rtt: Current RTT
-				</t>
-				<t>
-                                saved_rtt: RTT preserved from a previous connection
-				</t>
-				<t>
-				endpoint_token : Endpoint Token of the receiver
-				</t>
-				<t>
-                                current_endpoint_token : Current Endpoint Token of the receiver
-				</t>
-				<t>
-                                saved_endpoint_token : Endpoint Token of the
-                                receiver preserved from a previous connection
-				</t>
-				<t>
-                                remembered CC parameters: a combination
-                                of saved_rtt and saved_bb
-				</t>
+                               <t>saved_capacity: The capacity preserved from a
+            			previous connection;</t>
+				
+            			<t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
+            			of a set RTT of measurements taken at the time when the
+            			saved_capacity was estimated;</t>
+
+            			<t>endpoint_token: An Endpoint Token for a receiver;</t>
+
 				<t>
 				secured hash : hash generated by the sender using 
 				a list of CC parameters that it selected. The sender
@@ -320,40 +292,7 @@ the CC parameters -->
 				</t>
 			</list>
 			</t>
-	
-			<t>
-                	<xref target="RFC6349"></xref>
-                        defines the BDP as follows: "Derived from
-                        Round-Trip Time (RTT) and network Bottleneck
-                        Bandwidth (BB), the Bandwidth-Delay Product
-                        (BDP) determines the Send and Received Socket
-                        buffer sizes required to achieve the maximum
-                        TCP Throughput."
-                        This document considers the BDP
-                        estimated by a sender for the path to the receiver. This includes all
-                        buffering along this network path.
-		        The estimated BDP is related to the volume of 
-			bytes in flight and the measured path RTT.
-			</t> 
-                        
-			<t>
-			A QUIC connection is allowed to use the procedure detailed in 
-                        <xref target="RFC6349"></xref>
-                        to measure the BDP, but is permitted to choose another
-				method <xref target="RFC9002"></xref>.</t>
-			
-			<t>A sender might be able to also utilise
-                        other information to estimate the BDP. 
-			Congestion controllers, such as CUBIC or RENO, could estimate the
-        saved_bb and current_bb values by combining the
-        cwnd/flight_size and the minimum RTT. A different method could be used
-        to estimate the same values when using a rate-based congestion
-        controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.</t>
-			<t>It is important to
-        consider whether a method could result in over-estimating the
-        bottleneck bandwidth, and the preserved values therefore ought to be used
-				with caution.</t>
- 		
+			 		
 	<section anchor="sec:req_language" title="Requirements Language">
 			<t>
                         The keywords "MUST", "MUST NOT", "REQUIRED",
@@ -370,15 +309,17 @@ the CC parameters -->
 					Variable-length integer encoding is defined in section 16 of <xref target="RFC9000"></xref>. </t> 
 	</section> <!-- Notations and Terms: End of Requirements Language -->
 	
-</section> <!-- End of Notations and Terms -->
+</section> <!-- End of Notation and Terms -->
 
 <section anchor="sec:bdp_frame_section" title="BDP Frame">
 
 		<t>
-                This section describes the use of a new Frame, the BDP_FRAME.
-                The BDP_FRAME can be utilized by the congestion controller
-                and its data is not be limited by flow control limits. The sender and the receiver MAY
-                send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections. The rate of update SHOULD be limited (e.g. much less frequent than once for several RTTs).
+                This section describes the use of a new QUIC Frame, the BDP_FRAME.
+                The BDP_FRAME can be utilized by the congestion controller in the Careful Resume method.</t>
+	        <t>
+                Sending a BDP_FRAME is not be limited by flow control limits. The sender and the receiver MAY
+                send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections.
+	        The rate of update SHOULD be limited (e.g. much less frequent than once for several RTTs).
 		</t>
 
 		<section anchor="sec:bdp_metadata" title="BDP_FRAME Format">
@@ -393,7 +334,7 @@ BDP_FRAME {
   Type (i) = 0xXXX,
   Hash (...),
   Lifetime (i),
-  Saved BB (i),
+  Saved Capacity (i),
   Saved RTT (i),
   Saved Endpoint Token (...)
 }
@@ -405,8 +346,8 @@ BDP_FRAME {
 			<t>
 			Hash (secured_hash): 
 			The secured_hash is generated by the sender using  
-			CC parameters from the BDP_FRAME. The sender encrypts the hash so 
-			that the receiver can not read it. 
+			CC parameters from the BDP_FRAME. The sender encrypts the hash to 
+			prevent the receiver from reading it. 
 			</t>
 			<t>
                         Lifetime (extension_lifetime):
@@ -417,15 +358,15 @@ BDP_FRAME {
 			</t> 
 
 			<t>
-                        Saved BB
-                        (saved_bb): The
-                        saved_bb is a value in bytes, encoded as a variable-length integer. The
-                        bottleneck bandwidth can be estimated for the previous connection by
+                        Saved capacity estimate
+                        (saved_capacity): The
+                        saved_capacity is a value in bytes, encoded as a variable-length integer. The
+                        availanble capacity can be estimated for the previous connection by
 			the sender.
 			Using the previous values of bytes_in_flight defined in 
                         <xref target="RFC9002"></xref>
 			can result in overshoot of
-				the bottleneck capacity, and ought to be used carefully. It is advised to not only use the amount of bytes in flight but also the goodput.
+			the bottleneck capacity, and ought to be used carefully. It is advised to not only use the amount of bytes in flight but also the goodput.
 			</t>
 
 			<t>
@@ -446,16 +387,16 @@ BDP_FRAME {
 			</t>
 			<t>
                         Saved Endpoint Token (saved_endpoint_token) : The
-			saved_endpoint_token (More details in <xref target="I-D.kuhn-tsvwg-careful-resume"></xref>). 
+			saved_endpoint_token (More details in <xref target="I-D.tsvwg-careful-resume"></xref>). 
 			</t>
 			</list>
 			</t>
 			
 		    <t>
-   		Note: The Endpoint Token is defined in <xref target="I-D.kuhn-tsvwg-careful-resume"></xref>, 
+   		Note: The Endpoint Token is defined in <xref target="I-D.tsvwg-careful-resume"></xref>, 
 		and is discussed in the context of this protocol exchange in a later section.
 	        </t>
-	<!--- eEd of main part of BDP Frame, subsections follow -->
+	<!--- end of main part of BDP Frame, subsections follow -->
 
 	<section anchor="sec:bdp_activation" title="Extension activation">
 			<t>
@@ -542,7 +483,7 @@ BDP_FRAME {
 
 		<t>
                 The CC parameters are measured by
-                the sender during a previous
+                the sender by observing a previous
                 connection to the same receiver. The BDP extension is
                 protected by the mechanism that
                 protects the exchange of the 0-RTT
@@ -562,15 +503,15 @@ BDP_FRAME {
 
 		<t>
                 The sender SHOULD NOT trust
-                the content of the BDP Frame received from the receiver. 
+                the unprotected content of the BDP Frame received from the receiver. 
 		Even if the QUIC 
                 packets containing the BDP Frame are
                 encrypted, a receiver could modify the
                 values within the extension and
                 encrypt the QUIC packet.
                 One way to avoid this is for a sender to also 
-                store the saved_rtt and saved_bb parameters.
-		Another way to avoid this is to use the secured hash generated by the sender. If the receiver 
+                store the saved_rtt and saved_capacity parameters.
+		Another way to avoid this is to use a secured hash generated by the sender. If the receiver 
 		modifies a CC parameter, the result of the hash would be different. The sender should then 
 		avoid exploiting previously estimated CC parameters. 
 		</t>
@@ -583,12 +524,12 @@ BDP_FRAME {
           	<t>A sender that stores a resumption ticket for each receiver to
           	protect against replay on a third party, could also store the
           	Endpoint Token (i.e., saved_endpoint_token) and CC parameters (i.e.,
-          	saved_rtt and saved_bb) of a previous connection.</t>
+          	saved_rtt and saved_capacity) of a previous connection.</t>
 
           	<t>When the BDP Frame extension is used, locally stored CC
          	parameters at the sender can provide a cross-check of the CC
-          	parameters sent by a receiver. The sender can anyway enable a safe
-          	jump, but without the BDP Frame extension. However, using the CC
+          	parameters sent by a receiver. A Careful Resume sender can anyway enable a safe
+          	jump, but without using the BDP Frame extension. However, using the CC
           	parameters enables a receiver to choose whether to request this or
           	not, enabling it to utilize local knowledge of the network
           	conditions, connectivity, or connection requirements.</t>
@@ -599,6 +540,7 @@ BDP_FRAME {
 			different. This might be evident from a change of local interface, a change
 			in the client or sender IP address, or similar indication from the network.
 			Using the saved CC parameters could increase congestion.</t>
+			
 			<t> The network path has changed, but the new path is not known to be
 			different. This case might be accompanied by a change in the RTT, or
 			evident by loss observed at the start of the new connection and
@@ -606,17 +548,17 @@ BDP_FRAME {
 			
 			<t> The network conditions have changed and it is discovered that
 			the current capacity is
-			less than the previously estimated bottleneck bandwidth. Using the saved
+			less than the previously estimated bottleneck capacity. Using the saved
 			CC parameters would then increase congestion, and the flow needs
 			to adjust to a lower safe rate; </t>
 
-			<t> The stored CC parameters is too old. In this case, it is no longer
+			<t> The stored CC parameters are too old. In this case, it is no longer
 			be reasonable to expect the path to have same characteristics, and the
 			the saved CC parameters is no longer appropriate.</t>
 		</list></t>
 
-		<t>In all these case, the
-		Careful Resume method is not be used, and a sender needs to return to
+		<t>In all these cases, it is not useful to use the
+		Careful Resume method, and a sender needs to return to
 		a normal CC behavior.  The method can still be used to characterize the new path,
 		enabling later flows to use this method.</t>
 	
@@ -679,7 +621,6 @@ BDP_FRAME {
 
 		<section anchor="sec_example-token" title="Example use of an Endpoint Token"> <!-- subsection of Identify path-->
 
-
     		<t>
     		The sender computes an Endpoint Token that seeks to uniquely identify
     		the path that it uses to communicate with the receiver (1) this is
@@ -692,21 +633,20 @@ BDP_FRAME {
     		together with the Endpoint Token. The sender recomputes the Endpoint
     		Token and compares this with the received Endpoint Token before using
 		the CC parameters. 
-    		
 
     		<list style="numbers">
-	    	    <t>The Sender transmits the Endpoint Token to the Receiver
+	    	    <t>The Sender transmits the Endpoint Token to the Receiver;
 	            </t>
-	            <t>The Receiver holds an Endpoint Token 
+	            <t>The Receiver holds an Endpoint Token ;
 	            </t> 
-	            <t>The Receiver transmits the Endpoint Token to the Sender 
+	            <t>The Receiver transmits the Endpoint Token to the Sender.
 	            </t>
     		</list> </t>
 	</section> <!-- Example use of an Identify path: Endpoint Token -->    
 		
         <section title="Security Related to use of the Endpoint Token">
     	<t>
-   	A number of security-related topics have been discussed, mostly
+   	A number of security-related topics have been discussed
     	concerning the potential exposure of the identity on the path. This information can
    	also be visible in the IP source address or higher-layer data, but can
    	be hidden from a remote endpoint using methods such as MASQUE proxy.
@@ -758,18 +698,18 @@ BDP_FRAME {
     </t>
 	
     <section title="Protecton from Malicious Receivers">
-        <t>The sender MUST check the integrity of the saved_rtt and saved_bb
+        <t>The sender MUST check the integrity of the saved_rtt and saved_capacity
         parameters received from a receiver.</t>
 
         <t>There are several solutions to avoid attacks by malicious receivers:
         <list style="symbols">
             <t>Solution #1 : The sender stores a local estimate
-            of the bottleneck bandwidth and RTT parameters as the saved_bb and
+            of the capacity and RTT parameters as the saved_capacity and
             saved_rtt.</t>
 
             <t>Solution #2 : The sender sends the estimate of
-            the bottleneck bandwidth and RTT parameters to the receiver as the
-            saved_bb and saved_rtt in a block of CC parameters that is
+            the capacity and RTT parameters to the receiver as the
+            saved_capacity and saved_rtt in a block of CC parameters that is
             authenticated. These CC parameters also could be encrypted by the
             sender. The receiver resends the same CC parameters for a new
             connection. The sender can use its local key information to
@@ -778,11 +718,11 @@ BDP_FRAME {
 
             <t>Solution #3 : This approach is the same as
             above, except that the sender provides an estimate of the saved_rtt
-            and saved_bb parameters in a form that may be read by the receiver.
+            and saved_capacity parameters in a form that may be read by the receiver.
             Using the security mechanisms provided in this document,
             the sender can verify that the receiver did not change the CC parameters inside the frame.
 	    The receiver can 
-            read, but not modify, the saved_rtt and saved_bb parameters and
+            read, but not modify, the saved_rtt and saved_capacity parameters and
             could enable a receiver to decide whether the new
             CC parameters are thought appropriate, based on receiver-side information about
             the network conditions, connectivity, or needs of the new
