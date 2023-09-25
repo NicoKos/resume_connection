@@ -118,7 +118,7 @@ specify just the year. -->
     to constrain their rate of transmission <xref target="RFC8085"></xref>. In 2010,
     a survey of alternative CC methods <xref target="RFC5783"></xref>, noted that there
     are challenges when a CC method operates across an Internet path with a high and/or
-    variable bandwidth-delay product. This mechanism targets a
+    varying Bandwidth-Delay Product (BDP). This mechanism targets a
     solution for these challenges.</t>
 
     <t>A CC method typically takes time to ramp-up the sending rate,
@@ -136,7 +136,7 @@ specify just the year. -->
     <t>This document proposes a method that is expected to reduce the time to complete a transfer
     when the transfer sends significantly more data than allowed by the
     Initial congestion Window (IW), and
-    where the Bandwidth Delay Product (BDP) is also significantly
+    where the BDP of the path is also significantly
     more than the product of the IW and the Round Trip Rime (RTT).</t>
     <t>It introduces an alternative method to select initial CC parameters,
     that seek to more rapidly and safely grow the sending rate (or congestion
@@ -655,8 +655,8 @@ is later performed by an established connection.</t>
              <t>A current RTT sample that is less than a half of the
              saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
              (This factor of two arises, since the rate should not exceed the previous rate when
-             the bandwidth was measured, because the jump_cwnd is calculated as half the
-             measured bandwidth.) An RTT sample more than ten times the
+             the capacity was measured, because the jump_cwnd is calculated as half the
+             measured capacity.) An RTT sample more than ten times the
              saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
              (The factor of ten accommodates both increases in latency from buffering
              on a path, and any variation between samples).</t>
