@@ -192,20 +192,20 @@ the CC parameters -->
       </section><!-- End of intro: Optimizing Client Requests -->
 	
       <section title ="Three approaches">
-	    <t>This section reviews three approaches to implement parameter storage:
+	    <t>This section reviews three approaches to implement the storage of CC parameters:
 		<list>
 			<t>(1) The saved CC parameters are stored at the sender 
-        		("Local storage") and is never sent to a receiver;</t>
-			<t>(2) Some CC parameters are transmitted to the receiver,
+        		("Local storage") and is never sent to a receiver, this does not use a BDP Frame;</t>
+			<t>(2) Some CC parameters are transmitted to the receiver in a BDP_FRAME,
         		which can be used when reconnecting, but the receiver cannot read the
         		CC parameters received from the sender ("NEW TOKEN");</t>
 			<t>(3) the saved CC parameters are
-        		transmitted to a receiver, which can use it when reconnecting.
+        		transmitted to a receiver in a BDP Frame, which can use these when reconnecting.
         		The receiver can also read the CC parameters to accept or not the use of
 			CC parameters (a.k.a. "BDP extension").</t>
 		</list></t>
 	    <section anchor="sec-local_storage"
-               title="Independent Local Storage of Values">
+               title="Local Storage of Values">
         	<t>This approach independently lets both a receiver and a sender store
         	their CC parameters: 
 		<list style="symbols">
@@ -222,20 +222,6 @@ the CC parameters -->
                		table holds the RTT and path capacity (i.e. saved_rtt and
                		saved_capacity), and also the Endpoint Token of the receiver (i.e.
                		saved_endpoint_token).</t>
-
-               		<!--During the new session establishment (0-RTT or 1-RTT), the local endpoint waits for the first
-       			RTT measurement from the remote peer. This is used to
-        		verify that the current_rtt has not significantly changed from the
-        		saved_rtt (used as an indication that the CC parameters are
-        		appropriate for the current path).-->
-
-        		<!-- If this RTT is confirmed, the endpoint also verifies that an IW of
-        		data has been acknowledged without requiring retransmission or
-        		resulting in an ECN CE-mark. This second check detects whether a path
-        		is experiencing significant congestion (i.e., where it would not be
-        		safe to update the cwnd based on the saved_capacity). In practice, this
-        		could be realized by a proportional increase in the cwnd, where the
-        		increase is (saved_capacity/IW)*proportion_of_IW_currently-ACKed.-->
 		</list></t>
         	<t>This appraoch does not allow a receiver to request the sender not to
 		 use the CC parameters in the BDP Frame. If the sender does not want to store the
@@ -245,21 +231,21 @@ the CC parameters -->
         	CC parameters.</t>
       	</section> <!-- End of intro: Three appoaches: sec-local_storage -->
 
-      <section anchor="sec-using_new_token" title="Using NEW_TOKEN frames">
-        	<t>A sender can send a NEW_TOKEN Frame to the receiver. The token is an
+      <section anchor="sec-using_new_token" title="Using the BDP_FRAME">
+        	<t>The use of the BDP Frame is
+        	negotiated with the receiver.</t>
+        	<t> A sender can send a BDP_FRAME to the receiver constructed with
+		CC parameters collected during the Careful Resume Observe Phase.</t>
+		<t>The data in the frame can be an
         	opaque (encrypted) blob and the receiver can not read its content (see
-        	section 19.7 of <xref target="RFC9000"></xref>). The receiver sends the
-        	received token in the header of an Initial packet of a later
-       	 	connection.</t>
-      </section> <!-- End of intro: Three appoaches: sec-local_storage -->
-
-      <section anchor="sec-bdp_frame_section" title="BDP Frame">
-        	<t>Using BDP Frames, the sender is permitted to send a set of CC parameters 
-		to the receiver. The use of the BDP Frame is
-        	negotiated with the receiver. The receiver can read its content. If the
+        	section 19.7 of <xref target="RFC9000"></xref>).</t>
+	      <t>
+		The receiver can read the frames content. If the
         	receiver permits using the previous CC parameters, it can
-        	send the BDP Frame back to the sender in an Initial packet of a later
-        	connection.</t>
+        	send the BDP_FRAME back to the sender in the header of an Initial packet, or later in a
+       	 	connection. This frame needs to be received during the Reconaisance Phase
+		of the Careful Resume sender.
+	      </t>
       </section> <!-- End of intro: Three appoaches: sec-local_storage -->
     </section> <!-- End of intro: Three appoaches-->
 
