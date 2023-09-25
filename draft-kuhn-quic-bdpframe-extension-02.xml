@@ -93,14 +93,11 @@
                 The frame enables the exchange of Congestion Control (CC) parameters related to the
                 path characteristics between the receiver
                 and the sender during a connection.
-                These CC parameters can be utilised by the Careful Resume method
-                when a new connection is established. 
-		The CC parameters allows a receiver to prepare to use any additional
+		These CC parameters allow a receiver to prepare to use any additional
 		capacity that is made available when Careful Resume is used.
-                The CC parameters can also be used by the receiver to request that
-		previously computed CC parameters related to the 
-		path characteristics, are not used, when the receiver has additional information
-		about the path or traffic to be sent.
+                A receiver can request that
+		previously computed CC parameters, are not used when it has additional information
+		about the current path or traffic that is to be sent.
 		</t>
 	</abstract>
 	</front>
@@ -118,7 +115,7 @@ the CC parameters -->
     method <xref target="I-D.kuhn-tsvwg-careful-resume"></xref> 
     by allowing 
     sender-generated CC parameters to be stored at the receiver.
-    By transfering the CC parameters to a receiver, it also releases the
+    Transfering the CC parameters to a receiver, can release the
     sender from needing to retain CC parameter state for each
     receiver. This also allows
     a receiver to implement a policy that informs a sender
@@ -133,31 +130,28 @@ the CC parameters -->
 	For an established connection, the
 	current RTT, measured capacity
 	and receiver Endpoint Token 
-	are respectively
+	are computed and are respectively
 	stored as the saved_rtt, saved_capacity and
 	saved_endpoint_token within a BDP_FRAME.
-	The sender computes a secured hash with 
-	its own selection of the CC parameters of the BDP_FRAME,
-	encrypts the hash and sends this within the BDP_FRAME.
-	The sender encrypts the hash so that the receiver can not read nor modify the content of the secured hash;  
-	</t>
-	<t>
 	The receiver can read the non-encrypted portion of the BDP_FRAME parameters,
-	but is not permitted to modify any CC parameters. 
-	The receiver is unable to read the hash.
- 	</t>
+	but is not permitted to modify any CC parameters.</t>
 	<t>
-	A receiver later sends a BDP-FRAME back to
-        the sender to re-use previously computed CC parameters;
+	The sender also computes a secured hash over 
+	the CC parameters and sends this within the BDP_FRAME.
+	The sender encrypts the hash so that a receiver is neither
+	able to read nor modify the secured hash.</t>
+	<t>
+	At a later time, the receiver sends the BDP-FRAME to
+        the sender to re-use previously computed CC parameters.
 	</t>
 	<t>	
-	The sender is then able to utilise the CC parameters in the 
-	BDP_FRAME in new connection to the same endpoint.
+	The sender is able to utilise the CC parameters in a received 
+	BDP_FRAME when it is connected to the same endpoint.
 	</t>
     </list>
     </t>
 
-    <!-- PLEASE CHECK NEXT PARA - restructing of sections may have modified this -->
+    <t> {NOTE: PLEASE CHECK NEXT PARA - restructing of sections may have modified this.}</t>
     <t>This method can apply to any resumed QUIC session: both
     a saved_session and a recon_session can be a 0-RTT QUIC
     connection or a 1-RTT QUIC connection.
@@ -166,8 +160,10 @@ the CC parameters -->
     <section anchor="subsec:rationale_client" title="Optimizing Client Requests">
 	<t>Where the receiver is aware it is using a path with high Bandwidth-Delay Product (BDP),
 	it can adapt other protocol parameters
-	to better utilize the available capacity, such as 
-	increasing the size of flow credit.</t>
+	to better utilize the available capacity</t>
+	    
+	<t>One example, is to use CC paramters to estimate a 
+	larger size for the flow credit.</t>
 
         <t>Some designs of application do not use long-lasting transport connections. 
         Instead, they use a series of shorter connections, typically
