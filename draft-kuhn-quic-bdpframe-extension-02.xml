@@ -160,28 +160,26 @@ the CC parameters -->
     <section anchor="subsec:rationale_client" title="Optimizing Client Requests">
 	<t>Where the receiver is aware it is using a path with high Bandwidth-Delay Product (BDP),
 	it can adapt other protocol parameters
-	to better utilize the available capacity</t>
+	to better utilize the available capacity.</t>
 	    
-	<t>One example, is to use CC paramters to estimate a 
+	<t>One example, could be to use CC parameters to estimate a 
 	larger size for the flow credit.</t>
 
         <t>Some designs of application do not use long-lasting transport connections. 
         Instead, they use a series of shorter connections, typically
 	each using the same path. This style of application can benefit 
-	from this method, and could be enhanced by providing the receiver
-	with an estimate of the expected characteristics, which could help
-	to appropriately use a connection (e.g.,
-	adapting the content of quality for a video application; or anticipating
-	the time taken to complete the transmission of an object). </t>
-	
-	<t>An example scenario consideres a client using Dynamic Adaptive Streaming over HTTPS
-        (DASH). This client could be unable to receive sufficient data
+	when the receiver provides
+	an estimate of the expected characteristics (e.g., to
+	adapt the content of quality for a video application; or anticipate
+	the time taken to complete the transmission of an object).
+	An example scenario consideres a client using Dynamic Adaptive Streaming over HTTPS
+        (DASH). Such a client could be unable to receive sufficient data
 	to reach the video playback
-        quality that is supported by the path, because for each video chunk,
+        quality supported by the path, because for each video chunk,
         the transport CC method needs to independently determine the path
-        capacity. A lower transfer rate is safe, but can also lead to an
-        overly conservative requested rate to the sender, because clients
-        often adapt their application-layer requests based on the transport
+        capacity. A lower transfer rate is safe, but can lead to an
+        overly conservative requested rate when the rate is 
+        obased on the transport
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
         or to send high quality advertisements). 
@@ -195,24 +193,24 @@ the CC parameters -->
 	    <t>This section reviews three approaches to implement the storage of CC parameters:
 		<list>
 			<t>(1) The saved CC parameters are stored at the sender 
-        		("Local storage") and is never sent to a receiver, this does not use a BDP Frame;</t>
-			<t>(2) Some CC parameters are transmitted to the receiver in a BDP_FRAME,
-        		which can be used when reconnecting, but the receiver cannot read the
-        		CC parameters received from the sender ("NEW TOKEN");</t>
-			<t>(3) the saved CC parameters are
+        		("Local storage") and are not sent to a receiver, this does not use a BDP Frame;</t>
+			<t>(2) The saved  CC parameters are transmitted to the receiver in a BDP_FRAME,
+        		these can be used when reconnecting, but a receiver cannot read the
+        		CC parameters;</t>
+			<t>(3) The saved CC parameters are
         		transmitted to a receiver in a BDP Frame, which can use these when reconnecting.
-        		The receiver can also read the CC parameters to accept or not the use of
-			CC parameters (a.k.a. "BDP extension").</t>
+        		The receiver can also read, but not modify, the CC parameters to accept or not the use of
+			the parameters.</t>
 		</list></t>
 	    <section anchor="sec-local_storage"
                title="Local Storage of Values">
-        	<t>This approach independently lets both a receiver and a sender store
-        	their CC parameters: 
+        	<t>Local Storage independently allows both a sender to store
+        	saved CC parameters: 
 		<list style="symbols">
-        		<t>During a 1-RTT session, the endpoint stores the RTT (as the
+        		<!--During a 1-RTT session, the endpoint stores the RTT (as the
         		saved_rtt) and path capacity (as the saved_capacity) together in
         		the session resume ticket. 
-        		</t>
+        		-->
 
                		<t>The sender maintains a table of previously issued tickets,
                		indexed by the random ticket identifier that is used to guarantee
@@ -224,10 +222,10 @@ the CC parameters -->
                		saved_endpoint_token).</t>
 		</list></t>
         	<t>This appraoch does not allow a receiver to request the sender not to
-		 use the CC parameters in the BDP Frame. If the sender does not want to store the
+		 use the CC parameters in the BDP Frame. If the sender does not wish to store the
         	metrics from previous connections, an equivalent of the
         	tcp_no_metrics_save for QUIC may be necessary. This option could be
-        	negotiated that allows a receiver to choose whether to use the saved
+        	negotiated to allow a receiver to choose whether to use the saved
         	CC parameters.</t>
       	</section> <!-- End of intro: Three appoaches: sec-local_storage -->
 
@@ -255,7 +253,7 @@ the CC parameters -->
 			<t>
 			<list style="symbols">
 				<t>
-				BDP: Bandwdith Delay Product of the path
+				BDP: Bandwdith Delay Product of the path (maximum path capacity);
 				</t>
 				<t>
                                <t>saved_capacity: The capacity preserved from a
