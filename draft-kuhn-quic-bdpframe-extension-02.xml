@@ -179,7 +179,7 @@ the CC parameters -->
         the transport CC method needs to independently determine the path
         capacity. A lower transfer rate is safe, but can lead to an
         overly conservative requested rate when the rate is 
-        obased on the transport
+        based on the transport
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
         or to send high quality advertisements). 
@@ -221,7 +221,7 @@ the CC parameters -->
                		saved_capacity), and also the Endpoint Token of the receiver (i.e.
                		saved_endpoint_token).</t>
 		</list></t>
-        	<t>This appraoch does not allow a receiver to request the sender not to
+        	<t>This approach does not allow a receiver to request the sender not to
 		 use the CC parameters in the BDP Frame. If the sender does not wish to store the
         	metrics from previous connections, an equivalent of the
         	tcp_no_metrics_save for QUIC may be necessary. This option could be
@@ -341,7 +341,7 @@ BDP_FRAME {
                         Saved capacity estimate
                         (saved_capacity): The
                         saved_capacity is a value in bytes, encoded as a variable-length integer. The
-                        availanble capacity can be estimated for the previous connection by
+                        available capacity can be estimated for the previous connection by
 			the sender.
 			Using the previous values of bytes_in_flight defined in 
                         <xref target="RFC9002"></xref>
