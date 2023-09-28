@@ -389,7 +389,7 @@ is later performed by an established connection.</t>
 
             <t>Reconnaissance Phase (Lifetime of saved information): The CC information is temporal.
             Frequent connections to the same endpoint are likely to track
-            changes, but long-term use of the previous values is not appropriate.</t>
+            changes, but long-term use of the previously observed parameters is not appropriate.</t>
 
             <!-- A future version may say how many samples are needed?
              Reconnaissance Phase (Number of required samples): ????  -->
@@ -598,7 +598,7 @@ is later performed by an established connection.</t>
         Congestion controllers, such as CUBIC or Reno, can estimate the
         capacity by utilizing a combination of the
         CWND/flight_size and the RTT. A different approach could
-        estimate the same values for a rate-based congestion
+        estimate the same parameters for a rate-based congestion
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.
        
         <list style="symbols">
@@ -613,7 +613,7 @@ is later performed by an established connection.</t>
 
             <t>Observe Phase: There are cases where the CWND
             does not reflect the path capacity. At the End of the CC slow
-            start phase, the value can be significantly larger than
+            start phase, the size can be significantly larger than
             needed to fully utilize the path (i.e., a CWND
             overshoot). It is inappropriate to use an
             overshoot in the CWND as a basis for estimating the
@@ -810,7 +810,7 @@ is later performed by an established connection.</t>
             state.</t>
         </list></t>
         <t>{XXX-Editor note: A future revision should discuss updating
-        the saved values, whether used or not, after reaching normal operation for use
+        the saved parameters, whether used or not, after reaching normal operation for use
         the next time even if that update is to just refresh the expiration time.}</t>
     </section><!-- End of Normal Phase -->
     <section anchor="flow-control" title="Limitations from Transport Protocols">
