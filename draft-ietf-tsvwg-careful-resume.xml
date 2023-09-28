@@ -406,7 +406,7 @@ is later performed by an established connection.</t>
     </section> <!-- End of Reconnaissance Phase -->
      
     <section anchor="unv-phase" title="Unvalidated Phase">
-        <t>The Unvalidated Phase is designed to enable the rate/CWND
+        <t>The Unvalidated Phase is designed to enable the rate
         to more rapidly get up to speed, but this requires data to send.
         If the application is data limited, the sender sends insufficient data
         to be able to validate the tentative higher rate.
@@ -420,7 +420,7 @@ is later performed by an established connection.</t>
         Unvalidated Phase could require coordination with the management
         of buffers in the interface to the higher layers.</t>
 
-        <t>This phase paces transmission using an increased rate or CWND (jump_CWND)
+        <t>This phase paces transmission using an increased CWND (jump_CWND)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
              <t>Unvalidated Phase (jump_cwnd):
@@ -430,7 +430,7 @@ is later performed by an established connection.</t>
              Hence, jump_CWND &le; saved_capacity/2.</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated
-             rate or CWND MUST use pacing.</t>
+             CWND MUST use pacing.</t>
              
              <t>Unvalidated Phase (Confirming the path):
              If a sender determines that the previous parameters
@@ -533,7 +533,7 @@ is later performed by an established connection.</t>
                  <xref target="RFC3465"></xref> describes how to appropriately
                  account for such acknowledgments.</t>
             
-                <t>NOTE: On entry to the Safe Retreat Phase, the rate or CWND can be
+                <t>NOTE: On entry to the Safe Retreat Phase, the CWND can be
                 significantly reduced, when there was multiple loss,
                 recovery of all lost data could require multiple RTTs to complete.</t>
         </list></t>
@@ -560,7 +560,7 @@ is later performed by an established connection.</t>
 
         <list style="symbols">
 
-            <t>Normal Phase (Updating CC): The sender MUST reset the rate or CWND
+            <t>Normal Phase (Updating CC): The sender MUST reset the CWND
             on entry to the Normal Phase to reflect the volume of
             acknowledged data that was received during the Unvalidated Phase.
             (When the sender has used the entire jump_CWND and this was acknowledged
@@ -608,20 +608,20 @@ is later performed by an established connection.</t>
             (saved_capacity) after each observation.</t>
             <t>Observe Phase: The stored CC parameters should be updated
             if there are significant changes in the saved CC parameters.
-            The rate of update MUST be less than
+            The frequency of update MUST be less than
             one update for several RTTs of time.</t>
 
-            <t>Observe Phase: There are cases where the current rate or CWND
+            <t>Observe Phase: There are cases where the current  CWND
             does not reflect the path capacity. At the End of the CC slow
             start phase, the value can be significantly larger than
             needed to fully utilize the path (i.e., a CWND
             overshoot). It is inappropriate to use an
-            overshoot in the rate/CWND as a basis for estimating the
-            capacity. In most cases, the rate/CWND will converge to a stable
+            overshoot in the CWND as a basis for estimating the
+            capacity. In most cases, the CWND will converge to a stable
             value after several more RTTs.
             One mitigation could be to calculate the
             capacity based on
-            the flight_size or an averaged rate or CWND. Also when the sender
+            the flight_size, an averaged rate or the CWND. Also when the sender
             is application-limited or in an RTT following a burst of
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
@@ -656,7 +656,11 @@ is later performed by an established connection.</t>
              saved_RTT is regarded as too small, such a low RTT is indicative of a path change.
              (This factor of two arises, since the rate should not exceed the previous rate when
              the capacity was measured, because the jump_cwnd is calculated as half the
-             measured capacity.) An RTT sample more than ten times the
+             measured capacity.)</t>
+             <t>A current RTT larger than that at the time the capacity was measured results
+             in a proportionaly lower resumed rate, because the transmission using the CR method
+             is paced based on the current RTT.
+             An RTT sample more than ten times the
              saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
              (The factor of ten accommodates both increases in latency from buffering
              on a path, and any variation between samples).</t>
@@ -672,7 +676,7 @@ is later performed by an established connection.</t>
 
     <section anchor="req-unvalid" title="Safety Requirements for the Unvalidated Phase">
             <t> This section defines the safety requirements
-            for using saved CC parameters to tentatively update the rate or CWND.
+            for using saved CC parameters to tentatively update the  CWND.
             These safety guidelines mitigate the risk that a sender
             adds excessive congestion to an already congested path.</t>
                     <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
@@ -756,7 +760,7 @@ is later performed by an established connection.</t>
          resulting in overshoot where a disproportionate number of packets
          from existing flows are displaced from
          the buffer at the congested bottleneck.
-         For this reason, a sender needs to reduce its rate or CWND significantly
+         For this reason, a sender needs to reduce its CWND significantly
          below the saved_capacity.</t>
 
             
