@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-03"
+<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-04"
      ipr="trust200902">
     <!-- category values: std, bcp, info, exp, and historic
     ipr values: full3667, noModification3667, noDerivatives3667
@@ -775,7 +775,7 @@ is later performed by an established connection.</t>
     <t> The CWND is reduced on entry to the Safe Retreat Phase to
         no more than the IW.</t>
         
-        <t>This provdies some examples of
+        <t>This provides some examples of
         how to implement the Safe Retreat Phase:
         <list style="numbers">
              
@@ -807,6 +807,9 @@ is later performed by an established connection.</t>
 
     <section anchor="req-normal" title="Returning to Normal Congestion Control">
         <t>After using Careful Resume, the CC controller returns to the Normal Phase.
+
+        <t> The implementation details for the transition to the Normal Phase depend on the
+         design of the CC method.</t>
 
         <list>
             <t>For NewReno and CUBIC, it is recommended to exit slow-start
@@ -1048,6 +1051,8 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
      senders; selection of reasoned parameters; specification of safe retreat; and
      improvements to the consistency throughout. Added the validating phase.</t>
 <t>WG -03, explain entry to Validating Phase, editorial tidy.</t>
+<t>WG -04, ... .</t>
+
 </list></t>
 </section> <!-- End of Revisions -->
 
