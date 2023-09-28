@@ -423,7 +423,7 @@ is later performed by an established connection.</t>
         Unvalidated Phase could require coordination with the management
         of buffers in the interface to the higher layers.</t>
 
-        <t>This phase paces transmission using an increased CWND (jump_cwnd)
+        <t>This phase paces transmission using an increased CWND (jump_CWND)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
              <t>Unvalidated Phase (jump_cwnd):
@@ -603,15 +603,17 @@ is later performed by an established connection.</t>
        
         <list style="symbols">
             <!-- Avoid unhelpful use of the Careful Resume for small CWNDs.-->
-            <t>Observe Phase: The sender updates the stored CC parameters
-            after each estimate of the path capacity.</t>
-            <t>Observe Phase: When using the BDP Frame, the
-            an update should be sent to the receiver when
-            there are significant changes in the CC parameters.
+
+            <t>Observe Phase: The sender should update the stored CC parameters
+        and/or send updated CC parameter
+            information related to an estimated path capacity
+            (saved_capacity) after each observation.</t>
+            <t>Observe Phase: The stored CC parameters should be updated
+            if there are significant changes in the saved CC parameters.
             The frequency of update MUST be less than
             one update for several RTTs of time.</t>
 
-            <t>Observe Phase: There are cases where the CWND
+            <t>Observe Phase: There are cases where the current  CWND
             does not reflect the path capacity. At the End of the CC slow
             start phase, the size can be significantly larger than
             needed to fully utilize the path (i.e., a CWND
@@ -656,8 +658,12 @@ is later performed by an established connection.</t>
              saved_RTT, this is regarded as too small, and is an indicator of a path change.
              (This factor of two arises, because the rate should not exceed the observed rate when
              the capacity was measured, because the jump_cwnd is calculated as half the
-             measured capacity.) An RTT sample more than ten times the
-             saved_RTT is regarded as too large, this also is an indicator of a path change.
+             measured capacity.)</t>
+             <t>A current RTT larger than that at the time the capacity was measured results
+             in a proportionaly lower resumed rate, because the transmission using the CR method
+             is paced based on the current RTT.
+             An RTT sample more than ten times the
+             saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
              (The factor of ten accommodates both increases in latency from buffering
              on a path, and any variation between samples).</t>
 
