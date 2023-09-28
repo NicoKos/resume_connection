@@ -423,7 +423,7 @@ is later performed by an established connection.</t>
         Unvalidated Phase could require coordination with the management
         of buffers in the interface to the higher layers.</t>
 
-        <t>This phase paces transmission using an increased cwnd (jump_cwnd)
+        <t>This phase paces transmission using an increased CWND (jump_cwnd)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
              <t>Unvalidated Phase (jump_cwnd):
@@ -433,7 +433,7 @@ is later performed by an established connection.</t>
              Hence, jump_cwnd &le; saved_capacity/2.</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated
-             cwnd MUST use pacing.</t>
+             CWND MUST use pacing.</t>
              
              <t>Unvalidated Phase (Confirming the path):
              If a sender determines that the previous CC parameters
@@ -452,7 +452,7 @@ is later performed by an established connection.</t>
         <t>The Validating Phase is checks that the packets
     sent in the Unvalidated Phase were received without inducing congestion.
     The sender typically remains in this phase for 1 RTT.
-    The CWND remains unvalidated during in this phase. (Note: When the full jump_cwnd is not
+    The CWND remains unvalidated. (Note: When the full jump_cwnd is not
     fully utilised, it results in a smaller capacity being validated.)
         </t>
         <t><list style="symbols">
@@ -478,7 +478,7 @@ is later performed by an established connection.</t>
 
       <t>This phase is entered when the sender detects that a jump in the
       Unvalidated Phase has overshot the currently available capacity.
-      The phase starts when the first loss/ECN-CE marking is detected.
+      It starts when the first loss/ECN-CE marking is detected.
       (This trigger is the same as used by a QUIC sender to transition
       from Slow Start to Recovery <xref target="RFC9002"></xref> .)</t>
          
@@ -621,7 +621,7 @@ is later performed by an established connection.</t>
             value after several more RTTs.
             One mitigation could be to calculate the
             capacity based on
-            the flight_size, an averaged cwnd. Also when the sender
+            the flight_size, an averaged CWND. Also when the sender
             is application-limited or in an RTT following a burst of
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
@@ -666,7 +666,7 @@ is later performed by an established connection.</t>
         In the Reconnaissance Phase, this indication occurs earlier than congestion
         which is reported by
         loss or by ECN marking. Designs need to consider if this is
-        a suitable trigger for changing the phase.</t>
+        a suitable trigger for changing the phase of CR.</t>
         </section> <!-- End of Reconnaissance:Confirming the Path -->
     </section> <!-- End of Reconnaissance(req-recon) -->
 
@@ -782,7 +782,7 @@ is later performed by an established connection.</t>
             <t>Performance can be improved by tracking the volume of
             successfully transmitted packets sent
              using the Unvalidated Phase (e.g., by recording the sequence number
-             of the first packet sent in the phase.).
+             of the first packet sent in the phase).
             This measured capacity is called the Pipe.
          The Pipe is not a safe measure of the currently
             available share of the capacity whenever
@@ -804,7 +804,7 @@ is later performed by an established connection.</t>
 
         <list>
             <t>For NewReno and CUBIC, it is recommended to exit slow-start
-            and enter the congestion avoidance phase.</t>
+            and enter the congestion avoidance phase of the CC method.</t>
 
             <t>For BBR CC, it is recommended to enter the "probe bandwidth"
             state.</t>
