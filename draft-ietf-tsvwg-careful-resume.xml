@@ -139,9 +139,11 @@ specify just the year. -->
     where the BDP of the path is also significantly
     more than the product of the IW and the Round Trip Rime (RTT).</t>
     <t>It introduces an alternative method to select initial CC parameters,
-    that seek to more rapidly and safely grow the sending rate (or congestion
-    window, CWND).
-    This method is based on temporal sharing (sometimes known as
+    that seek to more rapidly and safely grow the sending rate controlled by
+    then congestion window, CWND. (CC methods that are rate-based can make
+    similar adjustments to their target sending rate.</t>
+     
+    <t>This method is based on temporal sharing (sometimes known as
     caching) of a saved set of CC parameters that relate to previous observations
     of the same path. The saved CC parameters include:
     the available capacity found on the path and the RTT. These
@@ -165,7 +167,7 @@ specify just the year. -->
         </list></t>
            
             <t>"Generally, implementations are advised
-            to be cautious when using previous values on a new path",
+            to be cautious when using saved CC parameters on a new path",
             as stated in <xref target="RFC9000"></xref>.
             While this statement has been proposed in the context of QUIC standardization, this advice is appropriate for any IETF transport protocol.
             Care is therefore needed
@@ -225,7 +227,7 @@ specify just the year. -->
         Without a new method,
         each connection would need to individually
         discover appropriate CC parameters, whereas Careful Resume allows the flow
-        to continue at a rate that resembles the previous rate.</t>
+        to continue at a rate that resembles the observed rate.</t>
 
         <t>In another example, an application reconnects after a disruption
         had temporarily reduced the path
@@ -233,7 +235,7 @@ specify just the year. -->
         impairment, or where a user on a train journey travels through
         different areas of connectivity). When the endpoint
         returns to use a path with the original characteristics, it can resume
-        a transmission rate based on the previously measured characteristics.</t>
+        a transmission rate based on the previously observed CC parameters.</t>
         <t>
         There is particular benefit for
         any path with an RTT that is much larger than typical
@@ -339,8 +341,8 @@ is later performed by an established connection.</t>
      
     <!-- These subsections to match next section format -->
     <section title="Observe Phase">
-        <t>During a previous connection, information about the specific path
-        to an endpoint is saved. This is used to characterize the path and
+        <t>During a previous connection, CC pareameters for the specific path
+        to an endpoint are saved. This is used to characterize the path and
         to measure the capacity that was used. This includes the minimum RTT
         (saved_rtt), the path capacity (saved_capacity) and the receiver
         Endpoint Token (saved_endpoint_token). An implementation
@@ -348,7 +350,7 @@ is later performed by an established connection.</t>
         with a receiver, as detailed in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
         <t><list style="symbols">
         <t>Observe Phase: If the measured CWND is less than four times the Initial Windown (IW)
-            (or the rate is less than would be permitted by IW*4/RTT),
+            ( CWND less than IW*4),
             a sender SHOULD NOT store and/or send CC parameter
             information.</t>
     </list></t>
@@ -368,7 +370,7 @@ is later performed by an established connection.</t>
         <t>In this phase, the sender transmits initial data, limited by the IW,
         and monitors its reception.
         This phase measures the current path characteristics
-        to confirm these are consistent with the previously characterized path.
+        to confirm these are consistent with the previously observed CC parameters.
 
         <list style="symbols"> <!-- list of phase -->
             <t>Reconnaissance Phase (Endpoint change):
@@ -380,14 +382,14 @@ is later performed by an established connection.</t>
 
              <t>Reconnaissance Phase (Confirming RTT): Since the CC information
              is directly impacted by the RTT, a significant change in the RTT
-             is a strong indication that the previously estimated CC
+             is a strong indication that the previously observed CC
              parameters are not valid for the current path.
              An RTT measurement is confirmed when current_rtt &ge;
              (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10 (TBC)).</t>
 
             <t>Reconnaissance Phase (Lifetime of saved information): The CC information is temporal.
             Frequent connections to the same endpoint are likely to track
-            changes, but long-term use of previous values is not appropriate.</t>
+            changes, but long-term use of the previous values is not appropriate.</t>
 
             <!-- A future version may say how many samples are needed?
              Reconnaissance Phase (Number of required samples): ????  -->
@@ -407,10 +409,10 @@ is later performed by an established connection.</t>
     </section> <!-- End of Reconnaissance Phase -->
      
     <section anchor="unv-phase" title="Unvalidated Phase">
-        <t>The Unvalidated Phase is designed to enable the rate/CWND
+        <t>The Unvalidated Phase is designed to enable the CWND
         to more rapidly get up to speed, but this requires data to send.
         If the application is data limited, the sender sends insufficient data
-        to be able to validate the tentative higher rate.
+        to be able to validate transmission at the tentative higher rate.
         Careful Resume therefore remains in the Reconnaissance Phase and does not
         transition to the Unvalidated Phase until the sender
         has more data ready to send in the transmission buffer
@@ -421,20 +423,20 @@ is later performed by an established connection.</t>
         Unvalidated Phase could require coordination with the management
         of buffers in the interface to the higher layers.</t>
 
-        <t>This phase paces transmission using an increased rate or CWND (jump_cwnd)
+        <t>This phase paces transmission using an increased cwnd (jump_cwnd)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
              <t>Unvalidated Phase (jump_cwnd):
              To avoid starving other (potential) flows that could have started
              or increased their capacity after the Observation Phase,
-             the jump_cwnd MUST be no more than half of the previous saved_capacity.
+             the jump_cwnd MUST be no more than half of the saved_capacity.
              Hence, jump_cwnd &le; saved_capacity/2.</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated
-             rate or CWND MUST use pacing.</t>
+             cwnd MUST use pacing.</t>
              
              <t>Unvalidated Phase (Confirming the path):
-             If a sender determines that the previous parameters
+             If a sender determines that the previous CC parameters
              are not valid (due to a detected change in the path)
              (e.g., the RTT has changed), Careful Resume enters the
              Safe Retreat Phase.</t>
@@ -606,7 +608,7 @@ is later performed by an established connection.</t>
             <t>Observe Phase: When using the BDP Frame, the
             an update should be sent to the receiver when
             there are significant changes in the CC parameters.
-            The rate of update MUST be less than
+            The frequency of update MUST be less than
             one update for several RTTs of time.</t>
 
             <t>Observe Phase: There are cases where the CWND
@@ -619,7 +621,7 @@ is later performed by an established connection.</t>
             value after several more RTTs.
             One mitigation could be to calculate the
             capacity based on
-            the flight_size, an averaged rate or CWND. Also when the sender
+            the flight_size, an averaged cwnd. Also when the sender
             is application-limited or in an RTT following a burst of
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
@@ -645,14 +647,14 @@ is later performed by an established connection.</t>
 
         <section anchor="sec-confirm" title="Confirming the Path">
             <t>Path characteristics can change over time for many reasons,
-            resulting in previously measured CC parameters
+            resulting in the previously observed CC parameters
             becoming irrelevant. The sender therefore compares the 
             saved_RTT with each of a
                 series of measured RTT samples.</t>
                 
              <t>If the current RTT sample is less than a half of the
              saved_RTT, this is regarded as too small, and is an indicator of a path change.
-             (This factor of two arises, because the rate should not exceed the previous rate when
+             (This factor of two arises, because the rate should not exceed the observed rate when
              the capacity was measured, because the jump_cwnd is calculated as half the
              measured capacity.) An RTT sample more than ten times the
              saved_RTT is regarded as too large, this also is an indicator of a path change.
@@ -678,11 +680,13 @@ is later performed by an established connection.</t>
 
         <t>
             <list style="symbols">
-                <t>Unvalidated Phase (Jump): A connection must not directly use the previously                   saved_capacity to directly initialize a new flow causing it to resume sending at the same
-                    rate. The jump_cwnd MUST be no more than half the previously saved capacity (saved_capacity) and is
+                <t>Unvalidated Phase (Jump): A connection must not directly use the previously
+                    saved_capacity to directly initialize a new flow causing it to resume sending at the same
+                    rate. The jump_cwnd MUST be no more than half the previously saved_capacity and is
                     paced based on the
                     current RTT (current_RTT). Using the current_rtt rather than a saved RTT value
-                    helps to ensure appropriate pacing, but places a limitation on the minimum acceptable RTT to avoid sending at a rate higher than previously observed.</t>
+                    helps to ensure appropriate pacing, but places a limitation on the minimum acceptable RTT
+                    to avoid sending at a rate higher than was previously observed.</t>
         </list></t>
     
         <section title="Exit for the Unvalidated Phase because of Variable Network Conditions">
