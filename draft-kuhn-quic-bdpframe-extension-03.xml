@@ -233,6 +233,16 @@ the CC parameters -->
         enabling a client to increase the requested quality of video chunks, to
 	fill receiver buffers and avoid stalling playback.</t>
 
+	<t>
+        Even if the capacity on forward and return links can be
+        different at a significant level (e.g. forward capacity being
+        five times higher than the return one), users exploiting a high
+        BDP forward link would probably also exploit a high BDP on the
+        return link. Knowing this information, an end user may exploit
+        information related to the forward link to adapt its
+        transmission of data on the return link.
+	</t>
+
 	<t> 
         There are also scenarios where the client may not be able to
         manage the previously available data-rate and reject the
