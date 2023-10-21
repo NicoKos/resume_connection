@@ -238,7 +238,7 @@ the CC parameters -->
         significantly different level (e.g., with forward capacity being
         five times higher than the return one), users experiencing a high
         BDP for the forward path would typically also experience a high BDP for the
-        return path. An end user could therfore utilise the CC parameter
+        return path. An end user could therefore utilise the CC parameter
         information related to the forward path to adjust its
         transmission of data using the return path.
 	</t>
@@ -248,7 +248,7 @@ the CC parameters -->
         achieve a previously available rate and would reject the
         use of the extension. Examples of this could include: a client could  be aware of changes in
         link propagation conditions, a change in the operational mode of a link on the path,
-	or awareness of limitationn in the  hardware platform.
+	or awareness of limitation in the  hardware platform.
 	</t>
 
     </section><!-- End of intro: Optimizing Client Requests -->
