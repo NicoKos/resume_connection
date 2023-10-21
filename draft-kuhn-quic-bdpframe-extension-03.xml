@@ -234,27 +234,21 @@ the CC parameters -->
 	fill receiver buffers and avoid stalling playback.</t>
 
 	<t>
-        Even if the capacity on forward and return links can be
-        different at a significant level (e.g. forward capacity being
-        five times higher than the return one), users exploiting a high
-        BDP forward link would probably also exploit a high BDP on the
-        return link. Knowing this information, an end user may exploit
-        information related to the forward link to adapt its
-        transmission of data on the return link.
+        Even if the capacity on the forward and return paths can be
+        significantly different level (e.g., with forward capacity being
+        five times higher than the return one), users experiencing a high
+        BDP for the forward path would typically also experience a high BDP for the
+        return path. An end user could therfore utilise the CC parameter
+        information related to the forward path to adjust its
+        transmission of data using the return path.
 	</t>
 
 	<t> 
-        There are also scenarios where the client may not be able to
-        manage the previously available data-rate and reject the
-        exploitation of the extension. This is not possible if the
-        client does not see the server-level approaches for resuming
-        sessions. Indeed, there are cases where the client is aware of
-        changes in the access network or a change in the available
-        data-rate (e.g. when using concurrent sessions). In case of
-        satellite communications, the client may be aware of changes in
-        the propagation conditions. The client may also run on a limited
-        hardware platform which limitations may not allow the
-        exploitation of multiple high data-rate sessions in parallele.
+        There are also scenarios where a client could be aware it is unable to
+        achieve a previously available rate and would reject the
+        use of the extension. Examples of this could include: a client could  be aware of changes in
+        link propagation conditions, a change in the operational mode of a link on the path,
+	or awareness of limitationn in the  hardware platform.
 	</t>
 
     </section><!-- End of intro: Optimizing Client Requests -->
