@@ -341,7 +341,7 @@ is later performed by an established connection.</t>
      
     <!-- These subsections to match next section format -->
     <section title="Observe Phase">
-        <t>During a previous connection, CC paremeters for the specific path
+        <t>During a previous connection, CC parameters for the specific path
         to an endpoint are saved. This is used to characterize the path and
         to record the saved_cwnd (the currently utilised capacity for the connection).
         This includes the minimum RTT
