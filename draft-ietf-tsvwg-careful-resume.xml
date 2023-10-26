@@ -199,7 +199,7 @@ specify just the year. -->
                 interface has changed since the CC parameters were stored;</t>
                 <t>knowledge of the current hardware limitations at a receiver;</t>
                 <t>a receiver that can predict additional capacity will be needed
-                for other concurrent/later flows
+                for other concurrent or later flows
                 (i.e., prefers to activate Careful Resume for the a different connection).</t>
         </list></t>
 
@@ -644,12 +644,12 @@ is later performed by an established connection.</t>
         and starts sending initial data.
         It measures the RTT to confirm the path it wishes to use.</t>
 
-        <t>The method does not permit multiple concurrent reuses of
+        <t>The method does not permit multiple concurrent reuse of
         the saved CC parameters. When multiple new concurrent connections
-        are made to the server, each can have a valid endpoint_token,
+        are made to a server, each can have a valid endpoint_token,
         but the saved-cwnd can only be used for one new connection. 
-        This prevents a sender from performing multiple jumps in the cwnd
-        each individually based on  saved_cwnd/2, and hence creating an
+        This is designed to prevent a sender from performing multiple jumps in the cwnd
+        each individually based on the same saved_cwnd, and hence creating an
         excessive aggregate load at the bottleneck.</t>
 
        <t>The method used to prevent re-use of the saved CC parameters
