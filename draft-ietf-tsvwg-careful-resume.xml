@@ -287,7 +287,8 @@ specify just the year. -->
             <!--            <t>recom_iw: Recommended IW;</t> -->
 
             <t>saved_cwnd: The value of cwnd preserved from a
-            previous connection;</t>
+            previous connection as an indication of the capacity
+            that was utlised by the connection;</t>
 
             <t>current_rtt: A sample measurement of the current RTT;</t>
 
