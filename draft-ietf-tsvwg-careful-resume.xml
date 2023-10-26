@@ -382,7 +382,7 @@ is later performed by an established connection.</t>
             current_endpoint_token), it is assumed to represent a different network path.</t>
 
             <t>Reconnaissance Phase (Using saved-cwnd):
-            Only one connection ought to use a set of saved CC parameters at any time.
+            Only one connection can use a specific set of saved CC parameters.
             If another connection has already started to use the saved_cwnd, the sender
             MUST use standard CC, and enter
             the Normal Phase.</t>
