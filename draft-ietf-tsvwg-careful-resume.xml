@@ -175,10 +175,11 @@ specify just the year. -->
             to assure safe use and to be robust to changes
             in traffic patterns, network routing, and link/node conditions.
             There are cases where using the saved parameters of a previous
-            connection is not appropriate.</t>
+            connection is not appropriate (e.g., <xref target="rec-choice"></xref>, 
+             <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
     </section>  <!-- End of use with care -->
           
-    <section title="Receiver Preference">
+    <section anchor="rec-choice" title="Receiver Preference">
             <t>Whilst a sender could take optimization decisions without considering
             the receiver's preference, there are cases where a receiver
             could have information that
