@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-kuhn-quic-bdpframe-extension-02" ipr="trust200902">
+<rfc category="std" docName="draft-kuhn-quic-bdpframe-extension-03" ipr="trust200902">
 	<!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN"
@@ -116,7 +116,7 @@ the CC parameters -->
     method <xref target="I-D.ietf-tsvwg-careful-resume"></xref>
     to allow
     sender-generated CC parameters to be stored at the receiver.
-    Transfering the CC parameters to a receiver, can release the
+    Transferring the CC parameters to a receiver, can release the
     sender from needing to retain CC parameter state for each
     receiver. This also allows
     a receiver to implement a policy that informs a sender
@@ -124,7 +124,7 @@ the CC parameters -->
     
     <t>
     It defines the method to exchange the CC parameters between
-    a QUIC receiver and the sender in an interoperable manner. The process
+    a QUIC receiver and the sender in an inter-operable manner. The process
     is outlined here:
     <list style="numbers">
         <t>
@@ -133,19 +133,21 @@ the CC parameters -->
         stored as the saved_rtt, saved_capacity and saved_endpoint_token.
         These are placed within a BDP_FRAME.
         The sender also computes a secured hash over
-        these CC parameters and sends this within the BDP_FRAME.</t>
+	these CC parameters and sends this within the BDP_FRAME.
+	This corresponds to the Observe Phase of the Careful Resume method.</t>
         
         <t>The receiver can read the non-encrypted portion of the BDP_FRAME parameters.
             It cannot verify the hash and is not permitted
             to modify any CC parameters.</t>
         
-        <t>At a later time, the receiver sends the BDP-FRAME to
-                the sender to re-use previously computed CC parameters.</t>
+        <t>At a later time, the receiver sends the BDP_FRAME to
+		the sender to re-use previously computed CC parameters.
+	The receiver can also request that the sender does not enter this phase. This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
  
         <t>Upon reception, the sender MUST verify the hash, and only use
         the CC parameters when valid. This is to prevent a receiver
         from modifying the parameters.
-        The sender is able to utilise the CC parameters in a received
+        The sender is able to utilize the CC parameters in a received
         BDP_FRAME when it is connected to the same endpoint.</t>
     </list>
     </t>
@@ -179,7 +181,7 @@ the CC parameters -->
               the session resume ticket.
 
                      <t>The sender maintains a table of previously stored CC parameters.
-                      Old enteries could be removed from the table using the
+                      Old entries could be removed from the table using the
                   Least Recently Used (LRU) logic.</t>
           </list></t>
           <t>If a sender does not wish to store the
@@ -197,11 +199,11 @@ the CC parameters -->
           section 19.7 of <xref target="RFC9000"></xref>).-->
         <t>The receiver can read the BDP Frame content and later decide to
         send the BDP_FRAME back to the sender in the header of an Initial packet, or later in a
-        connection. This frame needs to be received during the Reconaisance Phase
+        connection. This frame needs to be received during the Reconnaissance Phase
         of a Careful Resume sender.</t>
-    </section> <!-- End of intro: Three appoaches: sec-local_storage -->
+    </section> <!-- End of intro: Three approaches: sec-local_storage -->
 
-    <section anchor="subsec:rationale_client" title="Optimizing Client Requests">
+    <section anchor="subsec:rationale_client" title="Considering Client Point of View">
         <t>Where the receiver is aware it is using a path with high Bandwidth-Delay Product (BDP),
         it can also adapt other protocol parameters
         to better utilize the available capacity, e.g., to estimate a
@@ -229,7 +231,26 @@ the CC parameters -->
         These client requests could then be adapted based on the previously
         observed path characteristics,
         enabling a client to increase the requested quality of video chunks, to
-        fill receiver buffers and avoid stalling playback.</t>
+	fill receiver buffers and avoid stalling playback.</t>
+
+	<t>
+        Even if the capacity on the forward and return paths can be
+        significantly different level (e.g., with forward capacity being
+        five times higher than the return one), users experiencing a high
+        BDP for the forward path would typically also experience a high BDP for the
+        return path. An end user could therefore utilise the CC parameter
+        information related to the forward path to adjust its
+        transmission of data using the return path.
+	</t>
+
+	<t> 
+        There are also scenarios where a client could be aware it is unable to
+        achieve a previously available rate and would reject the
+        use of the extension. Examples of this could include: a client could  be aware of changes in
+        link propagation conditions, a change in the operational mode of a link on the path,
+	or awareness of limitation in the  hardware platform.
+	</t>
+
     </section><!-- End of intro: Optimizing Client Requests -->
 
 </section><!-- End of intro -->
@@ -237,7 +258,7 @@ the CC parameters -->
 
 <section anchor="sec:terms_def" title="Notation and Terms">
     <t> <list style="symbols">
-        <t>BDP: Bandwdith Delay Product of the path (maximum path capacity);</t>
+        <t>BDP: Bandwidth Delay Product of the path (maximum path capacity);</t>
         <t>saved_capacity: The capacity preserved from a
         previous connection;</t>
 
@@ -296,7 +317,7 @@ BDP_FRAME {
         <t>Hash (secured_hash):
         The secured_hash is generated by the sender using
         CC parameters from the BDP_FRAME. The sender encrypts the hash to
-        prevent the receiver from reading it, and allow the sender bto verify
+        prevent the receiver from reading it, and allow the sender to verify
         that the contents were not changed.</t>
 
         <t>Lifetime (extension_lifetime):
@@ -363,7 +384,7 @@ BDP_FRAME {
         <t> If the receiver activates the extension,
         it agrees to receive and read BDP_FRAMEs.
         If the receiver activates the optimization, 
-        it allows the sender to utilise the previously computed CC parameters.
+        it allows the sender to utilize the previously computed CC parameters.
         A receiver could then  perform session resumption optimization 
         without actually reading the previous CC parameters.</t>
 	</section> <!-- End of Extension activation -->
@@ -421,7 +442,7 @@ BDP_FRAME {
     <t>An example of implementation where the sender computes an
     Endpoint Token that seeks to uniquely identify the receiver
     is provided in <xref target="sec_example-token"></xref>.
-    The implementation details are independent from the specification of BDP-FRAME.</t>
+    The implementation details are independent from the specification of BDP_FRAME.</t>
 	
     <section title="Interoperability and Use Cases">
         <!--A sender that stores a resumption ticket for each receiver to
@@ -449,7 +470,7 @@ BDP_FRAME {
             <t>The network path has changed, but the new path is not known to be
             different. This case might be accompanied by a change in the RTT, or
             evident by loss observed at the start of the new connection.
-            This case could be detected in the Careful Resume Reconaissance Phase.
+            This case could be detected in the Careful Resume Reconnaissance Phase.
             The saved CC parameters are not appropriate to the current path.</t>
 
             <t> The network conditions have changed and it is discovered that
@@ -488,7 +509,7 @@ BDP_FRAME {
             address might be used, which does not identify a specific
             endpoint.</t>
             <t>In some cases, a sender can choose to vary the source address
-            over time to avoid linkability in the observable IP header, e.g.,
+            over time to avoid link-ability in the observable IP header, e.g.,
             because the used source address embeds private information, such as
             the endpoint's MAC address/EIDID.</t>
          </list> </t>
@@ -501,7 +522,7 @@ BDP_FRAME {
 
         <t> NOTE: A different Endpoint Token is used for each direction of transmission. A
         receiver might decide not to provide an Endpoint Token to a sender, to
-        avoid exposing additional linkable information (but also preventing use
+        avoid exposing additional link-able information (but also preventing use
         of any mechanism that relies on the token).
         </t>
     </section>
@@ -511,7 +532,7 @@ BDP_FRAME {
         <t>The sender computes an Endpoint Token that seeks to uniquely identify
         the path that it uses to communicate with the receiver (1) this is
         associated with the path information it sends. The Endpoint Token ought
-        to be encrypted to avoid sending linkable information observable to
+        to be encrypted to avoid sending link-able information observable to
         eavesdroppers on the path. The receiver stores the path information
         together with the Endpoint Token, together with the sender's
         address/name (2). When the receiver later wishes the sender to use the
@@ -540,7 +561,7 @@ BDP_FRAME {
     	</t>
     	<t>
     	A sender might decide to not use this method if it has a strong requirement to prevent
-    	flows being linkable with previous flows to the same endpoint. A
+    	flows being link-able with previous flows to the same endpoint. A
     	decision not to provide an Endpoint Token necessarily prevents the
     	sender from requesting the receiver to return path information to allow
     	the same CC parameters to be re-used, potentially strengthening
@@ -581,7 +602,7 @@ BDP_FRAME {
     in the Security Considerations section of Careful Resume.
     </t>
 	
-    <section title="Protecton from Malicious Receivers">
+    <section title="Protection from Malicious Receivers">
         <t>The sender MUST check the integrity of the saved_rtt and saved_capacity
         parameters received from a receiver.</t>
 
@@ -595,7 +616,7 @@ BDP_FRAME {
             the capacity and RTT parameters to the receiver as the
             saved_capacity and saved_rtt in a block of CC parameters that is
             authenticated. These CC parameters also could be encrypted by the
-            sender. The receiver resends the same CC parameters for a new
+            sender. The receiver retransmits the same CC parameters for a new
             connection. The sender can use its local key information to
             authenticate the CC parameters, without needing to keep a local
             copy.</t>
@@ -613,7 +634,7 @@ BDP_FRAME {
             connection.</t>
           </list></t>
 
-      </section> <!-- End of Safety: Malicous Clients -->
+      </section> <!-- End of Safety: Malicious Clients -->
 	
       <section anchor="sec-bdp_frame"
                title="Rationale behind the different implementation options">
@@ -651,7 +672,7 @@ BDP_FRAME {
 
 		<references title="Normative References">		
 			<?rfc include="reference.RFC.2119.xml"?>
-			<?rfc include="reference.RFC.6349.xml"?>
+			<!-- <?rfc include="reference.RFC.6349.xml"?> -->
 			<?rfc include="reference.RFC.6973.xml"?>
 			<?rfc include="reference.RFC.8174.xml"?>
 			<?rfc include="reference.RFC.8446.xml"?>
@@ -662,7 +683,7 @@ BDP_FRAME {
 		</references>
 			
 		<references title="Informative References">
-			<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
+			<!-- <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?> -->
 			<?rfc include="reference.I-D.ietf-tsvwg-careful-resume.xml"?>
 			<!--
 			<reference anchor="TMA18">
