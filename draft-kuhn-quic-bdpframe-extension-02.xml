@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-kuhn-quic-bdpframe-extension-03" ipr="trust200902">
+<rfc category="std" docName="draft-kuhn-quic-bdpframe-extension-04" ipr="trust200902">
 	<!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN"
@@ -691,7 +691,9 @@ x
                 <t>-00 Introduced session tickets and BDP_Frames</t>
                 <t>-01 Reviewed receiver actions when a receiver holds CC parameters</t>
                 <t>-02 Interim version to align with terminology in Careful Resume</t>
-                <t>-03 Rewritten to align with Careful Resume and use the BDP_Frame method. Removed annexe 1, and discussion of session tickets, prefering BDP Frames.</t>
+                <t>-03 Rewritten to align with Careful Resume and use the BDP_Frame method.
+	 	Removed annexe 1, and discussion of session tickets, prefering BDP Frames.</t>
+		 <t>-04 To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell.</t>
             </list>
             </t>
        </section>
