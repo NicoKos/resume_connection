@@ -135,9 +135,10 @@ specify just the year. -->
     In the extreme case, an overshoot can result in persistent congestion
     with unwanted starvation of
     other flows <xref target="RFC8867"></xref> (i.e., preventing other flows
-    from successfully sharing capacity at a common bottleneck).</t>
+    from successfully sharing the capacity at a common bottleneck).</t>
 
-    <t>This document proposes a CC method that is expected to reduce the time to complete a transfer
+    <t>This document proposes a CC method that is expected to
+     reduce the time to complete a transfer
     when the transfer sends significantly more data than allowed by the
     Initial congestion Window (IW), and
     where the BDP of the path is also significantly
@@ -150,7 +151,7 @@ specify just the year. -->
     <t>This method is based on temporal sharing (sometimes known as
     caching) of a saved set of CC parameters that relate to previous observations
     of the same path. The saved CC parameters include:
-    the available capacity found on the path and the RTT. These
+    the saved_cwnd for the path and the minimum RTT. These
     parameters are stored and used to modify the CC
     behavior of a subsequent connection between the
     same endpoints.</t>
@@ -162,7 +163,7 @@ specify just the year. -->
     <section title="Use of saved CC parameters by a Sender">
         <t>CC parameters are used by Careful Resume for two functions:
         <list style="symbols">
-            <t>Information about the utilised path capacity.
+            <t>Information about the utilised path capacity (saved_cwnd).
             This allows a later sender to
             determine an appropriate set of CC parameters for re-using the path.</t>
             <t>Information to characterize the saved path. This allows a sender to
@@ -178,10 +179,11 @@ specify just the year. -->
             to assure safe use and to be robust to changes
             in traffic patterns, network routing, and link/node conditions.
             There are cases where using the saved parameters of a previous
-            connection is not appropriate.</t>
+            connection is not appropriate (e.g., <xref target="rec-choice"></xref>, 
+             <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
     </section>  <!-- End of use with care -->
           
-    <section title="Receiver Preference">
+    <section anchor="rec-choice" title="Receiver Preference">
             <t>Whilst a sender could take optimization decisions without considering
             the receiver's preference, there are cases where a receiver
             could have information that
@@ -202,7 +204,7 @@ specify just the year. -->
                 interface has changed since the CC parameters were stored;</t>
                 <t>knowledge of the current hardware limitations at a receiver;</t>
                 <t>a receiver that can predict additional capacity will be needed
-                for other concurrent/later flows
+                for other concurrent or later flows
                 (i.e., prefers to activate Careful Resume for the a different connection).</t>
         </list></t>
 
@@ -289,16 +291,15 @@ specify just the year. -->
             <!--            <t>current_iw: Current IW;</t> -->
             <!--            <t>recom_iw: Recommended IW;</t> -->
 
-            <!--current_capacity : The currently utilised path capacity;-->
-
-            <t>saved_capacity: The capacity preserved from a
-            previous connection (measured in bytes);</t>
+            <t>saved_cwnd: The value of cwnd preserved from a
+            previous connection as an indication of the capacity
+            that was utlised by the connection;</t>
 
             <t>current_rtt: A sample measurement of the current RTT;</t>
 
             <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
             of a set RTT of measurements taken at the time when the
-            saved_capacity was estimated;</t>
+            saved_cwnd was estimated;</t>
 
             <t>endpoint_token: An Endpoint Token for a receiver;</t>
 
@@ -329,7 +330,7 @@ specify just the year. -->
    <t>
  <artwork align="left" name="" type="" alt=""><![CDATA[
      
-Connect -> Reconaissance --------------------> Normal
+Connect -> Reconnaissance --------------------> Normal
              |                                   ^
              v                                   |
            Unvalidated --> Validating -----------+
@@ -345,10 +346,11 @@ is later performed by an established connection.</t>
      
     <!-- These subsections to match next section format -->
     <section title="Observe Phase">
-        <t>During a previous connection, CC parameters for the path
+        <t>During a previous connection, CC parameters for the specific path
         to an endpoint are saved. This is used to characterize the path and
-        to measure the capacity that was used. This includes the minimum RTT
-        (saved_rtt), the path capacity (saved_capacity) and the receiver
+        to record the saved_cwnd (the currently utilised capacity for the connection).
+        This includes the minimum RTT
+        (saved_rtt), at the cwnd was saved and the receiver
         Endpoint Token (saved_endpoint_token). An implementation
         can store this information at the server (or could exchange this information
         with a receiver, as detailed in <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
@@ -384,12 +386,18 @@ is later performed by an established connection.</t>
             (i.e., the saved_endpoint_token is different from the
             current_endpoint_token), it is assumed to represent a different network path.</t>
 
+            <t>Reconnaissance Phase (Using saved-cwnd):
+            Only one connection can use a specific set of saved CC parameters.
+            If another connection has already started to use the saved_cwnd, the sender
+            MUST use standard CC, and enter
+            the Normal Phase.</t>
+          
              <t>Reconnaissance Phase (Confirming RTT): Since the CC information
              is directly impacted by the RTT, a significant change in the RTT
              is a strong indication that the previously observed CC
              parameters are not valid for the current path.
              An RTT measurement is confirmed when current_rtt &ge;
-             (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10 (TBC)).</t>
+             (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10).</t>
 
             <t>Reconnaissance Phase (Lifetime of saved information): The CC information is temporal.
             Frequent connections to the same endpoint are likely to track
@@ -428,11 +436,12 @@ is later performed by an established connection.</t>
         <t>This phase paces transmission using an increased CWND (jump_CWND)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
+             
              <t>Unvalidated Phase (jump_cwnd):
              To avoid starving other (potential) flows that could have started
-             or increased their capacity after the Observation Phase,
-             the jump_cwnd MUST be no more than half of the saved_capacity.
-             Hence, jump_cwnd &le; saved_capacity/2.</t>
+             or increased their used capacity after the Observation Phase,
+             the jump_cwnd MUST be no more than half of the saved_cwnd.
+             Hence, jump_cwnd &le; saved_cwnd/2.</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated
              CWND MUST use pacing.</t>
@@ -598,24 +607,24 @@ is later performed by an established connection.</t>
             
         <t>There are various approaches to measuring the capacity that used by a connection.
         Congestion controllers, such as CUBIC or Reno, can estimate the
-        capacity by utilizing a combination of the
-        CWND/flight_size and the RTT. A different approach could
+        capacity by utilizing the
+        CWND or flight_size. A different approach could
         estimate the same parameters for a rate-based congestion
         controller, such as BBR <xref target="I-D.cardwell-iccrg-bbr-congestion-control"></xref>.
        
         <list style="symbols">
             <!-- Avoid unhelpful use of the Careful Resume for small CWNDs.-->
 
-            <t>Observe Phase: The sender should update the stored CC parameters
-        and/or send updated CC parameter
-            information related to an estimated path capacity
-            (the saved_capacity) after each observation.</t>
-            <t>Observe Phase: The stored CC parameters should be updated
+            <t>Observe Phase: The sender updates the stored CC parameters
+             and/or send the updated CC parameter
+            information for the saved_cwnd
+            after each observation.</t>
+            <t>Observe Phase: The stored CC parameters ought to be updated
             if there are significant changes in the saved CC parameters.
             The frequency of update MUST be less than
             one update for several RTTs of time.</t>
 
-            <t>Observe Phase: There are cases where the current  CWND
+            <t>Observe Phase: There are cases where the current CWND
             does not reflect the path capacity. At the End of the CC slow
             start phase, the size can be significantly larger than
             needed to fully utilize the path (i.e., a CWND
@@ -623,13 +632,13 @@ is later performed by an established connection.</t>
             overshoot in the CWND as a basis for estimating the
             capacity. In most cases, the CWND will converge to a stable
             value after several more RTTs.
-            One mitigation could be to calculate the
-            capacity based on
-            the flight_size, an averaged CWND. Also when the sender
+            One mitigation could be to set the
+            saved_cwnd based on
+            the flight_size, or an averaged CWND. Also when the sender
             is application-limited or in an RTT following a burst of
             transmission, a sender typically transmits
             much less data than allowed. This case also ought to be discounted when
-            estimating the capacity.</t>
+            estimating the saved_cwnd.</t>
         </list></t>
     </section> <!-- Observe Phase  (measuring) -->
 
@@ -638,6 +647,23 @@ is later performed by an established connection.</t>
         and starts sending initial data.
         It measures the RTT to confirm the path it wishes to use.</t>
 
+        <t>The method does not permit multiple concurrent reuse of
+        the saved CC parameters. When multiple new concurrent connections
+        are made to a server, each can have a valid endpoint_token,
+        but the saved-cwnd can only be used for one new connection. 
+        This is designed to prevent a sender from performing multiple jumps in the cwnd
+        each individually based on the same saved_cwnd, and hence creating an
+        excessive aggregate load at the bottleneck.</t>
+
+       <t>The method used to prevent re-use of the saved CC parameters
+       depends on the design of the server being used
+       (e.g., if all connections from a given client IP arrive at the
+       same server process, then the server process could use a hash table).
+       A distributed system might be required for some types of load
+       balanceing to ensure this invariant when the load balancing hashes
+       connections by 4-tuple, when multiple connections from the same
+       client device are served by different server processes.</t>
+             
         <t>A sender must limit the initial data,
             sent in the first RTT of transmitted data,
             to not more than the IW <xref target="RFC9000"></xref>.
@@ -658,13 +684,11 @@ is later performed by an established connection.</t>
                 
              <t>If the current RTT sample is less than a half of the
              saved_RTT, this is regarded as too small, and is an indicator of a path change.
-             (This factor of two arises, because the unvalidated rate will
-             not exceed the observed rate when
-             the capacity was measured, because the jump_cwnd is calculated as half the
-             measured capacity.)</t>
-             <t>A current RTT larger than that at the time the capacity was measured results
-             in a proportionaly lower unvalidated rate,
-             because the transmission using the CR method
+             (This factor of two arises, because the rate should not exceed the observed rate when
+             the saved_cwnd was measured, because the jump_cwnd is calculated as half the
+             measured saved_cwnd.)</t>
+             <t>A current RTT larger than that at the time the saved_cwnd was measured results
+             in a proportionaly lower resumed rate, because the transmission using the CR method
              is paced based on the current RTT.
              An RTT sample more than ten times the
              saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
@@ -690,9 +714,9 @@ is later performed by an established connection.</t>
 
         <t>
             <list style="symbols">
-                <t>Unvalidated Phase (Jump): A connection does not directly use the
-                    saved_capacity to initialize a new flow to resume sending at the same
-                    rate. The jump_cwnd is no more than half the saved_capacity and is
+                <t>Unvalidated Phase (Jump): A connection must not directly use the previously
+                    saved_cwnd to directly initialize a new flow causing it to resume sending at the same
+                    rate. The jump_cwnd MUST be no more than half the previously saved_cwnd and is
                     paced based on the
                     current_RTT. Using the current_rtt, rather than the saved_RTT,
                     helps to ensure appropriate pacing,
@@ -732,12 +756,13 @@ is later performed by an established connection.</t>
             avoid line-rate bursts (e.g., <xref target="I-D.hughes-restart"></xref>).</t>
 
             <t>The following example provides a relevant pacing rhythm using the RTT and the
-            saved_capacity. The Inter-packet Transmission Time (ITT) could be determined
-            from the current Maximum Message Size (MMS),
-            the saved_capacity and the current_RTT. A safety
-            limit can avoid sending more than a recommended maximum (max_jump):
+            saved_cwnd. The Inter-packet Transmission Time (ITT) is determined
+            by using the current Maximum Message Size (MMS),
+            the saved_cwnd and the RTT. A safety
+            margin can avoid sending more than a recommended maximum
+            (max_jump):
             <list>
-                <t>jump_cwnd = min(max_jump,saved_capacity/2)</t>
+                <t>jump_cwnd = min(max_jump,saved_cwnd/2)</t>
                 <t>ITT = (current_RTT x MMS)/jump_cwnd</t>
             </list></t>
             <t>This follows the idea presented in <xref target="RFC4782"></xref>,
@@ -769,7 +794,7 @@ is later performed by an established connection.</t>
          the buffer at the congested bottleneck.
          For this reason, a sender needs to react to detected congestion by
          reducing significantly CWND significantly
-         below the saved_capacity.</t>
+         below the saved_cwnd.</t>
 
             
     <t>Note: Proportional Rate Reduction (PRR) assumes that it is safe to reduce
@@ -785,7 +810,7 @@ is later performed by an established connection.</t>
              
             <t>A simple conservative design sets CWND = IW and then
             resumes using normal slow-start.
-            This does not require measuring the capacity at congestion.
+            This does not require measuring the measured at congestion.
             The resulting pattern of CWND growth resembles that which
             would have occurred had the design not been used.</t>
              
@@ -846,7 +871,8 @@ is later performed by an established connection.</t>
 
 <section anchor="sec-acknowledgments" title="Acknowledgments">
       <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
-      Ian Swett, Igor Lubashev, Robin Marx, Roland Bless, Franklin Simo, Raffaello Secchi for
+      Ian Swett, Igor Lubashev, Robin Marx, Roland Bless, Franklin Simo, Kazuho Oku, 
+      Neal Cardwell, Raffaello Secchi for
       their fruitful comments on earlier versions of this document.</t>
       <t>The authors would like to particularly thank Tom Jones for co-authoring
       several previous versions of this document.</t>
@@ -1052,6 +1078,9 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
      senders; selection of reasoned parameters; specification of safe retreat; and
      improvements to the consistency throughout. Added the validating phase.</t>
 <t>WG -03, explain entry to Validating Phase, editorial tidy.</t>
+<t>WG -04, update based on review commenrts from Kazuho Oku.</t>
+<t>WG-05, update based on review comments from Neal Cardwell.</t>
+
 </list></t>
 </section> <!-- End of Revisions -->
 
