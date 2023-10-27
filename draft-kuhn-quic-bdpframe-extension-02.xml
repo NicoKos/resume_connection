@@ -130,7 +130,7 @@ the CC parameters -->
         <t>
         For an established connection, the current RTT, measured capacity
         and receiver Endpoint Token are computed and are respectively
-        stored as the saved_rtt, saved_capacity and saved_endpoint_token.
+        stored as the saved_rtt, saved_cwnd and saved_endpoint_token.
         These are placed within a BDP_FRAME.
         The sender also computes a secured hash over
         these CC parameters and sends this within the BDP_FRAME.</t>
@@ -163,10 +163,9 @@ the CC parameters -->
           <t>(2) The saved  CC parameters are transmitted to the receiver in a BDP_FRAME,
               these can be used when reconnecting, but a receiver does not read the
               CC parameters;</t>
-          <t>(3) The saved CC parameters are
-              transmitted to a receiver in a BDP_Frame,
+          <t>(3) The saved CC parameters are transmitted to a receiver in a BDP_Frame,
               which can use these when reconnecting.
-              The receiver can also read, but not modify,
+              The receiver can read, but not modify,
               the CC parameters to accept or not the use of these parameters.</t>
         </list></t>
     </section> <!--- still intro, end of 3 approaches -->
@@ -175,7 +174,7 @@ the CC parameters -->
           <t>Local Storage allows both a sender to store saved CC parameters:
           <list style="symbols">
               <t>-During a 1-RTT session, the endpoint stores the RTT (as the
-              saved_rtt) and path capacity (as the saved_capacity) together in
+              saved_rtt) and capacity utlised by the connection on the path (as the saved_cwnd) together in
               the session resume ticket.
 
                      <t>The sender maintains a table of previously stored CC parameters.
@@ -238,12 +237,12 @@ the CC parameters -->
 <section anchor="sec:terms_def" title="Notation and Terms">
     <t> <list style="symbols">
         <t>BDP: Bandwdith Delay Product of the path (maximum path capacity);</t>
-        <t>saved_capacity: The capacity preserved from a
+        <t>saved_cwnd: The capacity preserved from a
         previous connection;</t>
 
         <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
         of a set RTT of measurements taken at the time when the
-        saved_capacity was estimated;</t>
+        saved_cwnd was estimated;</t>
 
         <t>endpoint_token: An Endpoint Token for a receiver;</t>
 
@@ -305,8 +304,8 @@ BDP_FRAME {
         of a NewSessionTicket of TLS  <xref target="RFC8446"></xref>.
         This represents the validity in time of this extension.</t>
 
-        <t>Saved capacity estimate (saved_capacity): The
-        saved_capacity is a value in bytes, encoded as a variable-length integer. The
+        <t>Saved CND estimate (saved_cwnd): The
+        saved_cwnd is a value in bytes, encoded as a variable-length integer. The
         available capacity can be estimated for the previous connection by
         the sender.
         Using the previous values of bytes_in_flight defined in
@@ -431,7 +430,7 @@ BDP_FRAME {
         <!--A sender that stores a resumption ticket for each receiver to
             protect against replay on a third party, could also store the
             Endpoint Token (i.e., saved_endpoint_token) and CC parameters (i.e.,
-            saved_rtt and saved_capacity) of a previous connection.-->
+            saved_rtt and saved_cwnd) of a previous connection.-->
 
             <!--When the BDP_Frame extension is used, locally stored CC
             parameters at the sender can provide a cross-check of the CC
@@ -586,18 +585,18 @@ BDP_FRAME {
     </t>
 	
     <section title="Protecton from Malicious Receivers">
-        <t>The sender MUST check the integrity of the saved_rtt and saved_capacity
+        <t>The sender MUST check the integrity of the saved_rtt and saved_cwnd
         parameters received from a receiver.</t>
 
         <t>There are several solutions to avoid attacks by malicious receivers:
         <list style="symbols">
             <t>Solution #1 : The sender stores a local estimate
-            of the capacity and RTT parameters as the saved_capacity and
+            of the capacity and RTT parameters as the saved_cwnd and
             saved_rtt.</t>
 
             <t>Solution #2 : The sender sends the estimate of
             the capacity and RTT parameters to the receiver as the
-            saved_capacity and saved_rtt in a block of CC parameters that is
+            saved_cwnd and saved_rtt in a block of CC parameters that is
             authenticated by the secure hash including local key 
             information. The parameters may be encryptedd and
             are not read by the rceeiver.
@@ -608,7 +607,7 @@ BDP_FRAME {
 
             <t>Solution #3 : This approach is the same as
                 above, except the receiver can
-                read the saved_rtt and saved_capacity parameters and
+                read the saved_rtt and saved_cwnd parameters and
                 could enable a receiver to decide whether the new
                 CC parameters are thought appropriate, based on
                 receiver-side information about
