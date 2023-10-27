@@ -325,7 +325,7 @@ BDP_FRAME {
         of a NewSessionTicket of TLS  <xref target="RFC8446"></xref>.
         This represents the validity in time of this extension.</t>
 
-        <t>Saved CND estimate (saved_cwnd): The
+        <t>Saved CWND estimate (saved_cwnd): The
         saved_cwnd is a value in bytes, encoded as a variable-length integer. The
         available capacity can be estimated for the previous connection by
         the sender.
