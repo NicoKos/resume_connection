@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-03"
+<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-04"
      ipr="trust200902">
     <!-- category values: std, bcp, info, exp, and historic
     ipr values: full3667, noModification3667, noDerivatives3667
@@ -128,8 +128,12 @@ specify just the year. -->
     intention to avoid or limit overshooting the available capacity for the path.
     The slow-start design can increase queuing (latency/jitter) and/or
     congestion packet loss to the flow. Any overshoot can have a
-    detrimental effect on other flows sharing a common bottleneck. In the
-    extreme case, persistent congestion could result in unwanted starvation of
+    detrimental effect on other flows sharing a common bottleneck. 
+    A sender can use a method to observe the rated of acknowledged data,
+    and seek to avoid overshooting the bottleneck capacity (e.g., Hystart++
+    <xref target="RFC9406"></xref>).
+    In the extreme case, an overshoot can result in persistent congestion
+    with unwanted starvation of
     other flows <xref target="RFC8867"></xref> (i.e., preventing other flows
     from successfully sharing capacity at a common bottleneck).</t>
 
@@ -141,7 +145,7 @@ specify just the year. -->
     <t>It introduces an alternative method to select initial CC parameters,
     that seek to more rapidly and safely grow the sending rate controlled by
     then congestion window, CWND. (CC methods that are rate-based can make
-    similar adjustments to their target sending rate.</t>
+    similar adjustments to their target sending rate.)</t>
      
     <t>This method is based on temporal sharing (sometimes known as
     caching) of a saved set of CC parameters that relate to previous observations
@@ -193,7 +197,7 @@ specify just the year. -->
             <list style="numbers">
                 <t>a receiver that can predict the pattern of traffic
                 (e.g., insight into the volume of data to be sent,
-                the expected length of a session, or the maximum transfer rate required);</t>
+                the expected length of a session, or the required maximum transfer rate);</t>
                 <t>a receiver with a local indication that a path/local
                 interface has changed since the CC parameters were stored;</t>
                 <t>knowledge of the current hardware limitations at a receiver;</t>
@@ -227,15 +231,15 @@ specify just the year. -->
         Without a new method,
         each connection would need to individually
         discover appropriate CC parameters, whereas Careful Resume allows the flow
-        to continue at a rate that resembles the observed rate.</t>
+        to use a rate that based on the previously observed rate.</t>
 
         <t>In another example, an application reconnects after a disruption
         had temporarily reduced the path
         capacity (e.g., after a link propagation
         impairment, or where a user on a train journey travels through
         different areas of connectivity). When the endpoint
-        returns to use a path with the original characteristics, it can resume
-        a transmission rate based on the previously observed CC parameters.</t>
+        returns to use a path with the original characteristics, using
+        a rate based on the previously observed CC parameters.</t>
         <t>
         There is particular benefit for
         any path with an RTT that is much larger than typical
@@ -288,7 +292,7 @@ specify just the year. -->
             <!--current_capacity : The currently utilised path capacity;-->
 
             <t>saved_capacity: The capacity preserved from a
-            previous connection;</t>
+            previous connection (measured in bytes);</t>
 
             <t>current_rtt: A sample measurement of the current RTT;</t>
 
@@ -341,7 +345,7 @@ is later performed by an established connection.</t>
      
     <!-- These subsections to match next section format -->
     <section title="Observe Phase">
-        <t>During a previous connection, CC pareameters for the specific path
+        <t>During a previous connection, CC parameters for the path
         to an endpoint are saved. This is used to characterize the path and
         to measure the capacity that was used. This includes the minimum RTT
         (saved_rtt), the path capacity (saved_capacity) and the receiver
@@ -412,13 +416,11 @@ is later performed by an established connection.</t>
         <t>The Unvalidated Phase is designed to enable the CWND
         to more rapidly get up to speed, but this requires data to send.
         If the application is data limited, the sender sends insufficient data
-        to be able to validate transmission at the tentative higher rate.
+        to be able to validate transmission at the higher rate.
         Careful Resume therefore remains in the Reconnaissance Phase and does not
         transition to the Unvalidated Phase until the sender
         has more data ready to send in the transmission buffer
         than is permitted by the current CWND.
-        (If an application is data-limited, the sender sends insufficient data
-        to be able to validate the tentative higher rate.)
         In some implementations, the decision to enter the
         Unvalidated Phase could require coordination with the management
         of buffers in the interface to the higher layers.</t>
@@ -607,7 +609,7 @@ is later performed by an established connection.</t>
             <t>Observe Phase: The sender should update the stored CC parameters
         and/or send updated CC parameter
             information related to an estimated path capacity
-            (saved_capacity) after each observation.</t>
+            (the saved_capacity) after each observation.</t>
             <t>Observe Phase: The stored CC parameters should be updated
             if there are significant changes in the saved CC parameters.
             The frequency of update MUST be less than
@@ -656,11 +658,13 @@ is later performed by an established connection.</t>
                 
              <t>If the current RTT sample is less than a half of the
              saved_RTT, this is regarded as too small, and is an indicator of a path change.
-             (This factor of two arises, because the rate should not exceed the observed rate when
+             (This factor of two arises, because the unvalidated rate will
+             not exceed the observed rate when
              the capacity was measured, because the jump_cwnd is calculated as half the
              measured capacity.)</t>
              <t>A current RTT larger than that at the time the capacity was measured results
-             in a proportionaly lower resumed rate, because the transmission using the CR method
+             in a proportionaly lower unvalidated rate,
+             because the transmission using the CR method
              is paced based on the current RTT.
              An RTT sample more than ten times the
              saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
@@ -686,12 +690,13 @@ is later performed by an established connection.</t>
 
         <t>
             <list style="symbols">
-                <t>Unvalidated Phase (Jump): A connection must not directly use the previously
-                    saved_capacity to directly initialize a new flow causing it to resume sending at the same
-                    rate. The jump_cwnd MUST be no more than half the previously saved_capacity and is
+                <t>Unvalidated Phase (Jump): A connection does not directly use the
+                    saved_capacity to initialize a new flow to resume sending at the same
+                    rate. The jump_cwnd is no more than half the saved_capacity and is
                     paced based on the
-                    current RTT (current_RTT). Using the current_rtt rather than a saved RTT value
-                    helps to ensure appropriate pacing, but places a limitation on the minimum acceptable RTT
+                    current_RTT. Using the current_rtt, rather than the saved_RTT,
+                    helps to ensure appropriate pacing,
+                    but places a limitation on the minimum acceptable current_RTT
                     to avoid sending at a rate higher than was previously observed.</t>
         </list></t>
     
@@ -727,14 +732,13 @@ is later performed by an established connection.</t>
             avoid line-rate bursts (e.g., <xref target="I-D.hughes-restart"></xref>).</t>
 
             <t>The following example provides a relevant pacing rhythm using the RTT and the
-            saved_capacity. The Inter-packet Transmission Time (ITT) is determined
-            from the ratio between the current Maximum Message Size (MMS) and
-            the ratio between the saved_capacity and the RTT. A safety
-            margin can avoid sending more than a recommended maximum
-            (max_jump):
+            saved_capacity. The Inter-packet Transmission Time (ITT) could be determined
+            from the current Maximum Message Size (MMS),
+            the saved_capacity and the current_RTT. A safety
+            limit can avoid sending more than a recommended maximum (max_jump):
             <list>
                 <t>jump_cwnd = min(max_jump,saved_capacity/2)</t>
-                <t>ITT = MSS/(jump_cwnd/saved_rtt)</t>
+                <t>ITT = (current_RTT x MMS)/jump_cwnd</t>
             </list></t>
             <t>This follows the idea presented in <xref target="RFC4782"></xref>,
             <xref target="I-D.irtf-iccrg-sallantin-initial-spreading"></xref> and
@@ -754,7 +758,8 @@ is later performed by an established connection.</t>
     <section anchor="req-retreat" title="Safety Requirements for the Safe Retreat Phase">
 
          <t>This section defines the safety requirements
-        after congestion has been detected during the Unvalidated Phase.</t>
+         after congestion has been detected during the Unvalidated Phase.</t>
+         
          <t>The Safe Retreat reaction MUST differ from a traditional
          reaction to detected congestion, because
          the jump_cwnd can result in a significantly higher rate than would be allowed by the
@@ -775,8 +780,7 @@ is later performed by an established connection.</t>
     <t> The CWND is reduced on entry to the Safe Retreat Phase to
         no more than the IW.</t>
         
-        <t>This provdies some examples of
-        how to implement the Safe Retreat Phase:
+        <t>This provdies examples of how to implement the Safe Retreat Phase:
         <list style="numbers">
              
             <t>A simple conservative design sets CWND = IW and then
@@ -790,13 +794,12 @@ is later performed by an established connection.</t>
              using the Unvalidated Phase (e.g., by recording the sequence number
              of the first packet sent in the phase).
             This measured capacity is called the Pipe.
-         The Pipe is not a safe measure of the currently
+            The Pipe is not a safe measure of the currently
             available share of the capacity whenever
             there was also a significant overshoot at the bottleneck,
-             as indicated by excessive loss.
+            as indicated by excessive loss.
             Therefore, any design that increases CWND based on received acknowledgments
-             ought to be scaled, because an overshoot
-            could have resulted in unduly taking capacity from sharing flows.</t>
+            ought to avoid unduly taking capacity from sharing flows.</t>
             <!--Design using a slow-start threshold need to update this
             threshold using the Pipe, when this is known, on exit of the Safe Retreat Phase
             (i.e., ssthresh = Pipe).-->
@@ -906,8 +909,9 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <?rfc include="reference.RFC.6675.xml"?>
         <?rfc include="reference.RFC.6937.xml"?>
       <?rfc include="reference.RFC.8867.xml"?>
-      <?rfc include="reference.RFC.9040.xml"?>
       <?rfc include="reference.RFC.9002.xml"?>
+      <?rfc include="reference.RFC.9040.xml"?>
+      <?rfc include="reference.RFC.9406.xml"?>
 
 
       <reference anchor="MAPRG111">
