@@ -142,7 +142,7 @@ the CC parameters -->
         
         <t>At a later time, the receiver sends the BDP-FRAME to
         the sender to re-use previously computed CC parameters.</t>
-	The receiver can also request that the sender does not enter this phase. This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
+	<t>The receiver can also request that the sender does not enter this phase. This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
  
         <t>Upon reception, the sender MUST verify the hash, and only use
         the CC parameters when valid. This is to prevent a receiver

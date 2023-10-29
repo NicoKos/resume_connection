@@ -10,7 +10,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-04"
+<rfc category="std" docName="draft-ietf-tsvwg-careful-resume-05"
      ipr="trust200902">
     <!-- category values: std, bcp, info, exp, and historic
     ipr values: full3667, noModification3667, noDerivatives3667
@@ -179,8 +179,7 @@ specify just the year. -->
             to assure safe use and to be robust to changes
             in traffic patterns, network routing, and link/node conditions.
             There are cases where using the saved parameters of a previous
-            connection is not appropriate (e.g., <xref target="rec-choice"></xref>, 
-             <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>).</t>
+            connection is not appropriate (e.g., <xref target="rec-phase"></xref>).</t>
     </section>  <!-- End of use with care -->
           
     <section anchor="rec-choice" title="Receiver Preference">
@@ -293,7 +292,7 @@ specify just the year. -->
 
             <t>saved_cwnd: The value of cwnd preserved from a
             previous connection as an indication of the capacity
-            that was utlised by the connection;</t>
+            that was utilised by the connection;</t>
 
             <t>current_rtt: A sample measurement of the current RTT;</t>
 
@@ -386,7 +385,7 @@ is later performed by an established connection.</t>
             (i.e., the saved_endpoint_token is different from the
             current_endpoint_token), it is assumed to represent a different network path.</t>
 
-            <t>Reconnaissance Phase (Using saved-cwnd):
+            <t>Reconnaissance Phase (Using saved_cwnd):
             Only one connection can use a specific set of saved CC parameters.
             If another connection has already started to use the saved_cwnd, the sender
             MUST use standard CC, and enter
@@ -650,8 +649,8 @@ is later performed by an established connection.</t>
         <t>The method does not permit multiple concurrent reuse of
         the saved CC parameters. When multiple new concurrent connections
         are made to a server, each can have a valid endpoint_token,
-        but the saved-cwnd can only be used for one new connection. 
-        This is designed to prevent a sender from performing multiple jumps in the cwnd
+        but the saved_cwnd can only be used for one new connection. 
+        This is designed to prevent a sender from performing multiple jumps in the cwnd,
         each individually based on the same saved_cwnd, and hence creating an
         excessive aggregate load at the bottleneck.</t>
 
@@ -660,7 +659,7 @@ is later performed by an established connection.</t>
        (e.g., if all connections from a given client IP arrive at the
        same server process, then the server process could use a hash table).
        A distributed system might be required for some types of load
-       balanceing to ensure this invariant when the load balancing hashes
+       balancing to ensure this invariant when the load balancing hashes
        connections by 4-tuple, when multiple connections from the same
        client device are served by different server processes.</t>
              
@@ -805,7 +804,7 @@ is later performed by an established connection.</t>
     <t> The CWND is reduced on entry to the Safe Retreat Phase to
         no more than the IW.</t>
         
-        <t>This provdies examples of how to implement the Safe Retreat Phase:
+        <t>This provides examples of how to implement the Safe Retreat Phase:
         <list style="numbers">
              
             <t>A simple conservative design sets CWND = IW and then
@@ -930,7 +929,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
           <?rfc include="reference.I-D.kuhn-quic-bdpframe-extension.xml"?>
           <?rfc include="reference.RFC.3465.xml"?>
         <?rfc include="reference.RFC.4782.xml"?>
-        <?rfc include="reference.RFC.5681.xml"?>
+	    <!-- <?rfc include="reference.RFC.5681.xml"?> -->
         <?rfc include="reference.RFC.5783.xml"?>
         <?rfc include="reference.RFC.6675.xml"?>
         <?rfc include="reference.RFC.6937.xml"?>
