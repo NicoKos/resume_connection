@@ -57,6 +57,22 @@ full title is longer than 39 characters -->
       </address>
     </author>
 
+    <author fullname="Raffaello Secchi" initials="R" surname="Secchi">
+      <organization>University of Aberdeen</organization>
+
+      <address>
+        <postal>
+          <street>Department of Engineering</street>
+          <street>Fraser Noble Building</street>
+          <city>Aberdeen</city>
+          <code>AB24 3UE</code>
+          <country>UK</country>
+        </postal>
+
+        <email>r.secchi@erg.abdn.ac.uk</email>
+      </address>
+    </author>
+
     <author fullname="Christian Huitema" initials="C" surname="Huitema">
       <organization>Private Octopus Inc.</organization>
 
