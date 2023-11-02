@@ -167,7 +167,7 @@ specify just the year. -->
     <t>This method is based on temporal sharing (sometimes known as
     caching) of a saved set of CC parameters that relate to previous observations
     of the same path. The saved CC parameters include:
-    the saved_cwnd for the path and the minimum RTT. These
+    the saved_cwnd for the path and the minimum Round-Trip Time (RTT). These
     parameters are stored and used to modify the CC
     behavior of a subsequent connection between the
     same endpoints.</t>
