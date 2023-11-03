@@ -706,7 +706,7 @@ is later performed by an established connection.</t>
              in a proportionaly lower resumed rate, because the transmission using the CR method
              is paced based on the current RTT.
              An RTT sample more than ten times the
-             saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
+             saved_RTT or 150 ms (value TBC) larger than the saved_RTT is regarded as too large, such a high RTT is indicative of a path change.
              (The factor of ten accommodates both increases in latency from buffering
              on a path, and any variation between samples).</t>
 
@@ -1094,7 +1094,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
      improvements to the consistency throughout. Added the validating phase.</t>
 <t>WG -03, explain entry to Validating Phase, editorial tidy.</t>
 <t>WG -04, update based on review commenrts from Kazuho Oku.</t>
-<t>WG-05, update based on review comments from Neal Cardwell.</t>
+<t>WG-05, update based on review comments from Neal Cardwell and Ruediger Geib.</t>
 
 </list></t>
 </section> <!-- End of Revisions -->
