@@ -22,7 +22,7 @@
 		<!-- The abbreviated title is used in the page header - it is only necessary if the
          full title is longer than 39 characters -->
 
-		<title abbrev="BDP_Frame Extension">BDP_Frame Extension</title>
+		<title abbrev="BDP_Frame Extension">BDP_FRAME Extension</title>
 
 		<author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
 			<organization>Thales Alenia Space</organization>
@@ -155,7 +155,7 @@ the CC parameters -->
         It is unable to verify the hash and is not permitted
         to modify any CC parameters.</t>
         
-        <t>At a later time, the receiver sends the BDP-FRAME to
+        <t>At a later time, the receiver sends the BDP_FRAME to
         the sender to re-use previously computed CC parameters.</t>
 	<t>The receiver can also request that the sender does not enter this phase. This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
  
@@ -176,11 +176,11 @@ the CC parameters -->
         <t>This section reviews three approaches to implement the storage of CC parameters:
         <list>
           <t>(1) The saved CC parameters are stored at the sender
-              ("Local storage") and are not sent to a receiver, this does not use a BDP_Frame;</t>
-          <t>(2) The saved  CC parameters are transmitted to the receiver in a BDP_FRAME,
+              ("Local storage") and are not sent to a receiver, this does not use a BDP_FRAME;</t>
+          <t>(2) The saved  CC parameters are transmitted to the receiver in a resumption token,
               these can be used when reconnecting, but a receiver does not read the
               CC parameters;</t>
-          <t>(3) The saved CC parameters are transmitted to a receiver in a BDP_Frame,
+          <t>(3) The saved CC parameters are transmitted to a receiver in a BDP_FRAME,
               which can use these when reconnecting.
               The receiver can read, but not modify,
               the CC parameters to accept or not the use of these parameters.</t>
@@ -205,13 +205,13 @@ the CC parameters -->
           CC parameters.</t> -->
 
     <section anchor="sec-using_new_token" title="Using the BDP_FRAME">
-          <t>The use of the BDP_Frame is negotiated with the receiver.</t>
+          <t>The use of the BDP_FRAME is negotiated with the receiver.</t>
           <t> A sender can send a BDP_FRAME to the receiver  with
         CC parameters that were collected during the Careful Resume Observe Phase.</t>
       <!--The data in the frame can be an
           opaque (encrypted) blob and the receiver can not read its content (see
           section 19.7 of <xref target="RFC9000"></xref>).-->
-        <t>The receiver can read the BDP_Frame content and later decide to
+        <t>The receiver can read the BDP_FRAME content and later decide to
         send the BDP_FRAME back to the sender in the header of an Initial packet, or later in a
         connection. This frame needs to be received during the Reconnaissance Phase
         of a Careful Resume sender.</t>
@@ -303,7 +303,7 @@ the CC parameters -->
 </section> <!-- End of Notation and Terms -->
 <!-- ***************************************************************** -->
 
-<section anchor="sec-bdp_frame_section" title="BDP_Frame">
+<section anchor="sec-bdp_frame_section" title="BDP_FRAME">
     <t>This section describes the use of a new QUIC Frame, the BDP_FRAME.
     This can be utilized by the congestion controller in the Careful Resume method.</t>
 
@@ -385,8 +385,8 @@ BDP_FRAME {
             1: The receiver indicates to the sender that it wishes to receive
             BDP_FRAMEs and activates the optimization. </t>
             <t>
-            2: The receiver indicates that it does not wish to receive BDP
-            Frames, but activates the optimization. </t>
+            2: The receiver indicates that it does not wish to receive BDP_FRAMEs,
+            but activates the optimization. </t>
             <t>
             3: The receiver indicates that it wishes to receive BDP_FRAMEs, but
             does not activate the optimization. </t>
@@ -434,7 +434,7 @@ BDP_FRAME {
     <t>
     The CC parameters are measured by the sender by observing a previous
     connection to the same receiver. During transmission,
-    the BDP_Frame is
+    the BDP_FRAME is
     protected by the mechanism that protects the exchange of the 0-RTT
     transport parameters. For version 1 of QUIC, the this is protected
     using the mechanism that already protects the "initial_max_data"
@@ -447,7 +447,7 @@ BDP_FRAME {
     during a previous connection.</t>
 
     <t>
-    Although a BDP_Frame is
+    Although a BDP_FRAME is
     encrypted on transmission, a receiver could modify the
     value of the received CC parameters.
     The sender detects this by adding a secured hash over the
@@ -460,7 +460,7 @@ BDP_FRAME {
     <t>An example of an implementation where the sender computes an
     Endpoint Token to uniquely identify the receiver
     is provided in <xref target="sec_example-token"></xref>.
-    The implementation details are independent from the specification of the BDP_Frame.</t>
+    The implementation details are independent from the specification of the BDP_FRAME.</t>
 	
     <section title="Interoperability and Use Cases">
         <!--A sender that stores a resumption ticket for each receiver to
@@ -603,7 +603,7 @@ BDP_FRAME {
 <!-- ************************************************************************** -->
 
 <section anchor="sec:IANA" title="IANA Considerations">
-    <t>{XXX-Editor note: Text is required to register the BDP_Frame and the enable_bdp
+    <t>{XXX-Editor note: Text is required to register the BDP_FRAME and the enable_bdp
     transport parameter. Parameters are registered using the procedure
     defined in <xref target="RFC9000"></xref>.}</t>
 
@@ -724,11 +724,11 @@ x
         <section anchor="Changes" title="Change Log">
             <t> This section to be rmeoved prior to publication.
             <list>
-                <t>-00 Introduced session tickets and BDP_Frames</t>
+                <t>-00 Introduced session tickets and BDP_FRAMEs</t>
                 <t>-01 Reviewed receiver actions when a receiver holds CC parameters</t>
                 <t>-02 Interim version to align with terminology in Careful Resume</t>
-                <t>-03 Rewritten to align with Careful Resume and use the BDP_Frame method.
-	 	Removed annexe 1, and discussion of session tickets, prefering BDP Frames.</t>
+                <t>-03 Rewritten to align with Careful Resume and use the BDP_FRAME method.
+	 	Removed annexe 1, and discussion of session tickets, prefering BDP_FRAMEs.</t>
 		 <t>-04 To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell.</t>
             </list>
             </t>
