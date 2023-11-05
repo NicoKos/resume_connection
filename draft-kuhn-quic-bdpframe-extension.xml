@@ -593,7 +593,7 @@ BDP_FRAME {
     <t>
     The authors thank Gabriel Montenegro,
     Patrick McManus, Ian Swett, Igor Lubashev, Robin Marx,
-    Roland Bless and Franklin Simo for their fruitful
+    Roland Bless, Franklin Simo, Kazuho Oku and Marten Seeman for their fruitful
     comments on earlier versions of this document.</t>
     <t>
     The authors particularly thank Tom Jones
@@ -729,7 +729,9 @@ x
                 <t>-02 Interim version to align with terminology in Careful Resume</t>
                 <t>-03 Rewritten to align with Careful Resume and use the BDP_FRAME method.
 	 	Removed annexe 1, and discussion of session tickets, prefering BDP_FRAMEs.</t>
-		 <t>-04 To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell.</t>
+		 <t>-04 (1) To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell. 
+			(2) To fix the alternative of using resumption tokens as proposed by Marten Seeman and Kazuho Oku.
+		 	(3) To detail the client point of view and associated use-cases.</t>
             </list>
             </t>
        </section>
