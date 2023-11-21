@@ -143,7 +143,7 @@ specify just the year. -->
     intentionally uses less capacity than might be available, with the
     intention to avoid or limit overshooting the available capacity for the path.
     The slow-start design can increase queuing (latency/jitter) and/or
-    congestion packet loss to the flow. Any overshoot can have a
+    congestion packet loss for the flow. Any overshoot can have a
     detrimental effect on other flows sharing a common bottleneck. 
     A sender can use a method to observe the rated of acknowledged data,
     and seek to avoid overshooting the bottleneck capacity (e.g., Hystart++
@@ -315,7 +315,7 @@ specify just the year. -->
 
 	    <t>max_jump : The maximum configured jump_cwnd;</t>
 
-	    <t>pipe: The estimated available capacity at the time of congestion;</t>
+	    <t>pipe: The estimated capacity avalaible to a connection at the time of congestion;</t>
 
             <t>saved_cwnd: A value of cwnd derived from observation of a
             previous connection. This reflects capacity
@@ -435,7 +435,7 @@ is later performed by an established connection.</t>
              (saved_rtt / 2) and the current_rtt  &le;  (saved_rtt x 10).</t>
 
 	     <t>Reconnaissance Phase (Detected congestion): If the sender detects
-             congestion, MUST enter the Normal Phase.<t>
+             congestion (e.g., packet loss or ECN-CE marking), MUST enter the Normal Phase.<t>
 
 	      <t>Reconnaissance Phase (Using saved_cwnd):
             Only one connection can use a specific set of saved CC parameters.
