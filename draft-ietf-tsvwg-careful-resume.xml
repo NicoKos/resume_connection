@@ -885,9 +885,10 @@ is later performed by an established connection.</t>
 </section> <!--  End of Guidelines -->
 
 <section anchor="sec-QLOG" title="QLOG support for QUIC">
-	<t>This section provides qlog event definitions that enable Careful Resume Phase
+	<t>This section provides qlog event definitions that enable the 
+	Careful Resume method
 	to generate qlog events when using QUIC.
-	It introduces a mechanism to report the current phase of a sender, 
+	It introduces an event to report the current phase of a sender, 
 	and the associated description.</t>
 	
 	<t>The event and data structure definitions in ths document are
