@@ -885,13 +885,13 @@ is later performed by an established connection.</t>
 </section> <!--  End of Guidelines -->
 
 <section anchor="sec-QLOG" title="QLOG support for QUIC">
-	<t>This section provides qlog event definitions that enable the 
+	<t>This section provides definitions that enable the 
 	Careful Resume method
 	to generate qlog events when using QUIC.
 	It introduces an event to report the current phase of a sender, 
 	and the associated description.</t>
 	
-	<t>The event and data structure definitions in ths document are
+	<t>The event and data structure definitions in this section are
 	expressed in the Concise Data Definition Language 
 	<xref target="RFC8610"> and its
 	extensions described in <xref target="I-D.ietf-qlog-quic-events">.</t>
@@ -927,7 +927,7 @@ CrState::RETREAT => { 100 }
       Neal Cardwell, Raffaello Secchi for
       their fruitful comments on earlier versions of this document.</t>
       <t>The authors would like to particularly thank Tom Jones for co-authoring
-      several previous versions of this document.</t>
+      several previous versions of this document. Ana Custura devloped the qlog support.</t>
     </section>
 
     <section anchor="sec-IANA" title="IANA Considerations">
