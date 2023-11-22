@@ -892,11 +892,11 @@ is later performed by an established connection.</t>
 	and the associated description.</t>
 	
 	<t>The event and data structure definitions in this section are
-	expressed in the Concise Data Definition Language 
+	expressed in the Concise Data Definition Language (CDDL)
 	<xref target="RFC8610"> and its
 	extensions described in <xref target="I-D.ietf-qlog-quic-events">.</t>
 	
-	<section title="cr_phase">
+	<section title="cr_phase Event">
 		<name>cr_phase</name>
 		<t>Importance: Extra</t>
 
