@@ -901,7 +901,7 @@ is later performed by an established connection.</t>
 		<t>Importance: Extra</t>
 
 		<t>When the CC algorithm changes the Careful Resume Phase 
-		described in this specification.</t>
+		described in <xref target="sec-phase"> of this specification.</t>
        		 <t>Definition:</t>
 
 		<figure anchor="qlog-def">
