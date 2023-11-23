@@ -111,7 +111,7 @@ specify just the year. -->
     <abstract>
       <t>This document specifies a cautious method for IETF transports that
       enables fast startup of congestion control for a wide
-      range of connections or nections.
+      range of connections.
       It reuses a set of computed congestion control parameters that
       are based on previously observed path characteristics between
       the same pair of transport endpoints. These parameters
@@ -350,7 +350,7 @@ specify just the year. -->
    <t>
  <artwork align="left" name="" type="" alt=""><![CDATA[
      
-Connect -> naissance --------------------> Normal
+Connect -> Reconnaissance --------------------> Normal
              |                                   ^
              v                                   |
            Unvalidated --> Validating -----------+
@@ -403,8 +403,8 @@ is later performed by an established connection.</t>
 
     </section> <!-- End of define Observe Phase:-->
           
-    <section anchor="rec-phase" title="naissance Phase">
-        <t> When a sender resumes transmission, it enters the naissance Phase.
+    <section anchor="rec-phase" title="Reconnaissance Phase">
+        <t> When a sender resumes transmission, it enters the Reconnaissance Phase.
         In this phase, the sender transmits initial data, limited by the IW,
         and monitors its reception using normal CC (i.e., the CC is unchanged).</t>
 
@@ -418,34 +418,34 @@ is later performed by an established connection.</t>
 
         <list style="symbols"> <!-- list of phase -->
 
-            <t>naissance Phase (Endpoint change):
+            <t>Reconnaissance Phase (Endpoint change):
             If the current remote endpoint is not the same as a saved endpoint,
             the sender MUST enter the Normal Phase. If the Endpoint Token differs
             (i.e., the saved_endpoint_token is different from the
             current_endpoint_token), it is assumed to represent a different network path.
             The sender also enters the Normal Phase when there are no corresponding saved CC parameters.</t>
 
-            <t>naissance Phase (Lifetime of saved CC parameters): The CC parameters are temporal.
+            <t>Reconnaissance Phase (Lifetime of saved CC parameters): The CC parameters are temporal.
             Frequent connections to the same endpoint are likely to track
             changes, but long-term use of the previously observed parameters is not appropriate.</t>
             <!-- XX A future version may say how many samples are needed?-->
 
-             <t>naissance Phase (Confirming RTT): Since the CC information
+             <t>Reconnaissance Phase (Confirming RTT): Since the CC information
              is directly impacted by the RTT, a significant change in the RTT
              is a strong indication that the previously observed CC
              parameters are not valid for the current path.
              An RTT measurement is confirmed when current_rtt is greater than
              (saved_rtt / 2) and the current_rtt is less than or equal to (saved_rtt x 10).</t>
 
-            <t>naissance Phase (Detected congestion): If the sender detects
+            <t>Reconnaissance Phase (Detected congestion): If the sender detects
              congestion (e.g., packet loss or ECN-CE marking), MUST enter the Normal Phase.</t>
 
-            <t>naissance Phase (Using saved_cwnd):
+            <t>Reconnaissance Phase (Using saved_cwnd):
             Only one connection can use a specific set of saved CC parameters.
             If another connection has already started to use the saved_cwnd, the sender
             MUST enter the Normal Phase.</t>
 
-            <!--  naissance Phase (Is there a need for a number of required RTT samples): ????  -->
+            <!--  Reconnaissance Phase (Is there a need for a number of required RTT samples): ????  -->
         </list></t>
 
         <t>When a sender confirms the path and it
@@ -459,7 +459,7 @@ is later performed by an established connection.</t>
         <t>When a path is not confirmed, Careful Resume is not used
         and the sender enters the Normal Phase.</t>
 
-    </section> <!-- End of naissance Phase -->
+    </section> <!-- End of Reconnaissance Phase -->
      
     <section anchor="unv-phase" title="Unvalidated Phase">
         <t>The Unvalidated Phase is designed to enable the CWND
