@@ -251,7 +251,7 @@ specify just the year. -->
         discover appropriate CC parameters, whereas Careful Resume allows the flow
         to use a rate that is based on the previously observed CC parameters.</t>
 
-        <t>In another example, an application nects after a disruption
+        <t>In another example, an application connects after a disruption
         had temporarily reduced the path
         capacity (e.g., after a link propagation
         impairment, or where a user on a train journey travels through
