@@ -723,8 +723,22 @@ is later performed by an established connection.</t>
         connections by 4-tuple and hence multiple connections from the same
         client device are served by different server processes.</t>
 
+	<t><xref target="RFC7661"></xref> specifies a method for managing an
+	unvalidated CWND. This states: 
+	"After a fixed period of time (the non-validated period (NVP)), the sender 
+	adjusts the cwnd (Section 4.4.3). The NVP SHOULD NOT exceed five minutes."
+	Section 5 of <xref target="RFC7661"></xref> discusses the rationale for 
+	choosing that period. Hoewever, RFC 7661 targets rate-limited connections using normal 
+	CC. The method described in the present specification includes additional
+	mechanisms to avoid and compensate for the effects of overshoot, and therefore
+	this can be used to justify a longer period to preserve the saved_cwnd.</t> 
+
+	<t><xref target="RFC9040"></xref> provides guidance on the implementation of
+	TCP Control Block Interdependence, but does not specify how long a saved
+	parameter can safely be reused.</t>
+		
         <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
-        CC Parameters can be cached, possibly based on TCP-new-CWV or TCB, RFC9040.}</t>
+        CC Parameters can be cached - Ought this to me minutes, hours, days?}</t>
 
         <section anchor="sec-confirm" title="Confirming the Path">
             <t>Path characteristics can change over time for many reasons,
