@@ -428,7 +428,7 @@ is later performed by an established connection.</t>
             The sender also enters the Normal Phase when there are no corresponding saved CC parameters.</t>
 
 	    <t>Reconnaissance Phase (Lifetime of saved CC parameters): The CC parameters are temporal.
-	    If the lifetime of the observed CC parameters is exceeded <<xref target="sec-lifetime"></xref>,
+	    If the lifetime of the observed CC parameters is exceeded <xref target="req-lifetime"></xref>,
 	    the CC parameters are no longer used
 	    and sender enters the Normal Phase.</t>
 
@@ -468,11 +468,12 @@ is later performed by an established connection.</t>
         receives an acknowledgement for the initial data without reported congestion,
         it MAY then enter the Unvalidated Phase.
         This transition occurs when a sender has more data than permitted
-        by the current CWND.
-	Implementation requirements are provided in <xref target="req-"></xref>.</t>
-
+        by the current CWND.</t>
+        
         <t>When a path is not confirmed, Careful Resume is not used
         and the sender enters the Normal Phase.</t>
+
+        <t>Implementation requirements are provided in <xref target="req-recon"></xref>.</t>
 
     </section> <!-- End of Reconnaissance Phase -->
      
@@ -482,17 +483,17 @@ is later performed by an established connection.</t>
 	    
         <t> The sender only enters this phase when there are saved CC parameters for the same
         pair of endpoints and this information is currently valid 
-	<xref target="sec-lifetime"></xref>).
+	<xref target="req-lifetime"></xref>).
         A receiver can use a method (such as the QUIC BDP Frame
         <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>)) to request
         that the sender does not enter this phase.</t>
 
-        <t>This phase paces transmission using an increased CWND (jump_CWND)
+        <t>This phase paces transmission using an increased CWND (jump_cwnd)
         that is calculated based on the saved CC parameters and current_RTT.</t>
         <t><list style="symbols">
              
              <t>Unvalidated Phase (jump_cwnd):
-             To avoid starving other (potential) flows that could have started
+             To avoid starving other flows that could have either started
              or increased their used capacity after the Observation Phase,
              the jump_cwnd MUST be no more than half of the saved_cwnd.
              Hence, jump_cwnd is less than  or equal to the saved_cwnd/2.</t>
@@ -777,12 +778,12 @@ is later performed by an established connection.</t>
                 to avoid sending at a rate higher than was previously observed.</t>
         </list></t>
 
-        <section anchor="sec-lifetime" title="Lifestime of CC Parameters">
+        <section anchor="req-lifetime" title="Lifestime of CC Parameters">
 
 	    <t>The long-term use of the previously observed parameters is not appropriate,
-	    the CC parameters therefore the CC parameters need to define a lifetime within
-	    which the saved CC parameters could be safely re-used.
-	    <xref target="RFC9040"></xref> provides guidance on the implementation of
+	    a lifetime therefore need to be specified within
+	    which the saved CC parameters could be safely re-used.</t>
+	    <t><xref target="RFC9040"></xref> provides guidance on the implementation of
 	    TCP Control Block Interdependence, but does not specify how long a saved
 	    parameter can safely be reused.</t>
 	    
@@ -1021,6 +1022,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <?rfc include="reference.RFC.5783.xml"?>
         <?rfc include="reference.RFC.6675.xml"?>
         <?rfc include="reference.RFC.6937.xml"?>
+        <?rfc include="reference.RFC.7661.xml"?>
       <?rfc include="reference.RFC.8867.xml"?>
       <?rfc include="reference.RFC.9002.xml"?>
       <?rfc include="reference.RFC.9040.xml"?>
@@ -1165,7 +1167,7 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
         <t>WG-05, update based on review comments from Neal Cardwell. WG feedback from IETF-118.
         Reviewed the requirements v. guidelines; clarified that CC is not changed in recon., but
         the recon info is used to steer the next phase; clarified saved_cwnd can be computed
-        from ACK rate; use jump once; that real server platforms are complex. </t>
+        from ACK rate; use jump once; that real server platforms are complex. Clarified lifetime for saved CC params.</t>
 
     </list></t>
 </section> <!-- End of Revisions -->
