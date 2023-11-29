@@ -452,7 +452,8 @@ is later performed by an established connection.</t>
             MUST enter the Normal Phase.</t>
 
             <t>Reconnaissance Phase (Data-limited sender):
-            If the sender is data limited, it might send insufficient data
+            If the sender is data limited <xref target="RFC7661"></xref>, 
+	    it might send insufficient data
             to be able to validate transmission at the higher rate.
             Careful Resume is allowed to remain in the Reconnaissance Phase and to not
             transition to the Unvalidated Phase until the sender
