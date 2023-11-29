@@ -318,6 +318,8 @@ specify just the year. -->
 
 	    <t>jump_cwnd: The resumed CWND, used in the Unvalidated Phase.</t>
 
+	    <t>lifteime: The time for which the saved CC parameters can be safely re-used.</t>
+
 	    <t>max_jump : The maximum configured jump_cwnd;</t>
 
 	    <t>pipe: The estimated capacity avalaible to a connection at the time of congestion;</t>
@@ -329,7 +331,7 @@ specify just the year. -->
 	    <t>saved_endpoint_token: The Endpoint Token of a previous connection to a
             receiver;</t>
 
-            <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
+            <t>saved_rtt: The saved minimum RTT, corresponding to the minimum
             of a set RTT of measurements taken at the time when the
             saved_cwnd was estimated.</t>
  
@@ -425,10 +427,10 @@ is later performed by an established connection.</t>
             current_endpoint_token), it is assumed to represent a different network path.
             The sender also enters the Normal Phase when there are no corresponding saved CC parameters.</t>
 
-            <t>Reconnaissance Phase (Lifetime of saved CC parameters): The CC parameters are temporal.
-            Frequent connections to the same endpoint are likely to track
-            changes, but long-term use of the previously observed parameters is not appropriate.</t>
-            <!-- XX A future version may say how many samples are needed?-->
+	    <t>Reconnaissance Phase (Lifetime of saved CC parameters): The CC parameters are temporal.
+	    If the lifetime of the observed CC parameters is exceeded <<xref target="sec-lifetime"></xref>,
+	    the CC parameters are no longer used
+	    and sender enters the Normal Phase.</t>
 
              <t>Reconnaissance Phase (Confirming RTT): Since the CC information
              is directly impacted by the RTT, a significant change in the RTT
@@ -437,24 +439,37 @@ is later performed by an established connection.</t>
              An RTT measurement is confirmed when current_rtt is greater than
              (saved_rtt / 2) and the current_rtt is less than or equal to (saved_rtt x 10).</t>
 
+	     <t> XXX Reconnaissance Phase (Is there a need for a minimum required number of RTT samples to confirm a path ???? </t>
+		
             <t>Reconnaissance Phase (Detected congestion): If the sender detects
-             congestion (e.g., packet loss or ECN-CE marking), MUST enter the Normal Phase.</t>
+            congestion (e.g., packet loss or ECN-CE marking), the sender does not use the Careful
+	    Resume method and MUST enter the Normal Phase to respond to the detected congestion.
+	    </t>
 
             <t>Reconnaissance Phase (Using saved_cwnd):
             Only one connection can use a specific set of saved CC parameters.
             If another connection has already started to use the saved_cwnd, the sender
             MUST enter the Normal Phase.</t>
 
-            <!--  Reconnaissance Phase (Is there a need for a number of required RTT samples): ????  -->
+            <t>Reconnaissance Phase (Data-limited sender):
+            If the sender is data limited, it might send insufficient data
+            to be able to validate transmission at the higher rate.
+            Careful Resume is allowed to remain in the Reconnaissance Phase and to not
+            transition to the Unvalidated Phase until the sender
+            has more data ready to send in the transmission buffer
+            than is permitted by the current CWND.
+            In some implementations, the decision to enter the
+            Unvalidated Phase could require coordination with the management
+            of buffers in the interface to the higher layers.</t>
+
         </list></t>
 
         <t>When a sender confirms the path and it
         receives an acknowledgement for the initial data without reported congestion,
         it MAY then enter the Unvalidated Phase.
         This transition occurs when a sender has more data than permitted
-        by the current CWND.</t>
-
-        <t>Implementation requirements are provided in <xref target="req-"></xref>.</t>
+        by the current CWND.
+	Implementation requirements are provided in <xref target="req-"></xref>.</t>
 
         <t>When a path is not confirmed, Careful Resume is not used
         and the sender enters the Normal Phase.</t>
@@ -464,23 +479,13 @@ is later performed by an established connection.</t>
     <section anchor="unv-phase" title="Unvalidated Phase">
         <t>The Unvalidated Phase is designed to enable the CWND
         to more rapidly get up to speed, but this requires data to send.</t>
+	    
         <t> The sender only enters this phase when there are saved CC parameters for the same
-        pair of endpoints and this information is currently valid (i.e., the saved parameters have
-        not expired).
+        pair of endpoints and this information is currently valid 
+	<xref target="sec-lifetime"></xref>).
         A receiver can use a method (such as the QUIC BDP Frame
         <xref target="I-D.kuhn-quic-bdpframe-extension"></xref>)) to request
         that the sender does not enter this phase.</t>
-
-	    
-        <t>If the application is data limited, the sender sends insufficient data
-        to be able to validate transmission at the higher rate.
-        Careful Resume therefore remains in the Reconnaissance Phase and does not
-        transition to the Unvalidated Phase until the sender
-        has more data ready to send in the transmission buffer
-        than is permitted by the current CWND.
-        In some implementations, the decision to enter the
-        Unvalidated Phase could require coordination with the management
-        of buffers in the interface to the higher layers.</t>
 
         <t>This phase paces transmission using an increased CWND (jump_CWND)
         that is calculated based on the saved CC parameters and current_RTT.</t>
@@ -723,24 +728,6 @@ is later performed by an established connection.</t>
         connections by 4-tuple and hence multiple connections from the same
         client device are served by different server processes.</t>
 
-	<t><xref target="RFC7661"></xref> specifies a method for managing an
-	unvalidated CWND. This states:
-	"After a fixed period of time (the non-validated period (NVP)), the sender
-	adjusts the cwnd (Section 4.4.3). The NVP SHOULD NOT exceed five minutes."
-	Section 5 of <xref target="RFC7661"></xref> discusses the rationale for
-	choosing that period.
-	Hoewever, RFC 7661 targets rate-limited connections using normal
-	CC. The method described in the present specification includes additional
-	mechanisms to avoid and compensate for the effects of overshoot, and therefore
-	this can be used to justify a longer period to preserve the saved_cwnd.</t>
-
-	<t><xref target="RFC9040"></xref> provides guidance on the implementation of
-	TCP Control Block Interdependence, but does not specify how long a saved
-	parameter can safely be reused.</t>
-		
-        <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
-        CC Parameters can be cached - Ought this to me minutes, hours, days?}</t>
-
         <section anchor="sec-confirm" title="Confirming the Path">
             <t>Path characteristics can change over time for many reasons,
             resulting in the previously observed CC parameters
@@ -789,6 +776,31 @@ is later performed by an established connection.</t>
                 but places a limitation on the minimum acceptable current_RTT
                 to avoid sending at a rate higher than was previously observed.</t>
         </list></t>
+
+        <section anchor="sec-lifetime" title="Lifestime of CC Parameters">
+
+	    <t>The long-term use of the previously observed parameters is not appropriate,
+	    the CC parameters therefore the CC parameters need to define a lifetime within
+	    which the saved CC parameters could be safely re-used.
+	    <xref target="RFC9040"></xref> provides guidance on the implementation of
+	    TCP Control Block Interdependence, but does not specify how long a saved
+	    parameter can safely be reused.</t>
+	    
+	    <t><xref target="RFC7661"></xref> specifies a method for managing an
+	    unvalidated CWND. This states:
+	    "After a fixed period of time (the non-validated period (NVP)), the sender
+	    adjusts the cwnd (Section 4.4.3). The NVP SHOULD NOT exceed five minutes."
+	    Section 5 of <xref target="RFC7661"></xref> discusses the rationale for
+	    choosing that period.
+	    However, RFC 7661 targets rate-limited connections using normal
+	    CC. The method described in the present specification includes additional
+	    mechanisms to avoid and mitigate the effects of overshoot, and therefore
+	    this can be used to justify a longer lifetime fo the saved_cwnd using
+	    the Careful Resume method.</t>
+		
+            <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
+            CC Parameters can be cached - Ought this to me minutes, hours, days?}</t>
+        </section> <!-- End of Reconnaissance:Liftetime of Params -->
             
         <section anchor="req-pace" title="Pacing in the Unvalidated Phase">
         
