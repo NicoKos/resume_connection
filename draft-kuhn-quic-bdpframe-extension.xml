@@ -104,17 +104,16 @@
 
 	<abstract>
 		<t>
-        This document describes the BDP_FRAME extension for QUIC.
-        The frame enables the exchange of Congestion Control (CC) parameters related to the
+        This document describes an extension for QUIC.
+        This enables the exchange of Congestion Control (CC) parameters related to the
         path characteristics between the receiver
         and the sender during a connection.
-		These CC parameters allow a receiver to prepare to use any additional
-		capacity that is made available when using Careful Resume.
+	These CC parameters allow a receiver to prepare to use any additional
+	capacity that is made available when using Careful Resume.
         It also allows a receiver to request that
-		previously computed CC parameters, are not used when
+	previously computed CC parameters, are not used when
         the receiver has additional information
-		about the current path or traffic that is to be sent.
-		</t>
+	about the current path or traffic that is to be sent.</t>
 	</abstract>
 	</front>
 
@@ -138,7 +137,7 @@ the CC parameters -->
     whether the receiver desires the sender to reuse previously saved CC parameters.</t>
     
     <t>
-    It defines the method to exchange the CC parameters between
+    A method is defined to exchange the CC parameters between
     a QUIC receiver and the sender in an inter-operable manner. The process
     is outlined here:
     <list style="numbers">
@@ -157,7 +156,8 @@ the CC parameters -->
         
         <t>At a later time, the receiver sends the BDP_FRAME to
         the sender to re-use previously computed CC parameters.</t>
-	<t>The receiver can also request that the sender does not enter this phase. This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
+	<t>The receiver can also request that the sender does not enter this phase.
+	This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
  
         <t>Upon reception, the sender MUST verify the hash, and only use
         the CC parameters when valid. This is to prevent a receiver
@@ -166,11 +166,6 @@ the CC parameters -->
         BDP_FRAME when it is connected to the same endpoint.</t>
     </list>
     </t>
-
-    <!--{NOTE: PLEASE CHECK NEXT PARA - restructing of sections may have modified this.}</t>
-     <t>This method can apply to any resumed QUIC session: both
-     a saved_session and a recon_session can be a 0-RTT QUIC
-     connection or a 1-RTT QUIC connection. -->
 
     <section title ="Three approaches">
         <t>This section reviews three approaches to implement the storage of CC parameters:
@@ -191,12 +186,11 @@ the CC parameters -->
           <t>Local Storage allows both a sender to store saved CC parameters:
           <list style="symbols">
               <t>-During a 1-RTT session, the endpoint stores the RTT (as the
-              saved_rtt) and capacity utlised by the connection on the path (as the saved_cwnd) together in
-              the session resume ticket.
+              saved_rtt) and capacity utlised by the connection on the path (as the saved_cwnd).
 
-                     <t>The sender maintains a table of previously stored CC parameters.
-                      Old entries could be removed from the table using the
-                  Least Recently Used (LRU) logic.</t>
+              <t>The sender maintains a set of previously stored CC parameters.
+               Old entries could be removed from the table (e.g., using the
+                  Least Recently Used logic).</t>
           </list></t>
           <t>If a sender does not wish to store the
           metrics from previous connections, an equivalent of the
@@ -212,8 +206,8 @@ the CC parameters -->
           opaque (encrypted) blob and the receiver can not read its content (see
           section 19.7 of <xref target="RFC9000"></xref>).-->
         <t>The receiver can read the BDP_FRAME content and later decide to
-        send the BDP_FRAME back to the sender in the header of an Initial packet, or later in a
-        connection. This frame needs to be received during the Reconnaissance Phase
+        send the BDP_FRAME back to the sender. 
+	This frame needs to be received during the Reconnaissance Phase
         of a Careful Resume sender.</t>
     </section> <!-- End of intro: Three approaches: sec-local_storage -->
 
@@ -247,8 +241,7 @@ the CC parameters -->
         enabling a client to increase the requested quality of video chunks, to
 	fill receiver buffers and avoid stalling playback.</t>
 
-	<t>
-        Even if the capacity on the forward and return paths can be
+	<t>Even if the capacity on the forward and return paths can be
         significantly different level (e.g., with forward capacity being
         five times higher than the return one), users experiencing a high
         BDP for the forward path would typically also experience a high BDP for the
@@ -257,8 +250,7 @@ the CC parameters -->
         transmission of data using the return path.
 	</t>
 
-	<t> 
-        There are also scenarios where a client could be aware it is unable to
+	<t>There are also scenarios where a client could be aware it is unable to
         achieve a previously available rate and would reject the
         use of the extension. Examples of this could include: a client could  be aware of changes in
         link propagation conditions, a change in the operational mode of a link on the path,
@@ -334,15 +326,15 @@ BDP_FRAME {
         prevent the receiver from reading it, and allow the sender to verify
         that the contents were not modified.</t>
 
-        <t>Lifetime (extension_lifetime):
+        <t>Lifetime (lifetime):
         The extension_lifetime is a value in milliseconds,
         encoded as a variable-length integer. This follows the design
         of a NewSessionTicket of TLS  <xref target="RFC8446"></xref>.
         This represents the validity in time of this extension.</t>
 
-        <t>Saved CWND estimate (saved_cwnd): The
-        saved_cwnd is a value in bytes, encoded as a variable-length integer. The
-        available capacity can be estimated for the previous connection by
+        <t>Saved CWND (saved_cwnd): The
+        saved_cwnd is a value in bytes, encoded as a variable-length integer. This is based on the
+        available capacity estimated for a connection by
         the sender.
         Using the previous values of bytes_in_flight defined in
         <xref target="RFC9002"></xref>
@@ -397,17 +389,14 @@ BDP_FRAME {
         
         <t> If the receiver activates the extension,
         it agrees to receive and read BDP_FRAMEs.
-        If the receiver activates the optimization, 
-        it allows the sender to utilize the previously computed CC parameters.
-        A receiver could then  perform session resumption optimization 
-        without actually reading the previous CC parameters.</t>
+        This allows the sender to send a computed CC parameter.</t>
 	</section> <!-- End of Extension activation -->
 
 	<section title="Using the CC parameters with Care">
         <t>Care is needed in the use of any temporal information
         to assure safe use of the Internet and to be robust to changes
         in traffic patterns, network routing and link/node failures.
-        There are also cases where using the CC parameters of a previous
+        There are cases where using the CC parameters of a previous
         connection are not appropriate, and a need to evaluate the potential
         for malicious use of the method.
         The specification for the QUIC transport protocol
@@ -448,14 +437,14 @@ BDP_FRAME {
 
     <t>
     Although a BDP_FRAME is
-    encrypted on transmission, a receiver could modify the
-    value of the received CC parameters.
-    The sender detects this by adding a secured hash over the
+    encrypted on transmission by TLS, a receiver could modify the
+    received value of the received CC parameters.
+    The sender therefore detects this by adding a secured hash over the
     CC parameters.
     If the receiver modifies any CC parameter,
-    the result of the hash would be different.
+    i9t woiuld result in a different hash value.
     If a sender fails to verify the secured hash,
-    it MUST not use the CC parameters.</t>
+    it MUST NOT use the CC parameters.</t>
 
     <t>An example of an implementation where the sender computes an
     Endpoint Token to uniquely identify the receiver
@@ -468,13 +457,13 @@ BDP_FRAME {
             Endpoint Token (i.e., saved_endpoint_token) and CC parameters (i.e.,
             saved_rtt and saved_cwnd) of a previous connection.-->
 
-            <!--When the BDP_Frame extension is used, locally stored CC
-            parameters at the sender can provide a cross-check of the CC
+            <t>When the BDP_Frame extension is used, locally stored CC
+            parameters at the sender could provide a cross-check of the CC
             parameters sent by a receiver. A Careful Resume sender can anyway enable a safe
             jump, but without using the BDP_Frame extension. However, using the CC
             parameters enables a receiver to choose whether to request this or
             not, enabling it to utilize local knowledge of the network
-            conditions, connectivity, or connection requirements.-->
+            conditions, connectivity, or connection requirements.</t>
     
         <t>Four cases are identified where Careful Resume is not appropriate and
         using the saved CC parameters could increase congestion:
