@@ -908,12 +908,12 @@ is later performed by an established connection.</t>
 	          	<name>cr_phase</name>
 <sourcecode type="cddl"><![CDATA[
 XX Fix me as CDDL XX
-CrState::OBSERVE => { 0 }
+<!-- CrState::OBSERVE => { 0 }
 CrState::RECON => { 1 }
 CrState::UNVAL => { 2 }
 CrState::VALIDATE => { 3 }
 CrState::NORMAL => { 4 }
-CrState::RETREAT => { 100 }
+CrState::RETREAT => { 100 } -->
 
 ]]></sourcecode>
 		</figure>
