@@ -497,7 +497,7 @@ is later performed by an established connection.</t>
              To avoid starving other flows that could have either started
              or increased their used capacity after the Observation Phase,
              the jump_cwnd MUST be no more than half of the saved_cwnd.
-             Hence, jump_cwnd is less than  or equal to the saved_cwnd/2.</t>
+             Hence, jump_cwnd is less than  or equal to the saved_cwnd.</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated
              CWND MUST use pacing.</t>
@@ -833,7 +833,7 @@ is later performed by an established connection.</t>
             margin can avoid sending more than a recommended maximum
             (max_jump):
             <list>
-                <t>jump_cwnd = min(max_jump,saved_cwnd/2)</t>
+                <t>jump_cwnd = min(max_jump,saved_cwnd)</t>
                 <t>ITT = (current_RTT x MMS)/jump_cwnd</t>
             </list></t>
             <t>This follows the idea presented in <xref target="RFC4782"></xref>,
@@ -892,19 +892,10 @@ is later performed by an established connection.</t>
          reducing significantly CWND significantly
          below the saved_cwnd.</t>
 
-	<!--    
-	<t>The sender can increase CWND to account for any data that was acknowledged during 
-	the Validating Phase. Each unvalidated ACK can increase the CWND by half the size
-        of the acknowledged data. This could be realised by saving the CWND on entry
-	to the Unvalidated Phase as cr_low_mark, and then on entry to the Safe Retreat
-	Phase calculating:
-	</t> 
-	<t>cwnd = max( IW, (last_ack - cr_low_mark) /2 )</t>
-	<t>where last_ack is the latest acknowledgment received in the Unvalidated Phase.</t>
-	<t>Further acknowledgements received during the Safe Retreat Phase also
-	increase CWND by half the size
-        of each newly acknowledgment.</t> -->
-	
+	<!--    XXX  Safe retreat needs a polciy on what to do with ACK'ed data ... 
+	since otherwise we may end up with a small CWND in SS even whene there was a 
+	large measured pipe  XXX-->
+	 
         <t>Note: Proportional Rate Reduction (PRR) <xref target="RFC6937"></xref>
         assumes that it is safe to reduce
         the rate gradually when in congestion avoidance.
