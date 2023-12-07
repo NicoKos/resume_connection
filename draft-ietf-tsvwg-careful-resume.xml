@@ -889,7 +889,7 @@ is later performed by an established connection.</t>
          from existing flows are displaced from
          the buffer at the congested bottleneck.
          For this reason, a sender needs to react to detected congestion by
-         reducing significantly CWND significantly
+         reducing CWND significantly
          below the saved_cwnd.</t>
 
 	<!--    XXX  Safe retreat needs a polciy on what to do with ACK'ed data ... 
