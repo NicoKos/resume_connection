@@ -928,13 +928,50 @@ is later performed by an established connection.</t>
 
 </section> <!--  End of Guidelines -->
 
+<section anchor="sec-QLOG" title="QLOG support for QUIC">
+	<t>This section provides definitions that enable the 
+	Careful Resume method
+	to generate qlog events when using QUIC.
+	It introduces an event to report the current phase of a sender, 
+	and the associated description.</t>
+	
+	<t>The event and data structure definitions in this section are
+	expressed in the Concise Data Definition Language (CDDL)
+	<xref target="RFC8610"> and its
+	extensions described in <xref target="I-D.ietf-qlog-quic-events">.</t>
+	
+	<section title="cr_phase Event">
+		<name>cr_phase</name>
+		<t>Importance: Extra</t>
+
+		<t>When the CC algorithm changes the Careful Resume Phase 
+		described in <xref target="sec-phase"> of this specification.</t>
+       		 <t>Definition:</t>
+
+		<figure anchor="qlog-def">
+	          	<name>cr_phase</name>
+<sourcecode type="cddl"><![CDATA[
+XX Fix me as CDDL XX
+<!-- CrState::OBSERVE => { 0 }
+CrState::RECON => { 1 }
+CrState::UNVAL => { 2 }
+CrState::VALIDATE => { 3 }
+CrState::NORMAL => { 4 }
+CrState::RETREAT => { 100 } -->
+
+]]></sourcecode>
+		</figure>
+   
+	</section> 
+</section> <!--  End of Qlog -->
+
 <section anchor="sec-acknowledgments" title="Acknowledgments">
         <t>The authors would like to thank John Border, Gabriel Montenegro, Patrick McManus,
         Ian Swett, Igor Lubashev, Robin Marx, Roland Bless, Franklin Simo, Kazuho Oku,
         and Neal Cardwell for
         their fruitful comments on earlier versions of this document.</t>
         <t>The authors would like to particularly thank Tom Jones for co-authoring
-        several previous versions of this document.</t>
+        several previous versions of this document. Ana Custura developed the qlog support.</t>
     </section>
 
     <section anchor="sec-IANA" title="IANA Considerations">
@@ -980,9 +1017,12 @@ filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
       <!-- <?rfc include="reference.RFC.9001.xml"?> -->
 
+      <?rfc include="reference.RFC.8610.xml"?>
+
     </references>
 
     <references title="Informative References">
+	  <?rfc include="reference.I-D.ietf-qlog-quic-events.xml"?>
           <?rfc include="reference.I-D.irtf-iccrg-sallantin-initial-spreading.xml"?>
           <?rfc include="reference.I-D.hughes-restart.xml"?>
     <?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?>
