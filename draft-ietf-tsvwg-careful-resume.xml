@@ -304,8 +304,6 @@ specify just the year. -->
             <!-- GF (Feb 2023): Removed the IW from this information block??? -->
             <!-- it could potentially be in the BDP Frame ID, but is not needed here -->
             <!--    <t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
-            <!--            <t>current_iw: Current IW;</t> -->
-            <!--            <t>recom_iw: Recommended IW;</t> -->
 
 	    <t>CC parameters: A set of saved congestion control parameters from
 	    a previously observed connection (see <xref target="CC-params"/>.</t>
