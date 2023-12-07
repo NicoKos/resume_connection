@@ -927,7 +927,7 @@ CrState::RETREAT => { 100 } -->
       Neal Cardwell, Raffaello Secchi for
       their fruitful comments on earlier versions of this document.</t>
       <t>The authors would like to particularly thank Tom Jones for co-authoring
-      several previous versions of this document. Ana Custura devloped the qlog support.</t>
+      several previous versions of this document. Ana Custura developed the qlog support.</t>
     </section>
 
     <section anchor="sec-IANA" title="IANA Considerations">
