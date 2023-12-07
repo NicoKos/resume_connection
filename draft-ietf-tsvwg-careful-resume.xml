@@ -830,7 +830,7 @@ is later performed by an established connection.</t>
             margin can avoid sending more than a recommended maximum
             (max_jump):
             <list>
-                <t>jump_cwnd = min(max_jump,saved_cwnd)</t>
+                <t>jump_cwnd = min(max_jump,saved_cwnd/2)</t>
                 <t>ITT = (current_RTT x MMS)/jump_cwnd</t>
             </list></t>
             <t>This follows the idea presented in <xref target="RFC4782"></xref>,
