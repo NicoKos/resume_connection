@@ -329,9 +329,8 @@ specify just the year. -->
 	    <t>saved_endpoint_token: The Endpoint Token of a previous connection to a
             receiver;</t>
 
-            <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
-            of a set RTT of measurements taken at the time when the
-            saved_cwnd was estimated.</t>
+            <t>saved_rtt: The preserved minimum RTT, e.g. corresponding to the minimum
+            of a set RTT of measurements over the last 5 minutes of a connection.</t>
  
         </list>
         </t>
@@ -375,7 +374,7 @@ is later performed by an established connection.</t>
 	from the acknowledged rate by measuring the volume of data acknowledged
 	in one RTT.
         The CC parameters also include the minimum RTT
-        (saved_rtt), at the time when cwnd was saved and the receiver
+        (saved_rtt) and the receiver
         Endpoint Token (saved_endpoint_token).</t> 
 	<t>An implementation
         can store the CC parameters at the server (or could exchange this information
@@ -411,7 +410,7 @@ is later performed by an established connection.</t>
         <t>The phase seeks to determine if the path is consistent with
         a set of previously observed CC parameters, allowing it to either use the CR method
         or to revert to the Normal Phase. During this phase
-        a sender records the minimum RTT.</t>
+        a sender records the current minimum RTT for the connection.</t>
 
         <t>There are a set of conditions that need to be confirmed before the sender is
         permitted to enter the Unvalidated Phase:
@@ -431,7 +430,7 @@ is later performed by an established connection.</t>
             <!-- XX A future version may say how many samples are needed?-->
 
              <t>Reconnaissance Phase (Confirming RTT): Since the CC information
-             is directly impacted by the RTT, a significant change in the RTT
+             is directly impacted by the RTT, a significant change in the minimum RTT
              is a strong indication that the previously observed CC
              parameters are not valid for the current path.
              An RTT measurement is confirmed when current_rtt is greater than
@@ -691,8 +690,8 @@ is later performed by an established connection.</t>
     <section anchor="req-recon"  title="Confirming the Path in the Reconnaissance Phase">
         <t>In the Reconnaissance Phase a sender initiates a connection
         and starts sending initial data.
-        While in this phase, it measures the minimum RTT. 
-	If a decision is made to use Careful Resume, trhis is used to confirm the path.</t>
+        While in this phase, it measures the current minimum RTT. 
+	If a decision is made to use Careful Resume, this is used to confirm the path.</t>
 	    
         <t> This CC is not modified during the Reconnaissance Phase.
         A sender therefore needs to limit the initial data,
