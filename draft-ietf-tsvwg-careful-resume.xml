@@ -140,7 +140,7 @@ specify just the year. -->
     <t>A CC method typically takes time to ramp-up the sending rate,
     called the "slow-start phase", informally known as the time to "Get up
     to speed". This slow-start phase defines a time in which a sender
-    intentionally uses less capacity than might be available, with the
+    intentionally uses less-than-available capacity than might be available, with the
     intention to avoid or limit overshooting the available capacity for the path.
     The slow-start design can increase queuing (latency/jitter) and/or
     congestion packet loss for the flow. Any overshoot can have a
@@ -304,9 +304,11 @@ specify just the year. -->
             <!-- GF (Feb 2023): Removed the IW from this information block??? -->
             <!-- it could potentially be in the BDP Frame ID, but is not needed here -->
             <!--    <t>IW: Initial Window <xref target="RFC9002"></xref>;</t> -->
-            <!--            <t>current_iw: Current IW;</t> -->
+            <!--            <t>current_iw: IW;</t> -->
             <!--            <t>recom_iw: Recommended IW;</t> -->
 
+	    <t>Careful Resume (CR): Method proposed in this document to an alternative method to select initial CC parameters, that seek to more rapidly and safely grow the sending rate controlled by then congestion window (CWND).</t>
+		
 	    <t>CC parameters: A set of saved congestion control parameters from
 	    a previously observed connection (see <xref target="CC-params"/>.</t>
 		
@@ -408,7 +410,7 @@ is later performed by an established connection.</t>
         and monitors its reception using normal CC (i.e., the CC is unchanged).</t>
 
         <t>The phase seeks to determine if the path is consistent with
-        a set of previously observed CC parameters, allowing it to either use the CR method
+        a set of previously observed CC parameters, allowing it to either use the Careful Resume (CR) method
         or to revert to the Normal Phase. During this phase
         a sender records the current minimum RTT for the connection.</t>
 
@@ -848,7 +850,7 @@ is later performed by an established connection.</t>
          from existing flows are displaced from
          the buffer at the congested bottleneck.
          For this reason, a sender needs to react to detected congestion by
-         reducing significantly CWND significantly
+         reducing CWND significantly
          below the saved_cwnd.</t>
             
         <t>Note: Proportional Rate Reduction (PRR) <xref target="RFC6937"></xref>
