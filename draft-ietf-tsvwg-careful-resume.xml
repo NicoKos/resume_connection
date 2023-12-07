@@ -497,7 +497,7 @@ is later performed by an established connection.</t>
              To avoid starving other flows that could have either started
              or increased their used capacity after the Observation Phase,
              the jump_cwnd MUST be no more than half of the saved_cwnd.
-             Hence, jump_cwnd is less than  or equal to the saved_cwnd.</t>
+             Hence, jump_cwnd is less than  or equal to the (saved_cwnd/2).</t>
              
              <t>Unvalidated Phase (Pacing): Transmission using an unvalidated
              CWND MUST use pacing.</t>
@@ -808,7 +808,7 @@ is later performed by an established connection.</t>
 	    However, RFC 7661 targets rate-limited connections using normal
 	    CC. The method described in the present specification includes additional
 	    mechanisms to avoid and mitigate the effects of overshoot, and therefore
-	    this can be used to justify a longer lifetime fo the saved_cwnd using
+	    this can be used to justify a longer lifetime of the saved_cwnd using
 	    the Careful Resume method.</t>
 		
             <t>{XXX-Editor NOTE: A future revision of this document needs to specify how long
