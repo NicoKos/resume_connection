@@ -108,7 +108,7 @@
         This enables the exchange of Congestion Control (CC) parameters related to the
         path characteristics between the receiver
         and the sender during a connection.
-	These CC parameters allow a receiver to prepare to use any additional
+	These CC parameters allow a receiver to prepare to use additional
 	capacity that is made available when using Careful Resume.
         It also allows a receiver to request that
 	previously computed CC parameters, are not used when
@@ -129,91 +129,74 @@ the CC parameters -->
     <t>This document extends the Careful Resume
     method <xref target="I-D.ietf-tsvwg-careful-resume"></xref>
     to allow
-    sender-generated CC parameters to be stored at the receiver.
-    Transferring the CC parameters to a receiver, can release the
+    sender-generated Congestion Control parameters  (CC params) to be stored at the receiver.
+    Transferring the CC params to a receiver, can release the
     sender from needing to retain CC parameter state for each
-    receiver. This also allows
+    receiver. It also allows
     a receiver to implement a policy that informs a sender
-    whether the receiver desires the sender to reuse previously saved CC parameters.</t>
+    whether the receiver desires the sender to reuse previously saved CC params.</t>
     
     <t>
-    A method is defined to exchange the CC parameters between
+    A method is defined to exchange the CC paramms between
     a QUIC receiver and the sender in an inter-operable manner. The process
     is outlined here:
     <list style="numbers">
         <t>
-        For an established connection, the current RTT, measured capacity
+        For an established connection, the current RTT, measured capacity,
+	requested lifetime,
         and receiver Endpoint Token are computed and are respectively
-        stored as the saved_rtt, saved_cwnd and saved_endpoint_token.
+        stored as the saved_rtt, saved_cwnd , LifeTime, and saved_endpoint_token.
         These are placed within a BDP_FRAME.
         The sender also computes a secured hash over
-	these CC parameters and sends this within the BDP_FRAME.
+	these CC params and sends this within the BDP_FRAME.
 	This corresponds to the Observe Phase of the Careful Resume method.</t>
         
-        <t>The receiver can read the non-encrypted portion of the BDP_FRAME parameters.
+        <t>The receiver can read the non-encrypted portion of the CC params.
         It is unable to verify the hash and is not permitted
-        to modify any CC parameters.</t>
+        to modify any CC params.</t>
         
-        <t>At a later time, the receiver sends the BDP_FRAME to
-        the sender to re-use previously computed CC parameters.</t>
+        <t>At a later time, the receiver sends a BDP_FRAME to
+        the sender to re-use previously computed CC params.</t>
 	<t>The receiver can also request that the sender does not enter this phase.
-	This corresponds to the Reconnaissance Phase of the Careful Resume method.</t>
+	The CC params need to be sent before completion of the Reconnaissance Phase
+	for the Careful Resume method.</t>
  
         <t>Upon reception, the sender MUST verify the hash, and only use
-        the CC parameters when valid. This is to prevent a receiver
-        from modifying the parameters.
-        The sender is able to utilize the CC parameters in a received
-        BDP_FRAME when it is connected to the same endpoint.</t>
+        the CC params when this is valid. 
+        The Careful Resume method specifies the rules for utilizing the CC params.</t>
     </list>
     </t>
 
     <section title ="Three approaches">
-        <t>This section reviews three approaches to implement the storage of CC parameters:
+        <t>This section reviews three approaches to implement the storage of CC params:
         <list>
-          <t>(1) The saved CC parameters are stored at the sender
-              ("Local storage") and are not sent to a receiver, this does not use a BDP_FRAME;</t>
-          <t>(2) The saved  CC parameters are transmitted to the receiver in a resumption token,
-              these can be used when reconnecting, but a receiver does not read the
-              CC parameters;</t>
-          <t>(3) The saved CC parameters are transmitted to a receiver in a BDP_FRAME,
-              which can use these when reconnecting.
-              The receiver can read, but not modify,
-              the CC parameters to accept or not the use of these parameters.</t>
+          <t>(1) The saved CC params are stored at the sender
+              ("Local storage"). They are not sent to a receiver, this does not use the method in this specification;</t>
+          <t>(2) The saved  CC params are transmitted to the receiver in an opaque record.
+              A receiver can choose to use the CC params when reconnecting, but is unable to read the
+              value of the CC params;</t>
+          <t>(3) The saved CC params are transmitted to a receiver, in a format that allows key parameters to be read.
+              A receiver can choose to use CC params when reconnecting, and is able to read the
+              value of the CC params nto decide whether to accept or not the use of these parameters.</t>
         </list></t>
     </section> <!--- still intro, end of 3 approaches -->
     
    <!--  <section anchor="sec-local_storage" title="Local Storage of Values">
-          <t>Local Storage allows both a sender to store saved CC parameters:
+          <t>Local Storage allows both a sender to store saved CC params:
           <list style="symbols">
-              <t>-During a 1-RTT session, the endpoint stores the RTT (as the
-              saved_rtt) and capacity utlised by the connection on the path (as the saved_cwnd).
-
-              <t>The sender maintains a set of previously stored CC parameters.
-               Old entries could be removed from the table (e.g., using the
-                  Least Recently Used logic).</t>
+              <t>The sender maintains a set of previously stored CC params.
+               Old entries MAY be removed from the table (e.g., using the
+                  Least Recently Used, LRU, logic).</t>
           </list></t>
           <t>If a sender does not wish to store the
-          metrics from previous connections, an equivalent of the
-          tcp_no_metrics_save for QUIC could be used. This option could be
-          negotiated to allow a receiver to choose whether to use any saved
-          CC parameters.</t> -->
+          metrics for any previous connections, it can discard the informatioon.
+	   An equivalent of the
+          tcp_no_metrics_save for QUIC could be used by a receiver to request this
+	  choice.</t> -->
 
-    <section anchor="sec-using_new_token" title="Using the BDP_FRAME">
-          <t>The use of the BDP_FRAME is negotiated with the receiver.</t>
-          <t> A sender can send a BDP_FRAME to the receiver  with
-        CC parameters that were collected during the Careful Resume Observe Phase.</t>
-      <!--The data in the frame can be an
-          opaque (encrypted) blob and the receiver can not read its content (see
-          section 19.7 of <xref target="RFC9000"></xref>).-->
-        <t>The receiver can read the BDP_FRAME content and later decide to
-        send the BDP_FRAME back to the sender. 
-	This frame needs to be received during the Reconnaissance Phase
-        of a Careful Resume sender.</t>
-    </section> <!-- End of intro: Three approaches: sec-local_storage -->
-
-    <section anchor="subsec:rationale_client" title="Considering Client Point of View">
-        <t>Where the receiver is aware it is using a path with high Bandwidth-Delay Product (BDP),
-        it can also adapt other protocol parameters
+    <section anchor="subsec:rationale_client" title="Considering Client Preference">
+        <t>Where a receiver is aware it is using a path with high Bandwidth-Delay Product (BDP),
+        it can use the Careful resume method, but can also adapt other protocol parameters
         to better utilize the available capacity, e.g., to estimate a
         larger size for the flow credit.</t>
 
@@ -228,34 +211,32 @@ the CC parameters -->
         (DASH) that is unable to receive sufficient data
         to reach the desired video playback
         quality supported by the path, because for each video chunk,
-        the transport CC method needs to independently determine the path
+        the video transport needs to independently determine the path
         capacity. In this example,
         a lower transfer rate is safe, but could lead to an
         overly conservative requested rate when the rate is
-        based on the transport
+        based on the video transport
         performance (i.e., the client could fail to increase the requested
         quality of video chunks, or to fill buffers to avoid stalling playback
         or to send high quality advertisements).
-        These client requests could then be adapted based on the previously
+        Using the CC param information, the client requests could be adapted based on the previously
         observed path characteristics,
         enabling a client to increase the requested quality of video chunks, to
 	fill receiver buffers and avoid stalling playback.</t>
 
 	<t>Even if the capacity on the forward and return paths can be
-        significantly different level (e.g., with forward capacity being
-        five times higher than the return one), users experiencing a high
-        BDP for the forward path would typically also experience a high BDP for the
-        return path. An end user could therefore utilise the CC parameter
-        information related to the forward path to adjust its
+        significantly different, users experiencing a high
+        BDP for their forward path would typically also experience a high BDP for the
+        return path. An end user could therefore utilise the CC params
+        related to the forward path to initially adjust its
         transmission of data using the return path.
 	</t>
 
-	<t>There are also scenarios where a client could be aware it is unable to
-        achieve a previously available rate and would reject the
-        use of the extension. Examples of this could include: a client could  be aware of changes in
+	<t>There are  scenarios where a client could be aware it is unable to
+        achieve a previously available rate and would then wish to reject the
+        use of the CC oarams. Examples of this could include: a client could  be aware of changes in
         link propagation conditions, a change in the operational mode of a link on the path,
-	or awareness of limitation in the  hardware platform.
-	</t>
+	or awareness of limitation in the  hardware platform.</t>
 
     </section><!-- End of intro: Optimizing Client Requests -->
 
@@ -265,18 +246,21 @@ the CC parameters -->
 <section anchor="sec:terms_def" title="Notation and Terms">
     <t> <list style="symbols">
         <t>BDP: Bandwdith Delay Product of the path (maximum path capacity);</t>
-        <t>saved_cwnd: The capacity preserved from a
+
+	<t>saved_cwnd: The capacity preserved from a
         previous connection;</t>
 
         <t>saved_rtt: The preserved minimum RTT, corresponding to the minimum
         of a set RTT of measurements taken at the time when the
         saved_cwnd was estimated;</t>
 
+	<t>LifeTime: The time at which CC params are no longer to be used;</t>
+
         <t>endpoint_token: An Endpoint Token for a receiver;</t>
 
-        <t>secured hash: hash generated by the sender using
-        a list of CC parameters that it selected. The sender
-        uses a private key to protect the hash.</t>
+        <t>secured hash: hash generated by the sender covering
+        the list of CC params. The sender
+        uses a private key to protect this hash.</t>
     </list> </t>
 			 		
 	<section anchor="sec:req_language" title="Requirements Language">
@@ -299,12 +283,19 @@ the CC parameters -->
     <t>This section describes the use of a new QUIC Frame, the BDP_FRAME.
     This can be utilized by the congestion controller in the Careful Resume method.</t>
 
-    <t>Sending a BDP_FRAME is not be limited by flow control limits.
+          <t>Support for use of the BDP frame is negotiated with the receiver.</t>
+          <t> Once allowed, a sender can send a BDP_FRAME to the receiver  with
+        CC params collected during the Careful Resume Observe Phase.</t>
+	
+        <t>The receiver can read the BDP_FRAME content and later decide whwther to
+        send a BDP_FRAME to the sender during a new connection. 
+
+    <t>Sending a BDP_FRAME is not be limited by flow control limits of the underlying QUIC transport.
     The sender and the receiver MAY
-    send multiple BDP_FRAMEs in both 1-RTT and 0-RTT connections.
+    send multiple BDP_FRAMEs.
     The rate of update SHOULD be limited (e.g., much less frequent than once for several RTTs).</t>
 
-        <t>The format of a BDP_FRAME is shown in <xref target="fig:bdp_frame_format"></xref>.</t>
+	<t>The format of a BDP_FRAME is shown in <xref target="fig:bdp_frame_format"></xref>.</t>
 
 <figure anchor="fig:bdp_frame_format" title="BDP_FRAME Format">
 <artwork>
