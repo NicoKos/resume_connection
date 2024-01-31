@@ -460,9 +460,9 @@ Sender                                 Receiver
 
 	  New Connection
 
-  |   <--- enable_careful_resume_request -|
+  |          <--- careful_resume_request -|
 	      or
-  |     <--- enable_careful_resume_avoid -|  
+  |            <--- careful_resume_avoid -|  
 	  
 </artwork>
 </figure>
