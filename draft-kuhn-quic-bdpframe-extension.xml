@@ -442,13 +442,31 @@ BDP_FRAME {
 
 <!-- ***************************************************************** -->
 
-
-
-<!-- ***************************************************************** -->
-
 <section anchor="sec:discuss" title="Discussion">
 <section anchor="sec:use" title="Use of the saved CC Params">
     <t>
+<figure anchor="fig:sequence" title="Sequence Diagram">
+<artwork>
+Sender                                 Receiver
+  |                                       |
+  |<--- enable_careful_resume_indication -|
+  |                                       |
+  |- careful_resume_indication --->       |
+	  ...
+  |                                       |
+  |- careful_resume_indication --->       |  
+	  ...
+	  Connection Terminates
+
+	  New Connection
+
+  |   <--- enable_careful_resume_request -|
+	      or
+  |     <--- enable_careful_resume_avoid -|  
+	  
+</artwork>
+</figure>
+
     <list style="numbers">
        	<t>When a receiver sends a enable_careful_resume_indication, a sender
 		in the Observe Phase of the Careful Resume method
@@ -462,17 +480,19 @@ BDP_FRAME {
         these CC params and includes this within the careful_resume_indication.</t>
 
 	<t>
-    	During transmission, the careful_resume_indication is encrypted
+    	When transmitted, the careful_resume_indication is encrypted
     	by QUIC transport using TLS <xref target="RFC8446">
     	</xref> <xref target="RFC9001"></xref>.
     	The secured hash
     	is used by a sender to verify that the returned
     	CC params were not modified by the receiver.</t>
 	
-        <t>A receiver s unable to verify the hash and is not permitted
-        to modify any CC params, but is expected to store these params and the hash.
-	It MAY read any non-encrypted CC params (see <xref target="subsec:client_tune"></xref>).
-        (It i)</t>
+        <t>A receiver is unable to verify the hash and is not permitted
+        to modify any CC params, but it is expected to store these params and their hash.
+	Access to this information would normally be indexed on the receiver's view
+	of the path to the server.
+	It can read any non-encrypted CC params (see <xref target="subsec:client_tune"></xref>).
+        </t>
         
         <t>When the receiver makes a subequent connection, it
 	can send the CC params (and the saved hash) using
