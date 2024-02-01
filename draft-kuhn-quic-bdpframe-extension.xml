@@ -139,6 +139,13 @@ the CC parameters -->
     a receiver to implement a policy that informs a sender
     whether the receiver desires the sender to reuse previously
     saved CC params.</t>
+
+    <t>This method specifies both sender and receiver changes. If a
+    sender does not support the method, it must ignore the requests
+    made by the user. It can idependently decide to use Careful Resume. 
+    If a receiver does not support the method, the sender does not
+    receive any of the specified requests, and can idependently decide to use Careful Resume.</t>
+
     
     <section title ="Three approaches">
         <t>This section identifies three approaches to implement the
@@ -310,14 +317,15 @@ the CC parameters -->
     and the final choice is to be confirmed.}</t>
 
    <t>The following subsections define four signals to carry transport control information.
-    The transmission of these signals is not  limited by flow control limits
-    of the underlying QUIC transport.</t>
+    The transmission of these signals is not limited by flow control limits
+    of the underlying QUIC transport. If a sender or receiver does not implement this
+   specification, the signals MSUT be ignored.</t>
 
 <section anchor="sec:bdp_activation" title="Extension Activation (enable_careful_resume_indication)">
 
 	<t>A receiver indicates its willingness to accept the transmission of careful_resume_indications
         from the sender by sending a enable_careful_resume_indication (0xTBD).
-	This is a transport paraemeter sent in the 1-RTT connection.</t>
+	This is a transport parameter sent in the 1 RTT connection.</t>
 
         <t><list style="symbols">
             <t>0: Default value. BY default the receiver does not support, or does
@@ -337,6 +345,8 @@ the CC parameters -->
         
         <t>The encoding for this Transport Parameter is
         described in Section 18 of <xref target="RFC9000"></xref>.</t>
+
+	<t>Note: This signal has no action when the sender does not support this specification.</t>
         
 </section> <!-- End of Extension activation -->
 
@@ -411,32 +421,44 @@ BDP_FRAME {
         MUST verify the secured hash for the CC params, and
         MUST NOT use the CC params when it cannot verify the secured hash.</t>
 	</list></t>
+	
+	<t>Note: This signal ought not to be sent when the receiver did not request its use.</t>
 
 </section> <!--- careful_resume_indication -->
 	
 <section anchor="sec:request" title="Request to use the saved CC Params (careful_resume_request)">
         
     <t>This section describes the careful_resume_request.</t>
+	
     <t>A receiver MAY send
     a careful_resume_request to the sender requesting use of saved CC params when the server
     is expected to be in the Careful Resume
     Reconaisance Phase. This returns a previously received set of CC params for the
     same pair of endpoints, using CC params stucture.
     This request is an input to the sender, and the decision to use or not
-    use the CC params is taken by the sender.
+    use the CC params is taken by the sender.</t>
+    <t>Note: A receiver ought to treat the transmission
+    of this signal as an indication that the path may have a higher BDP, and therefore
+    might accordingly allocate additional flow credit to prevent potential use of the
+    Careful Resume method becoming limited by flow control.
     </t>
 
     <t>The format of a careful_resume_request is shown in
     <xref target="fig:indication_format"></xref>, and the format
     for the CC params is shown in <xref target="fig:cc_params"></xref>.</t>
 
+	<t>Note: This signal has no action when the sender does not support this specification.</t>
+
+
 </section> <!--- CC Params -->
 	
 <section anchor="sec:avoid" title="Request to avoid using the saved CC Params (careful_resume_avoid)">
     <t>
     This ection describes a signal to the sender that requests to avoid using the saved cc params.
-   No parameters are exchanged. This is a transport parameter sent in the 1-RTT connection.
+    No parameters are exchanged. This is a transport parameter sent in the 1-RTT connection.
     The sender determines whether to use or not Careful Resume.</t>
+    <t>Note: This signal has no action when the sender does not support this specification.</t>
+
 </section> <!--- END of avoid using CC Params -->
 </section> <!--- END of definitions -->
 
