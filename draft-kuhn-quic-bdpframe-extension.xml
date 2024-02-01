@@ -22,7 +22,7 @@
 		<!-- The abbreviated title is used in the page header - it is only necessary if the
          full title is longer than 39 characters -->
 
-		<title abbrev="BDP_Frame Extension">The QUIC BDP_FRAME Extension for CC Parameters</title>
+		<title abbrev="QUIC BDP Signalling">Signalling CC Parameters for Careful Resume using QUIC</title>
 
 		<author fullname="Nicolas Kuhn" initials="N" surname="Kuhn">
 			<organization>Thales Alenia Space</organization>
