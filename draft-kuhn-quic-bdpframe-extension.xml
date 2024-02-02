@@ -133,7 +133,7 @@ the CC parameters -->
     (CC params) to be stored at the receiver, and used by a
     the sender to resume a subsequent connection.</t>
    
-    <t>Transferring these CC params to a receiver, can release the
+    <t>Transferring these CC Paremeters (CC params) to a receiver, can release the
     sender from needing to retain CC parameter state for each
     receiver. The method also allows
     a receiver to implement a policy that informs a sender
@@ -142,9 +142,9 @@ the CC parameters -->
 
     <t>This method specifies both sender and receiver changes. If a
     sender does not support the method, it must ignore the requests
-    made by the user. It can idependently decide to use Careful Resume. 
+    made by the user. It can independently decide whether to use Careful Resume. 
     If a receiver does not support the method, the sender does not
-    receive any of the specified requests, and can idependently decide to use Careful Resume.</t>
+    receive any of the specified requests, and can independently decide whether to use Careful Resume.</t>
 
     
     <section title ="Three approaches">
@@ -262,7 +262,7 @@ the CC parameters -->
         significantly different, clients experiencing a high
         BDP for their forward path would typically also
         experience a high BDP for the
-        return path. The the CC params
+        return path. The CC params
         related to the forward path could potentially be used to initially adjust the
         transmission of data using the return path.</t>
 
@@ -319,7 +319,7 @@ the CC parameters -->
    <t>The following subsections define four signals to carry transport control information.
     The transmission of these signals is not limited by flow control limits
     of the underlying QUIC transport. If a sender or receiver does not implement this
-   specification, the signals MSUT be ignored.</t>
+   specification, the signals MUST be ignored.</t>
 
 <section anchor="sec:bdp_activation" title="Extension Activation (enable_careful_resume_indication)">
 
@@ -433,8 +433,8 @@ BDP_FRAME {
     <t>A receiver MAY send
     a careful_resume_request to the sender requesting use of saved CC params when the server
     is expected to be in the Careful Resume
-    Reconaisance Phase. This returns a previously received set of CC params for the
-    same pair of endpoints, using CC params stucture.
+    Reconnaissance Phase. This returns a previously received set of CC params for the
+    same pair of endpoints, using CC params structure.
     This request is an input to the sender, and the decision to use or not
     use the CC params is taken by the sender.</t>
     <t>Note: A receiver ought to treat the transmission
@@ -454,7 +454,7 @@ BDP_FRAME {
 	
 <section anchor="sec:avoid" title="Request to avoid using the saved CC Params (careful_resume_avoid)">
     <t>
-    This ection describes a signal to the sender that requests to avoid using the saved cc params.
+    This section describes a signal to the sender that requests to avoid using the saved cc params.
     No parameters are exchanged. This is a transport parameter sent in the 1-RTT connection.
     The sender determines whether to use or not Careful Resume.</t>
     <t>Note: This signal has no action when the sender does not support this specification.</t>
@@ -468,25 +468,25 @@ BDP_FRAME {
 <section anchor="sec:use" title="Use of the saved CC Params">
     <t>
 <figure anchor="fig:sequence" title="Sequence Diagram">
-<artwork>
+<artwork align="center"><![CDATA[
 Sender                                 Receiver
   |                                       |
-  |<--- enable_careful_resume_indication -|
+  | <-- enable_careful_resume_indication -|
   |                                       |
-  |- careful_resume_indication --->       |
+  |- careful_resume_indication -->        |
 	  ...
   |                                       |
-  |- careful_resume_indication --->       |  
+  |- careful_resume_indication -->        |  
 	  ...
 	  Connection Terminates
 
 	  New Connection
 
-  |          <--- careful_resume_request -|
+  |           <-- careful_resume_request -|
 	      or
-  |            <--- careful_resume_avoid -|  
+  |             <-- careful_resume_avoid -|  
 	  
-</artwork>
+]]></artwork>
 </figure>
 
     <list style="numbers">
@@ -494,7 +494,7 @@ Sender                                 Receiver
 		in the Observe Phase of the Careful Resume method
 	is permitted to start sending CC params in a careful_resume_indication,
 	transported to the receiver using the QUIC connection.
-	Each inidcation includes the current RTT, measured capacity,
+	Each indication includes the current RTT, measured capacity,
         requested lifetime,
         and receiver Endpoint Token are computed and are respectively
         stored as the saved_rtt, saved_cwnd, LifeTime and saved_endpoint_token.
@@ -516,7 +516,7 @@ Sender                                 Receiver
 	It can read any non-encrypted CC params (see <xref target="subsec:client_tune"></xref>).
         </t>
         
-        <t>When the receiver makes a subequent connection, it
+        <t>When the receiver makes a subsequent connection, it
 	can send the CC params (and the saved hash) using
 	a careful_resume_request to
         the sender at the start of a new connection.
@@ -739,9 +739,9 @@ Sender                                 Receiver
 		 <t>-04 (1) To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell. 
 			(2) To fix the alternative of using resumption tokens as proposed by Marten Seeman and Kazuho Oku.
 		 	(3) To detail the client point of view and associated use-cases.</t>
-		 <t>-05 Rewritten to clarify story and separately identify: format; transport; use; discussion. This rev.
+		 <t> (4) Rewritten to clarify story and separately identify: format; transport; use; discussion. This rev.
 		        would also allow a change of transport method if the WG advises this.</t>
-		<t>Specify two control frames and two actions sending cc params.</t>
+		<t> (5) Specify two control frames and two actions sending cc params.</t>
 
             </list>
             </t>
