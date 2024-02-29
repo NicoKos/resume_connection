@@ -130,19 +130,20 @@ the CC parameters -->
     <t>This document extends the Careful Resume
     method <xref target="I-D.ietf-tsvwg-careful-resume"></xref>
     to allow sender-generated Congestion Control parameters
-    (CC params) to be stored at the receiver, and used by a
+    (CC params) to be stored at the receiver, and used by
     the sender to resume a subsequent connection.</t>
    
-    <t>Transferring these CC Paremeters (CC params) to a receiver, can release the
+    <t>Transferring these CC Parameters (CC params) to a receiver can release the
     sender from needing to retain CC parameter state for each
     receiver. The method also allows
     a receiver to implement a policy that informs a sender
     whether the receiver desires the sender to reuse previously
     saved CC params.</t>
 
-    <t>This method specifies both sender and receiver changes. If a
-    sender does not support the method, it must ignore the requests
-    made by the user. It can independently decide whether to use Careful Resume. 
+    <t>This method specifies both sender and receiver changes. 
+    A sender can independently decide whether to use Careful Resume. If a
+    sender does not support the current method, it must ignore the requests
+    made by the receiver.  
     If a receiver does not support the method, the sender does not
     receive any of the specified requests, and can independently decide whether to use Careful Resume.</t>
 
@@ -164,7 +165,7 @@ the CC parameters -->
             A receiver can choose to use CC params when reconnecting,
             and is able to read the
             value of the CC params to decide whether to accept
-            or not the use of these parameters.</t>
+            or not the use of these parameters. This is the method described in this specification.</t>
         </list></t>
     </section> <!--- intro, end of 3 approaches -->
     
@@ -219,15 +220,15 @@ the CC parameters -->
 	<t>In all these examples, use of the saved
             CC params could increase congestion, and a receiver could
             wish to reject the
-        use of the saved CC params. The sender needs to return to
+        use of the saved CC params. The sender reverts to
         the normal QUIC CC behavior <xref target="RFC9002"></xref>.</t>
     </section> <!-- Subsection on Interop -->
 	
 <section anchor="subsec:client_tune" title="Example Cases where a Receiver might tune based on saved CC Params">
         <t>Where a receiver is aware it is using a path with a high 
         Bandwidth-Delay Product (BDP),
-        Using approach 
-	3, it can also adapt other protocol parameters
+       approach 
+	3 allows it to adapt other protocol parameters
         to better utilize the available capacity, e.g., to estimate a
         larger size for the flow credit.</t>
 
@@ -243,9 +244,9 @@ the CC parameters -->
         Dynamic Adaptive Streaming over HTTPS
         (DASH) that is unable to receive sufficient data
         to reach the desired video playback
-        quality supported by the path, because for each video chunk,
+        quality supported by the path, because
         the video transport needs to independently determine the path
-        capacity. In this example,
+        capacity for each video chunk. In this example,
         a lower transfer rate is safe, but could lead to an
         overly conservative requested rate when the rate is
         based on the video transport
@@ -437,6 +438,7 @@ BDP_FRAME {
     same pair of endpoints, using CC params structure.
     This request is an input to the sender, and the decision to use or not
     use the CC params is taken by the sender.</t>
+	
     <t>Note: A receiver ought to treat the transmission
     of this signal as an indication that the path may have a higher BDP, and therefore
     might accordingly allocate additional flow credit to prevent potential use of the
@@ -454,7 +456,7 @@ BDP_FRAME {
 	
 <section anchor="sec:avoid" title="Request to avoid using the saved CC Params (careful_resume_avoid)">
     <t>
-    This section describes a signal to the sender that requests to avoid using the saved cc params.
+    This section describes a signal by a sender with a request to avoid using the saved cc params.
     No parameters are exchanged. This is a transport parameter sent in the 1-RTT connection.
     The sender determines whether to use or not Careful Resume.</t>
     <t>Note: This signal has no action when the sender does not support this specification.</t>
@@ -617,13 +619,13 @@ Sender                                 Receiver
         header, and hence the proxy itself, not the end-to-end communication
         relayed by the proxy.
         </t>
-        <t>A sender might decide to not use this method if it has a
+        <t>A sender or receiver might decide to not use this method if it has a
         strong requirement to prevent
-        flows being link-able with previous flows to the same endpoint. A
+        flows being linkable with previous flows to the same endpoint. A
         decision not to provide an Endpoint Token necessarily prevents the
         sender from requesting the receiver to return path information to allow
         the same CC parameters to be re-used, potentially strengthening
-        privacy but consequently eliminating any performance benefits.</t>
+        privacy, but consequently eliminating any performance benefits.</t>
     </section> <!-- End of: Endpoint Token Sec -->
     
     <section title="Using the CC Params with Care">
@@ -636,7 +638,7 @@ Sender                                 Receiver
         The specification for the QUIC transport protocol
         <xref target="RFC9000"></xref> therefore notes
         "Generally, implementations are advised
-        to be cautious when using previous values on a new path." </t>
+        to be cautious when using previous values on a new path". </t>
             
     </section>  <!--- end of care -->
 </section> <!-- End of Discussion -->
@@ -676,10 +678,8 @@ Sender                                 Receiver
 	because the value is only computed at the sender, and a sender 
 	can choose any suitable algorithm to meet its own security objectives.</t>
 
-
       </section> <!-- End of Safety: Malicious Clients -->
 	
-
 </section> <!-- End of sec considerations -->
 <!-- ************************************************************************** -->
 
@@ -702,6 +702,7 @@ Sender                                 Receiver
 			<?rfc include="reference.RFC.2119.xml"?>
 			<?rfc include="reference.RFC.8174.xml"?>
 			<?rfc include="reference.RFC.9000.xml"?>
+			<?rfc include="reference.I-D.ietf-tsvwg-careful-resume.xml"?>
 		</references>
 			
 		<references title="Informative References">
@@ -712,7 +713,6 @@ Sender                                 Receiver
            <?rfc include="reference.RFC.9002.xml"?>
 
 	<!--<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?> -->
-			<?rfc include="reference.I-D.ietf-tsvwg-careful-resume.xml"?>
 			<!--
 			<reference anchor="TMA18">
 				<front>
