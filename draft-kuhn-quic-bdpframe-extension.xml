@@ -107,8 +107,8 @@
         This document describes an extension for QUIC.
         This enables the exchange of Congestion Control (CC)
         parameters related to the
-        path characteristics between the receiver
-        and the sender during a connection.
+        characteristics of the between the sender
+        and the receiver during a connection.
         These CC parameters allow a receiver to prepare to use additional
         capacity that is made available when using Careful Resume.
         It can also allow a receiver to request that
@@ -137,11 +137,11 @@ the CC parameters -->
     sender from needing to retain this state for each
     receiver. The method also allows
     a receiver to implement a policy that informs a sender
-    whether the receiver desires the sender to reuse previously
-    saved CC params.</t>
+    whether the receiver desires the sender to reuse any previously
+    saved CC params. A sender can independently decide whether to use Careful Resume.</t>
 
     <t>This specifies both sender and receiver changes. 
-    A sender can independently decide whether to use Careful Resume. If a
+    If a
     sender does not support the current method, it will ignore the requests
     made by the receiver.  
     If a receiver does not support the method, the sender does not
@@ -176,14 +176,14 @@ the CC parameters -->
                   Least Recently Used, LRU, logic).</t>
           </list></t>
           <t>If a sender does not wish to store the
-          metrics for any previous connections, it can discard the information.
-	   An equivalent of the
+          CC params for any previous connections, it can discard the information.
+	  An equivalent of the
           tcp_no_metrics_save for QUIC could be used by a receiver to request this
 	  choice.</t> -->
 
     <section title="Example Cases where a Receiver might decide not to request use of saved CC Params">	    
-	<t>A receiver using approaches 2 or 3 can choose whether to request use or
-        no of the saved CC params, based on local knowledge of the network
+	<t>A receiver using approaches 2 or 3 can choose whether to request or
+        avoid use of the saved CC params. This can be based on local knowledge of the network
         conditions, connectivity, or connection requirements.</t>
     
         <t>Four cases are identified where Careful Resume would not be
