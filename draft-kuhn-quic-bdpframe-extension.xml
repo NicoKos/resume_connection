@@ -133,21 +133,20 @@ the CC parameters -->
     (CC params) to be stored at the receiver, and used by
     the sender to resume a subsequent connection.</t>
    
-    <t>Transferring these CC Parameters (CC params) to a receiver can release the
-    sender from needing to retain CC parameter state for each
+    <t>Transferring these CC params to a receiver can release the
+    sender from needing to retain this state for each
     receiver. The method also allows
     a receiver to implement a policy that informs a sender
     whether the receiver desires the sender to reuse previously
     saved CC params.</t>
 
-    <t>This method specifies both sender and receiver changes. 
+    <t>This specifies both sender and receiver changes. 
     A sender can independently decide whether to use Careful Resume. If a
-    sender does not support the current method, it must ignore the requests
+    sender does not support the current method, it will ignore the requests
     made by the receiver.  
     If a receiver does not support the method, the sender does not
-    receive any of the specified requests, and can independently decide whether to use Careful Resume.</t>
+    receive any of the specified requests.</t>
 
-    
     <section title ="Three approaches">
         <t>This section identifies three approaches to implement the
         storage of CC params:
@@ -170,7 +169,7 @@ the CC parameters -->
     </section> <!--- intro, end of 3 approaches -->
     
    <!--  <section anchor="sec-local_storage" title="Local Storage of Values">
-          <t>Local Storage allows both a sender to store saved CC params:
+          <t>Local Storage stores the saved CC params at the sender:
           <list style="symbols">
               <t>The sender maintains a set of previously stored CC params.
                Old entries MAY be removed from the table (e.g., using the
