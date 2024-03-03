@@ -343,7 +343,7 @@ the CC parameters -->
         <t>The encoding for this Transport Parameter is
         described in Section 18 of <xref target="RFC9000"></xref>.</t>
 
-	<t>This signal has no action when the sender does not support this specification.</t>
+	<t>This indication has no action when the sender does not support this specification.</t>
         
 </section> <!-- End of Extension activation -->
 
@@ -390,7 +390,7 @@ CC_params {
     Once the extension has been activated, a sender in the Careful Resume
     Observe Phase MAY send
     a careful_resume_indication to the receiver including CC params. A sender MAY update the CC params by sending
-    additional careful_resume_indications within a connection.
+    an additional careful_resume_indication within a connection.
     The rate of update SHOULD be limited
     (e.g., much less frequent than once for several RTTs).</t>
 
@@ -410,9 +410,9 @@ BDP_FRAME {
 
 	<t><list style="symbols">
         <t>Hash (secured_hash): The sender constructs the secured_hash over the
-        set of CC params. A sender uses this hash to detect whether received CC params
+        set of CC params. A sender uses this hash to detect whether the received CC params
         were modified. A sender
-        MUST verify the secured hash for the CC params, and
+        MUST verify the secured_hash for the CC params, and
         MUST NOT use the CC params when it cannot verify the secured_hash.</t>
 	</list></t>
 	
@@ -432,7 +432,7 @@ BDP_FRAME {
     <t>This section describes the careful_resume_request.</t>
 	
     <t>A receiver MAY send
-    a careful_resume_request to the sender requesting use of saved CC params for the
+    a careful_resume_request to the sender to request use of saved CC params for the
     same pair of endpoints when the server
     is expected to be in the Careful Resume
     Reconnaissance Phase. 
@@ -453,9 +453,9 @@ BDP_FRAME {
 	
 <section anchor="sec:avoid" title="Request to avoid using the saved CC Params (careful_resume_avoid)">
     <t>
-    This section describes a signal to a sender requesting it avoids using the saved cc params.
-    No parameters are exchanged. This request is a transport parameter sent in the 1-RTT connection.
-    The sender determines whether to use or not Careful Resume.</t>
+    This section describes a transport parameter to a sender requesting it avoids using the saved cc params.
+    No parameters are exchanged. This request is sent in the 1-RTT connection.</t>
+	
     <t>Note: The sender determines whether to use or not Careful Resume.
     The signal has no action when a sender does not support this specification.</t>
 
@@ -490,9 +490,9 @@ Sender                                 Receiver
 </figure>
 
     <list style="numbers">
-       	<t>When a receiver sends a enable_careful_resume_indication, a sender
-	in the Observe Phase of the Careful Resume method
-	is permitted to start sending CC params in a careful_resume_indication.
+       	<t>Recption of a enable_careful_resume_indication, permits a sender
+	to start sending CC params using a careful_resume_indication.
+	This is done in the Observe Phase of the Careful Resume method.
 	Each indication includes the current RTT, measured capacity,
         requested lifetime,
         and receiver Endpoint Token are computed and are respectively
