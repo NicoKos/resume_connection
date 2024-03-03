@@ -120,9 +120,9 @@
 
 <middle>
 
-<!-- Feb 2023, this document now includes all BDP-Frame related text from Careful Resume,
+<!-- Feb 2023, this document now includes all BDP- related text from Careful Resume,
 but at this stage probably contains a lot of repetition, and potentially some confusion
-about whether QUIC Transport Params, Session Tickets or other Frames are used to send
+about whether QUIC Transport Params, Session Tickets or other s are used to send
 the CC parameters -->
 		
 <!-- ***************************************************************** -->
@@ -421,8 +421,15 @@ BDP_FRAME {
         MUST verify the secured hash for the CC params, and
         MUST NOT use the CC params when it cannot verify the secured hash.</t>
 	</list></t>
-	
-	<t>Note: This signal ought not to be sent when the receiver did not request its use.</t>
+
+	<t>Note: Section 19.21 of <xref target="RFC9000"></xref> states
+	"An extension to QUIC that wishes to use a 
+	new type of frame MUST first ensure that a peer is able to understand the frame.
+	An endpoint can use a transport parameter to signal its willingness to receive
+	extension frame types. One transport parameter can indicate support for one
+	or more extension frame types". Implicitly, it is a protocol violation error
+	to use an extension frame type that has not
+	been approved by the peer by receiving a enable_careful_resume_indication.</>
 
 </section> <!--- careful_resume_indication -->
 	
@@ -738,10 +745,11 @@ Sender                                 Receiver
 	 	Removed annexe 1, and discussion of session tickets, preferring BDP_FRAMEs.</t>
 		 <t>-04 (1) To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell. 
 			(2) To fix the alternative of using resumption tokens as proposed by Marten Seeman and Kazuho Oku.
-		 	(3) To detail the client point of view and associated use-cases.</t>
-		 <t> (4) Rewritten to clarify story and separately identify: format; transport; use; discussion. This rev.
-		        would also allow a change of transport method if the WG advises this.</t>
-		<t> (5) Specify two control frames and two actions sending cc params.</t>
+		 	(3) To detail the client point of view and associated use-cases.
+		 (4) Rewritten to clarify story and separately identify: format; transport; use; discussion. This rev.
+		        would also allow a change of transport method if the WG advises this.
+		(5) Specify two frames and two actions sending cc params.</t>
+		<t>-05 Editorial corrections.</t>
 
             </list>
             </t>
