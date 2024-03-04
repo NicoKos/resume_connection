@@ -107,8 +107,8 @@
         This document describes an extension for QUIC.
         This enables the exchange of Congestion Control (CC)
         parameters related to the
-        path characteristics between the receiver
-        and the sender during a connection.
+        characteristics of the between the sender
+        and the receiver during a connection.
         These CC parameters allow a receiver to prepare to use additional
         capacity that is made available when using Careful Resume.
         It can also allow a receiver to request that
@@ -130,23 +130,23 @@ the CC parameters -->
     <t>This document extends the Careful Resume
     method <xref target="I-D.ietf-tsvwg-careful-resume"></xref>
     to allow sender-generated Congestion Control parameters
-    (CC params) to be stored at the receiver, and used by a
+    (CC params) to be stored at the receiver, and used by
     the sender to resume a subsequent connection.</t>
    
-    <t>Transferring these CC Paremeters (CC params) to a receiver, can release the
-    sender from needing to retain CC parameter state for each
+    <t>Transferring these CC params to a receiver can release the
+    sender from needing to retain this state for each
     receiver. The method also allows
     a receiver to implement a policy that informs a sender
-    whether the receiver desires the sender to reuse previously
-    saved CC params.</t>
+    whether the receiver desires the sender to reuse any previously
+    saved CC params. A sender can independently decide whether to use Careful Resume.</t>
 
-    <t>This method specifies both sender and receiver changes. If a
-    sender does not support the method, it must ignore the requests
-    made by the user. It can independently decide whether to use Careful Resume. 
+    <t>This specifies both sender and receiver changes. 
+    If a
+    sender does not support the current method, it will ignore the requests
+    made by the receiver.  
     If a receiver does not support the method, the sender does not
-    receive any of the specified requests, and can independently decide whether to use Careful Resume.</t>
+    receive any of the specified requests.</t>
 
-    
     <section title ="Three approaches">
         <t>This section identifies three approaches to implement the
         storage of CC params:
@@ -164,26 +164,26 @@ the CC parameters -->
             A receiver can choose to use CC params when reconnecting,
             and is able to read the
             value of the CC params to decide whether to accept
-            or not the use of these parameters.</t>
+            or not the use of these parameters. This is the method described in this specification.</t>
         </list></t>
     </section> <!--- intro, end of 3 approaches -->
     
    <!--  <section anchor="sec-local_storage" title="Local Storage of Values">
-          <t>Local Storage allows both a sender to store saved CC params:
+          <t>Local Storage stores the saved CC params at the sender:
           <list style="symbols">
               <t>The sender maintains a set of previously stored CC params.
                Old entries MAY be removed from the table (e.g., using the
                   Least Recently Used, LRU, logic).</t>
           </list></t>
           <t>If a sender does not wish to store the
-          metrics for any previous connections, it can discard the information.
-	   An equivalent of the
+          CC params for any previous connections, it can discard the information.
+	  An equivalent of the
           tcp_no_metrics_save for QUIC could be used by a receiver to request this
 	  choice.</t> -->
 
     <section title="Example Cases where a Receiver might decide not to request use of saved CC Params">	    
-	<t>A receiver using approaches 2 or 3 can choose whether to request use or
-        no of the saved CC params, based on local knowledge of the network
+	<t>A receiver using approaches 2 or 3 can choose whether to request or
+        avoid use of the saved CC params. This can be based on local knowledge of the network
         conditions, connectivity, or connection requirements.</t>
     
         <t>Four cases are identified where Careful Resume would not be
@@ -219,15 +219,15 @@ the CC parameters -->
 	<t>In all these examples, use of the saved
             CC params could increase congestion, and a receiver could
             wish to reject the
-        use of the saved CC params. The sender needs to return to
+        use of the saved CC params. The sender reverts to
         the normal QUIC CC behavior <xref target="RFC9002"></xref>.</t>
     </section> <!-- Subsection on Interop -->
 	
 <section anchor="subsec:client_tune" title="Example Cases where a Receiver might tune based on saved CC Params">
         <t>Where a receiver is aware it is using a path with a high 
         Bandwidth-Delay Product (BDP),
-        Using approach 
-	3, it can also adapt other protocol parameters
+       approach 
+	3 allows it to adapt other protocol parameters
         to better utilize the available capacity, e.g., to estimate a
         larger size for the flow credit.</t>
 
@@ -243,27 +243,25 @@ the CC parameters -->
         Dynamic Adaptive Streaming over HTTPS
         (DASH) that is unable to receive sufficient data
         to reach the desired video playback
-        quality supported by the path, because for each video chunk,
+        quality supported by the path, because
         the video transport needs to independently determine the path
-        capacity. In this example,
+        capacity for each video chunk. In this example,
         a lower transfer rate is safe, but could lead to an
         overly conservative requested rate when the rate is
         based on the video transport
-        performance (i.e., the client could fail to increase the requested
-        quality of video chunks, or to fill buffers to avoid stalling playback
-        or to send high quality advertisements).
+        performance.
         Using the CC param information,
         the client requests could be adapted based on the previously
         observed path characteristics,
-        enabling a client to increase the requested quality of video chunks, to
+        enabling a client to increase the requested quality of video chunks or to
         fill receiver buffers and avoid stalling playback.</t>
 
-        <t>Even if the capacity on the forward and return paths can be
+        <t>Even if the capacity on the forward and return paths might be
         significantly different, clients experiencing a high
         BDP for their forward path would typically also
-        experience a high BDP for the
+        experience a high BDP for their
         return path. The CC params
-        related to the forward path could potentially be used to initially adjust the
+        related to the forward path could then potentially be used to initially adjust the
         transmission of data using the return path.</t>
 
     </section><!-- End of intro: Optimizing Client Requests -->
@@ -316,10 +314,9 @@ the CC parameters -->
     method to signal use and to send CC params. There are various alternatives
     and the final choice is to be confirmed.}</t>
 
-   <t>The following subsections define four signals to carry transport control information.
+   <t>The following subsections define four signals that carry transport control information.
     The transmission of these signals is not limited by flow control limits
-    of the underlying QUIC transport. If a sender or receiver does not implement this
-   specification, the signals MUST be ignored.</t>
+    of the underlying QUIC transport.</t>
 
 <section anchor="sec:bdp_activation" title="Extension Activation (enable_careful_resume_indication)">
 
@@ -328,25 +325,25 @@ the CC parameters -->
 	This is a transport parameter sent in the 1 RTT connection.</t>
 
         <t><list style="symbols">
-            <t>0: Default value. BY default the receiver does not support, or does
-            not wish to activate, the transmission of indications.</t>
+            <t>0: Default value. By default, a receiver does
+            not activate, the transmission of indications.</t>
             
-            <t>1: The value of 1 requests transmission of careful_resume_indications (enabled) to the receiver.
+            <t>1: The value of 1 requests transmission of careful_resume_indications.
 		When the receiver activates the extension,
-        it agrees to receive careful_resume_indications carrying
-        CC params.</t>
+        	it agrees to receive careful_resume_indications carrying
+        	CC params.</t>
             
             <t>All values larger than
-        1 are reserved for future use,
-        and the receipt of these values MUST be treated
-        as a connection error of type TRANSPORT_PARAMETER_ERROR
-        <xref target="RFC9000"></xref>. </t>
+        	1 are reserved for future use,
+        	and the receipt of these values MUST be treated
+        	as a connection error of type TRANSPORT_PARAMETER_ERROR
+        	<xref target="RFC9000"></xref>. </t>
         </list></t>
         
         <t>The encoding for this Transport Parameter is
         described in Section 18 of <xref target="RFC9000"></xref>.</t>
 
-	<t>Note: This signal has no action when the sender does not support this specification.</t>
+	<t>This indication has no action when the sender does not support this specification.</t>
         
 </section> <!-- End of Extension activation -->
 
@@ -371,18 +368,16 @@ CC_params {
         This represents the validity in time of this extension.</t>
 
         <t>Saved CWND (saved_cwnd): The
-        saved_cwnd is a value in bytes per RTT, encoded as a variable-length integer. This is based on the
-        available capacity estimated for a connection by
-        the sender.</t>
+        saved_cwnd is a value in bytes per RTT, encoded as a variable-length integer. A sender bases this on the
+        estimated available capacity for a connection.</t>
 
         <t>Saved RTT (saved_rtt): The saved_rtt is a value in
         milliseconds, encoded as a variable-length integer.
-        The saved_rtt is set to the min_rtt.</t>
+        The saved_rtt is set to the min_rtt for a connection.</t>
 
         <t>Saved Endpoint Token (saved_endpoint_token) :
-        Note: The Endpoint Token is defined in <xref target="I-D.ietf-tsvwg-careful-resume"></xref>,
-        and is discussed in the context of this protocol 
-        exchange in a later section.</t>
+        The Endpoint Token is defined in <xref target="I-D.ietf-tsvwg-careful-resume"></xref>,
+        and is discussed in a later section.</t>
     </list></t>
     
     <t>Careful use of the CC params is discussed
@@ -392,14 +387,14 @@ CC_params {
 <section anchor="sec:indication" title="Transporting the CC Params (careful_resume_indication)">
         
     <t>This section describes the careful_resume_indication.
-    Once the extension has been activated, a sender MAY send
-    a careful_resume_indication to the receiver with CC params during the Careful Resume
-    Observe Phase. A sender MAY update the CC params by sending
-    additional careful_resume_indications within a connection.
+    Once the extension has been activated, a sender in the Careful Resume
+    Observe Phase MAY send
+    a careful_resume_indication to the receiver including CC params. A sender MAY update the CC params by sending
+    an additional careful_resume_indication within a connection.
     The rate of update SHOULD be limited
     (e.g., much less frequent than once for several RTTs).</t>
 
-    <t>The format of a careful_resume_indication is shown in
+    <t>The format of a careful_resume_indication is specified in
     <xref target="fig:indication_format"></xref>, and the format
     for the CC params is specified in <xref target="sec:params"></xref>.</t>
 
@@ -414,15 +409,21 @@ BDP_FRAME {
 </figure>
 
 	<t><list style="symbols">
-        <t>Hash (secured_hash): The secured_hash is generated by the sender using
-        CC params. The sender constructs the secured hash over the
-        set of CC params. A sender uses this hash to detect whether received CC params
+        <t>Hash (secured_hash): The sender constructs the secured_hash over the
+        set of CC params. A sender uses this hash to detect whether the received CC params
         were modified. A sender
-        MUST verify the secured hash for the CC params, and
-        MUST NOT use the CC params when it cannot verify the secured hash.</t>
+        MUST verify the secured_hash for the CC params, and
+        MUST NOT use the CC params when it cannot verify the secured_hash.</t>
 	</list></t>
 	
-	<t>Note: This signal ought not to be sent when the receiver did not request its use.</t>
+        <t>Note: Section 19.21 of <xref target="RFC9000"></xref> states
+	"An extension to QUIC that wishes to use a 
+	new type of frame MUST first ensure that a peer is able to understand the frame.
+	An endpoint can use a transport parameter to signal its willingness to receive
+	extension frame types. One transport parameter can indicate support for one
+	or more extension frame types". Implicitly, it is a protocol violation error
+	to use an extension frame type that has not
+	been approved by the peer by receiving a enable_careful_resume_indication.</>
 
 </section> <!--- careful_resume_indication -->
 	
@@ -431,14 +432,15 @@ BDP_FRAME {
     <t>This section describes the careful_resume_request.</t>
 	
     <t>A receiver MAY send
-    a careful_resume_request to the sender requesting use of saved CC params when the server
+    a careful_resume_request to the sender to request use of saved CC params for the
+    same pair of endpoints when the server
     is expected to be in the Careful Resume
-    Reconnaissance Phase. This returns a previously received set of CC params for the
-    same pair of endpoints, using CC params structure.
-    This request is an input to the sender, and the decision to use or not
-    use the CC params is taken by the sender.</t>
+    Reconnaissance Phase. 
+    The sender decides  whether to use or not
+    the received CC params.</t>
+	
     <t>Note: A receiver ought to treat the transmission
-    of this signal as an indication that the path may have a higher BDP, and therefore
+    of a careful_resume_request as an indication that the path may have a higher BDP, and therefore
     might accordingly allocate additional flow credit to prevent potential use of the
     Careful Resume method becoming limited by flow control.
     </t>
@@ -447,17 +449,15 @@ BDP_FRAME {
     <xref target="fig:indication_format"></xref>, and the format
     for the CC params is shown in <xref target="fig:cc_params"></xref>.</t>
 
-	<t>Note: This signal has no action when the sender does not support this specification.</t>
-
-
 </section> <!--- CC Params -->
 	
 <section anchor="sec:avoid" title="Request to avoid using the saved CC Params (careful_resume_avoid)">
     <t>
-    This section describes a signal to the sender that requests to avoid using the saved cc params.
-    No parameters are exchanged. This is a transport parameter sent in the 1-RTT connection.
-    The sender determines whether to use or not Careful Resume.</t>
-    <t>Note: This signal has no action when the sender does not support this specification.</t>
+    This section describes a transport parameter to a sender requesting it avoids using the saved cc params.
+    No parameters are exchanged. This request is sent in the 1-RTT connection.</t>
+	
+    <t>Note: The sender determines whether to use or not Careful Resume.
+    The signal has no action when a sender does not support this specification.</t>
 
 </section> <!--- END of avoid using CC Params -->
 </section> <!--- END of definitions -->
@@ -490,10 +490,9 @@ Sender                                 Receiver
 </figure>
 
     <list style="numbers">
-       	<t>When a receiver sends a enable_careful_resume_indication, a sender
-		in the Observe Phase of the Careful Resume method
-	is permitted to start sending CC params in a careful_resume_indication,
-	transported to the receiver using the QUIC connection.
+       	<t>Recption of a enable_careful_resume_indication, permits a sender
+	to start sending CC params using a careful_resume_indication.
+	This is done in the Observe Phase of the Careful Resume method.
 	Each indication includes the current RTT, measured capacity,
         requested lifetime,
         and receiver Endpoint Token are computed and are respectively
@@ -505,11 +504,11 @@ Sender                                 Receiver
     	When transmitted, the careful_resume_indication is encrypted
     	by QUIC transport using TLS <xref target="RFC8446">
     	</xref> <xref target="RFC9001"></xref>.
-    	The secured hash
+    	The secured_hash
     	is used by a sender to verify that the returned
     	CC params were not modified by the receiver.</t>
 	
-        <t>A receiver is unable to verify the hash and is not permitted
+        <t>A receiver is unable to verify the secured_hash and is not permitted
         to modify any CC params, but it is expected to store these params and their hash.
 	Access to this information would normally be indexed on the receiver's view
 	of the path to the server.
@@ -517,14 +516,14 @@ Sender                                 Receiver
         </t>
         
         <t>When the receiver makes a subsequent connection, it
-	can send the CC params (and the saved hash) using
+	can send the CC params (and the secured_hash) using
 	a careful_resume_request to
         the sender at the start of a new connection.
         These CC params need to be received during
         the Reconnaissance Phase
         of the Careful Resume method.</t>
 
-	 <t>Upon reception, a sender MUST verify the hash, and only use
+	 <t>Upon reception, a sender MUST verify the secured_hash, and only use
         the CC params when this is valid.
         The Careful Resume method specifies the rules
         for utilizing verified CC params.</t>
@@ -538,7 +537,7 @@ Sender                                 Receiver
     </t>
 </section>
     <section title="Identifying the Path">    
-<t>This extension is designed do not provide an opportunity for the current
+<t>This extension is designed to avoid an opportunity for the current
     connection to be a vector for an amplification attack. The QUIC address
     validation process, used to prevent amplification attacks, SHOULD be
     performed <xref target="RFC9000"></xref>.</t>
@@ -577,8 +576,8 @@ Sender                                 Receiver
         size of token can add to the ambiguity set, reducing this likability.
         </t>
 
-        <t> NOTE: A different Endpoint Token is used for each direction of transmission. A
-        receiver might decide not to provide an Endpoint Token to a sender, to
+        <t>Note: A different Endpoint Token is used for each direction of transmission. A
+        receiver could decide not to uses this method to
         avoid exposing additional link-able information (but also preventing use
         of any mechanism that relies on the token).
         </t>
@@ -617,13 +616,13 @@ Sender                                 Receiver
         header, and hence the proxy itself, not the end-to-end communication
         relayed by the proxy.
         </t>
-        <t>A sender might decide to not use this method if it has a
+        <t>A sender or receiver might decide to not use this method if it has a
         strong requirement to prevent
-        flows being link-able with previous flows to the same endpoint. A
+        flows being linkable with previous flows to the same endpoint. A
         decision not to provide an Endpoint Token necessarily prevents the
         sender from requesting the receiver to return path information to allow
         the same CC parameters to be re-used, potentially strengthening
-        privacy but consequently eliminating any performance benefits.</t>
+        privacy, but consequently eliminating any performance benefits.</t>
     </section> <!-- End of: Endpoint Token Sec -->
     
     <section title="Using the CC Params with Care">
@@ -636,7 +635,7 @@ Sender                                 Receiver
         The specification for the QUIC transport protocol
         <xref target="RFC9000"></xref> therefore notes
         "Generally, implementations are advised
-        to be cautious when using previous values on a new path." </t>
+        to be cautious when using previous values on a new path". </t>
             
     </section>  <!--- end of care -->
 </section> <!-- End of Discussion -->
@@ -676,10 +675,8 @@ Sender                                 Receiver
 	because the value is only computed at the sender, and a sender 
 	can choose any suitable algorithm to meet its own security objectives.</t>
 
-
       </section> <!-- End of Safety: Malicious Clients -->
 	
-
 </section> <!-- End of sec considerations -->
 <!-- ************************************************************************** -->
 
@@ -702,6 +699,7 @@ Sender                                 Receiver
 			<?rfc include="reference.RFC.2119.xml"?>
 			<?rfc include="reference.RFC.8174.xml"?>
 			<?rfc include="reference.RFC.9000.xml"?>
+			<?rfc include="reference.I-D.ietf-tsvwg-careful-resume.xml"?>
 		</references>
 			
 		<references title="Informative References">
@@ -712,7 +710,6 @@ Sender                                 Receiver
            <?rfc include="reference.RFC.9002.xml"?>
 
 	<!--<?rfc include="reference.I-D.cardwell-iccrg-bbr-congestion-control.xml"?> -->
-			<?rfc include="reference.I-D.ietf-tsvwg-careful-resume.xml"?>
 			<!--
 			<reference anchor="TMA18">
 				<front>
@@ -738,11 +735,11 @@ Sender                                 Receiver
 	 	Removed annexe 1, and discussion of session tickets, preferring BDP_FRAMEs.</t>
 		 <t>-04 (1) To align with Careful Resume to use saved_cwnd, after review of CR from Neil Cardwell. 
 			(2) To fix the alternative of using resumption tokens as proposed by Marten Seeman and Kazuho Oku.
-		 	(3) To detail the client point of view and associated use-cases.</t>
-		 <t> (4) Rewritten to clarify story and separately identify: format; transport; use; discussion. This rev.
-		        would also allow a change of transport method if the WG advises this.</t>
-		<t> (5) Specify two control frames and two actions sending cc params.</t>
-
+		 	(3) To detail the client point of view and associated use-cases.
+		 (4) Rewritten to clarify story and separately identify: format; transport; use; discussion. This rev.
+		        would also allow a change of transport method if the WG advises this.
+		(5) Specify two frames and two actions sending cc params.</t>
+		<t>-05 Editorial corrections.</t>
             </list>
             </t>
        </section>
