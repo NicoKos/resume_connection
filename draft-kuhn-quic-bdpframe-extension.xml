@@ -423,7 +423,7 @@ BDP_FRAME {
 	extension frame types. One transport parameter can indicate support for one
 	or more extension frame types". Implicitly, it is a protocol violation error
 	to use an extension frame type that has not
-	been approved by the peer by receiving a enable_careful_resume_indication.</>
+	been approved by the peer by receiving a enable_careful_resume_indication.</t>
 
 </section> <!--- careful_resume_indication -->
 	
